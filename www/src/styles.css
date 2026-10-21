@@ -1501,6 +1501,134 @@ body {
     border-width: 1.5px;
 }
 
+/* ==========================================
+   🃏 MULTI-ROW OWN HAND (portrait)
+   自家手牌自動分成多排，每排最多 5 張，
+   方便一眼看出 順子 / 葫蘆 / 同花 等 5 張牌型。
+   ========================================== */
+.mobile-layout #human-area .hand.multi-row {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    padding: 2px 0;
+    min-height: 0;
+}
+
+.mobile-layout #human-area .hand.multi-row .hand-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    width: 100%;
+    padding-top: 13px; /* 保留選牌上浮的空間，避免被裁切 */
+}
+
+.mobile-layout #human-area .hand.multi-row .card {
+    width: 46px !important;
+    height: 64px !important;
+    margin-right: -25px !important;
+}
+
+.mobile-layout #human-area .hand .hand-row .card:last-child {
+    margin-right: 0 !important;
+}
+
+.mobile-layout #human-area .hand.multi-row .card .rank {
+    font-size: 14px;
+}
+
+.mobile-layout #human-area .hand.multi-row .card .suit {
+    font-size: 15px;
+}
+
+.mobile-layout #human-area .hand.multi-row .card.selected {
+    transform: translateY(-11px);
+}
+
+/* 矮螢幕（例如 360x640）再壓縮一點，確保三排手牌與按鈕都在畫面內 */
+@media (max-height: 760px) {
+    .mobile-layout #game-container {
+        padding-top: calc(52px + env(safe-area-inset-top, 0px));
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+        gap: 6px;
+    }
+
+    .mobile-layout #top-controls {
+        top: calc(10px + env(safe-area-inset-top, 0px));
+        gap: 10px;
+    }
+
+    .mobile-layout .player.ai {
+        padding: 4px 10px;
+        gap: 8px;
+    }
+
+    .mobile-layout .player.ai .avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+
+    .mobile-layout .played-cards-slot {
+        min-height: 44px;
+    }
+
+    .mobile-layout .slot-card {
+        width: 34px !important;
+        height: 48px !important;
+        margin-right: -20px !important;
+    }
+
+    .mobile-layout #human-area {
+        padding: 6px;
+        gap: 4px;
+    }
+
+    .mobile-layout #human-area .avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+
+    .mobile-layout #human-area .hand.multi-row {
+        gap: 0;
+        padding: 0;
+    }
+
+    .mobile-layout #human-area .hand.multi-row .hand-row {
+        padding-top: 9px;
+    }
+
+    .mobile-layout #human-area .hand.multi-row .card {
+        width: 42px !important;
+        height: 52px !important;
+        margin-right: -23px !important;
+    }
+
+    .mobile-layout #human-area .hand.multi-row .card .rank {
+        font-size: 13px;
+    }
+
+    .mobile-layout #human-area .hand.multi-row .card .suit {
+        font-size: 13px;
+    }
+
+    .mobile-layout #human-area .hand.multi-row .card.selected {
+        transform: translateY(-7px);
+    }
+
+    .mobile-layout #controls .premium-btn {
+        height: 34px;
+        padding: 4px 14px;
+        font-size: 13px;
+    }
+
+    .mobile-layout #status-message {
+        font-size: 13px;
+        padding: 4px 12px;
+    }
+}
+
 /* Touch-friendly Gameplay Action Buttons Bar */
 .mobile-layout #controls {
     grid-area: 3 / 1 / 4 / 4;

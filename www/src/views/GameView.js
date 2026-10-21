@@ -23,16 +23,28 @@ window.trialStatus = document.getElementById('trial-status');
 const SUIT_SYMBOLS = ['♣', '♦', '♥', '♠'];
 const RANK_LABELS = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
 
+// Multi-row hand layout constants (declared before updateResponsiveLayout() runs,
+// because that function may re-render the hand on the very first call).
+const HAND_ROW_SIZE = 5;          // 每排最多 5 張，讓 5 張牌型能被完整看見
+const HAND_ROW_MIN_CARDS = 7;     // 6 張以下單排還放得下，不需要拆排
+
 // Dynamically handle mobile-layout based on environment and window width
 function updateResponsiveLayout() {
     const isAndroid = (typeof AppEnv !== 'undefined' && AppEnv.isAndroid);
     const isNarrow = window.innerWidth < 900; // Trigger mobile layout below 900px
-    if (isAndroid || isNarrow) {
+    const useMobile = isAndroid || isNarrow;
+    const wasMobile = document.body.classList.contains('mobile-layout');
+    if (useMobile) {
         document.body.classList.add('mobile-layout');
         document.documentElement.classList.add('mobile-layout');
     } else {
         document.body.classList.remove('mobile-layout');
         document.documentElement.classList.remove('mobile-layout');
+    }
+    // Re-render the hand so the multi-row split follows the active layout
+    if (wasMobile !== useMobile && window.gameState && Array.isArray(window.gameState.players) &&
+        Array.isArray(window.gameState.players[0]) && typeof renderHumanHand === 'function') {
+        renderHumanHand();
     }
 }
 updateResponsiveLayout();
@@ -99,27 +111,60 @@ function renderAll() {
     updateDynamicAvatars();
 }
 
+// --- Portrait / mobile hand layout ---------------------------------------
+// 起手時把自家手牌自動分成多排（每排最多 5 張），讓 順子 / 葫蘆 / 同花 等
+// 5 張牌型可以一眼看出來。13 張 = 5+5+3（三排）、10 張 = 5+5（兩排）。
+function isMobileLayout() {
+    return document.body.classList.contains('mobile-layout');
+}
+
+function chunkHandIntoRows(cards) {
+    const rows = [];
+    for (let i = 0; i < cards.length; i += HAND_ROW_SIZE) {
+        rows.push(cards.slice(i, i + HAND_ROW_SIZE));
+    }
+    return rows;
+}
+
+function createHumanCardElement(cardId) {
+    const cardEl = createCardElement(cardId);
+    if (gameState.selectedCards.has(cardId)) {
+        cardEl.classList.add('selected');
+    }
+    cardEl.onclick = () => {
+        AudioPlayer.playCardSelect();
+        if (gameState.selectedCards.has(cardId)) {
+            gameState.selectedCards.delete(cardId);
+            cardEl.classList.remove('selected');
+        } else {
+            gameState.selectedCards.add(cardId);
+            cardEl.classList.add('selected');
+        }
+        updatePlayButtonVisibility();
+        updateShoutButton();
+    };
+    return cardEl;
+}
+
 function renderHumanHand() {
     if (!humanCardsContainer) return;
     humanCardsContainer.innerHTML = '';
-    gameState.players[0].forEach(cardId => {
-        const cardEl = createCardElement(cardId);
-        if (gameState.selectedCards.has(cardId)) {
-            cardEl.classList.add('selected');
-        }
-        cardEl.onclick = () => {
-            AudioPlayer.playCardSelect();
-            if (gameState.selectedCards.has(cardId)) {
-                gameState.selectedCards.delete(cardId);
-                cardEl.classList.remove('selected');
-            } else {
-                gameState.selectedCards.add(cardId);
-                cardEl.classList.add('selected');
-            }
-            updatePlayButtonVisibility();
-            updateShoutButton();
-        };
-        humanCardsContainer.appendChild(cardEl);
+
+    const cards = gameState.players[0] || [];
+    const useRows = isMobileLayout() && cards.length >= HAND_ROW_MIN_CARDS;
+    humanCardsContainer.classList.toggle('multi-row', useRows);
+
+    if (!useRows) {
+        cards.forEach(cardId => humanCardsContainer.appendChild(createHumanCardElement(cardId)));
+        return;
+    }
+
+    chunkHandIntoRows(cards).forEach((rowCards, rowIndex) => {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'hand-row';
+        rowEl.dataset.row = String(rowIndex + 1);
+        rowCards.forEach(cardId => rowEl.appendChild(createHumanCardElement(cardId)));
+        humanCardsContainer.appendChild(rowEl);
     });
 }
 

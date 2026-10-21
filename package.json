@@ -17,6 +17,8 @@
     "test:ui": "node tests/ui.test.js",
     "build-StoreBridge": "node-gyp clean configure build --directory=StoreBridge",
     "sync-www": "node scripts/sync-www.js",
+    "android:sync": "npm run sync-www && npx cap sync android",
+    "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug",
     "tauri:dev": "npm run sync-www && npx tauri dev",
     "tauri:dev:store": "npm run sync-www && npx tauri dev --config src-tauri/tauri.store.conf.json --features store",
     "tauri:build:github": "npm run increment-build && npm run sync-www && npx tauri build",
