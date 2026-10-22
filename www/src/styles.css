@@ -2125,3 +2125,57 @@ input:checked + .slider:before {
 
     .mobile-layout #controls .premium-btn { height: 28px; font-size: 12px; }
 }
+
+/* ==========================================
+   🪵 OPTION B：有框牌桌 + 座位內收
+   參考圖的層次：深色花紋地毯 → 木質桌沿 → 綠色絨面。
+   絨面改成中間一張有界的桌子，座位往內往下收，兩側留出桌面邊界。
+   ========================================== */
+.mobile-layout #game-container {
+    background:
+        radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.05) 0 1px, transparent 1.6px) 0 0 / 15px 15px,
+        radial-gradient(ellipse at 50% 0%, #16262f 0%, #0d1a22 45%, #060f15 100%);
+    padding-top: calc(200px + env(safe-area-inset-top, 0px));
+}
+
+.mobile-layout #game-container::before {
+    display: none;
+}
+
+.mobile-layout #player-2 { left: 14px; top: 80px; }
+.mobile-layout #player-3 { top: 62px; }
+.mobile-layout #player-4 { right: 14px; top: 80px; }
+
+.mobile-layout #table-center {
+    align-items: center;
+    justify-content: center;
+    margin: 2px 4px 8px;
+    padding: 6px;
+    min-height: 84px;
+    border-radius: 22px;
+    border: 8px solid #5b3d1c;
+    outline: 1px solid rgba(250, 204, 21, 0.3);
+    outline-offset: -12px;
+    background:
+        radial-gradient(ellipse 90% 120% at 50% 18%, #1c9459 0%, #0c7240 42%, #06482a 78%, #03301c 100%);
+    box-shadow:
+        inset 0 0 34px rgba(0, 0, 0, 0.5),
+        0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-height: 760px) {
+    .mobile-layout #game-container {
+        padding-top: calc(172px + env(safe-area-inset-top, 0px));
+    }
+
+    .mobile-layout #player-2 { left: 12px; top: 66px; }
+    .mobile-layout #player-3 { top: 50px; }
+    .mobile-layout #player-4 { right: 12px; top: 66px; }
+
+    .mobile-layout #table-center {
+        border-width: 6px;
+        border-radius: 18px;
+        margin: 2px 4px 6px;
+        min-height: 72px;
+    }
+}
