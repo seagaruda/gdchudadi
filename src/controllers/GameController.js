@@ -385,9 +385,10 @@ function calculateScores(winnerIndex) {
         else if (baseLost >= 10) loserMult *= 3;
         else if (baseLost >= 8) loserMult *= 2;
 
-        // 手上剩的 2 仍然加倍；鐵支 / 同花順的額外翻倍已取消
-        const twosCount = hand.filter(c => GameLogic.getRank(c) === 12).length;
-        loserMult *= Math.pow(2, twosCount);
+        // 黑 2 規則：只有手上剩「黑桃 2」才觸發加倍（其他花色的 2 不算）
+        // 52 張牌裡黑桃 2 唯一，所以最多只乘一次 2
+        const hasSpadeTwo = hand.some(c => GameLogic.getRank(c) === 12 && GameLogic.getSuit(c) === 3);
+        if (hasSpadeTwo) loserMult *= 2;
 
         const finalLost = baseLost * winnerMult * loserMult;
         gameState.scores[i] -= finalLost;
