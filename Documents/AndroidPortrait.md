@@ -90,3 +90,40 @@ chromium --headless=new --window-size=390,844 \
 * 390×844（一般豎屏）：13 張 → 三排 5/5/3，按鈕與狀態列完整可見
 * 360×640（小屏豎屏）：13 張 → 三排 5/5/3，全部在畫面內、無裁切
 * 1280×800（桌面）：手牌仍為單排，版面與 `main` 相同
+
+## 移除大模型（LLM）相關功能
+
+此分支只保留本機規則 AI，所有大模型（LLM / WebLLM / LM Studio / OpenAI 相容 API）相關功能與程式碼均已移除：
+
+**刪除的檔案**
+
+| 檔案 | 內容 |
+| --- | --- |
+| `src/ai/BaseLLMAI.js` | LLM 決策、提示詞組裝、記憶（learnings）與復盤請求 |
+| `src/ai/LLMCharacters.js` | Diana / Ares 兩位 LLM 角色 |
+| `src/services/AiServiceFactory.js`、`aiWorker.js`、`LmStudioAiService.js`、`WebLlmAiService.js` | 各家 LLM 服務轉接層 |
+| `src/services/WebLlmCacheManager.js`、`view/WebLlmCacheView.js` | 內建 WebGPU 模型下載與快取管理 |
+| `src/controllers/AISummaryController.js`、`src/views/AISummaryView.js` | 賽後 LLM 復盤面板與問答 |
+| `src/services/sharedPrompt.js` | 共用提示詞 |
+| `tests/ui.test.js`、`tests/test_fade_in_and_parse.js`、`tests/debug_ui.js` | 依賴 LLM 的測試 |
+
+**UI 移除**
+
+* 規則視窗中的「AI 設定」與「模型管理」分頁（API URL / Model / API Key / 復盤開關 / WebGPU 快取）
+* 角色 AI 設定彈窗、`⚙️` 齒輪入口、`.llm-glow` 光暈
+* 賽後復盤面板（`#ai-review-panel`）與 LLM 網路設定（CORS）導覽
+
+**保留**
+
+* 本機規則 AI：`AICharacter` + `HeuristicAI`（Alex / Bella / Chris / 河狸 / 柴犬 / 橘貓）
+* 點頭像換角色、音效、規則切換、計分、拉（Shout）等原有玩法
+
+**驗證方式**
+
+```bash
+node tests/logic.test.js      # 17/17
+# 讓 0 號位也交給本機 AI，整局自動打完（headless chromium + 虛擬時間）
+# 結果：gameEnded=true, 40 步, 分數 [-8, 26, -6, -12], 無 JS 錯誤
+```
+
+> 註：`package.json` 的 `"test"` 腳本已改為只跑 `tests/logic.test.js`。

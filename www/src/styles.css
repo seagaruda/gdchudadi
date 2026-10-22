@@ -614,31 +614,6 @@ body {
     }
 }
 
-.llm-glow {
-    box-shadow: 0 0 15px #9b59b6, inset 0 0 10px #9b59b6;
-    border: 2px solid #9b59b6;
-    animation: llmPulse 2s infinite ease-in-out;
-}
-
-@keyframes llmPulse {
-    0% {
-        box-shadow: 0 0 5px #9b59b6;
-    }
-
-    50% {
-        box-shadow: 0 0 20px #9b59b6, 0 0 30px rgba(155, 89, 182, 0.4);
-    }
-
-    100% {
-        box-shadow: 0 0 5px #9b59b6;
-    }
-}
-
-.alert-content {
-
-    text-align: center;
-    max-width: 400px;
-}
 
 .alert-content p {
     font-size: 18px;

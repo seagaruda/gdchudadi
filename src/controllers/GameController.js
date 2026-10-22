@@ -47,9 +47,6 @@ function resetCycleState() {
 window.resetCycleState = resetCycleState;
 
 function initGame() {
-    if (window.AISummary && typeof window.AISummary.hidePanel === 'function') {
-        window.AISummary.hidePanel();
-    }
     if (window.alertModal) window.alertModal.classList.add('hidden');
     gameState.gameEnded = false;
     gameState.shouted = [false, false, false, false];
@@ -63,11 +60,6 @@ function initGame() {
 
     // Reset BGM to default
     AudioPlayer.playBGM();
-
-    // Randomize AI Personas for each game
-    if (window.AI && typeof window.AI.randomizeAllPersonas === 'function') {
-        window.AI.randomizeAllPersonas();
-    }
 
     // Generate deck
     let deck = Array.from({ length: 52 }, (_, i) => i);
@@ -249,15 +241,7 @@ function executePlay(playerIndex, cards) {
         calculateScores(playerIndex);
         renderAll();
         AudioPlayer.playWin();
-        if (window.AISummary && typeof window.AISummary.showSummary === 'function' && window.AISummary.reviewPanelEnabled !== false) {
-            window.AISummary.showSummary(gameState, playerIndex);
-        } else {
-            setTimeout(() => showAlert(t('winner', { name: PLAYER_NAMES[playerIndex] })), 100);
-        }
-
-        if (window.AI && typeof window.AI.postGameReflection === 'function') {
-            window.AI.postGameReflection(gameState.gameLog, playerIndex, gameState.players);
-        }
+        setTimeout(() => showAlert(t('winner', { name: PLAYER_NAMES[playerIndex] })), 100);
 
         // Auto-Restart logic if Slot 0 is AI-controlled
         const p0Char = window.AI ? window.AI.getCharacter(0) : null;
@@ -443,11 +427,7 @@ function handleDragonWin(playerIndex) {
     renderAll();
     AudioPlayer.playWin();
 
-    if (window.AISummary && typeof window.AISummary.showSummary === 'function' && window.AISummary.reviewPanelEnabled !== false) {
-        window.AISummary.showSummary(gameState, playerIndex);
-    } else {
-        setTimeout(() => showAlert(t('dragonWin', { name: PLAYER_NAMES[playerIndex] })), 100);
-    }
+    setTimeout(() => showAlert(t('dragonWin', { name: PLAYER_NAMES[playerIndex] })), 100);
 
     const p0Char = window.AI ? window.AI.getCharacter(0) : null;
     if (p0Char) {

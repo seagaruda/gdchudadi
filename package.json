@@ -1,7 +1,7 @@
 {
   "name": "taiwan-big-two-ai",
   "version": "1.5.54",
-  "description": "Modern Big Two game with LLM-powered AI integration",
+  "description": "Modern Big Two game with local rule-based AI (Android portrait branch)",
   "license": "AGPL-3.0-only",
   "main": "main.js",
   "scripts": {
@@ -13,8 +13,7 @@
     "dist:msix": "cross-env BUILD_TARGET=STORE npm run increment-build && electron-builder --win appx",
     "package": "npm run increment-build && electron-packager . \"Taiwan Big2 AI\" --platform=win32 --arch=x64 --out=dist --overwrite",
     "increment-build": "node scripts/increment-build.js",
-    "test": "node tests/logic.test.js && node tests/ui.test.js",
-    "test:ui": "node tests/ui.test.js",
+    "test": "node tests/logic.test.js",
     "build-StoreBridge": "node-gyp clean configure build --directory=StoreBridge",
     "sync-www": "node scripts/sync-www.js",
     "android:sync": "npm run sync-www && npx cap sync android",

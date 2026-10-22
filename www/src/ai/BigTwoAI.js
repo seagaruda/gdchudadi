@@ -5,7 +5,7 @@ class BigTwoAI {
     constructor(gameLogic) {
         this.gameLogic = gameLogic;
         // All available character blueprints (null = Human)
-        this.availableBlueprints = [null, AlexAI, BellaAI, ChrisAI, OrangeCatAI, ShibaDogAI, BeaverAI, DianaAI, AresAI];
+        this.availableBlueprints = [null, AlexAI, BellaAI, ChrisAI, OrangeCatAI, ShibaDogAI, BeaverAI];
 
         // Active characters in slots 0, 1, 2, 3
         this.characters = {
@@ -14,18 +14,6 @@ class BigTwoAI {
             2: new ShibaDogAI(gameLogic),  // Player 3 is Shiba Dog!
             3: new OrangeCatAI(gameLogic)  // Player 4 is Orange Cat!
         };
-    }
-
-    /**
-     * Swap the character in playerIndex with the one on the bench
-     */
-    randomizeAllPersonas() {
-        for (let i = 0; i < 4; i++) {
-            const char = this.characters[i];
-            if (char && char.isLLM && typeof char.randomizePersona === 'function') {
-                char.randomizePersona();
-            }
-        }
     }
 
     swapCharacter(playerIndex) {
@@ -50,7 +38,7 @@ class BigTwoAI {
                 if (candidateBlueprint === null) {
                     this.characters[playerIndex] = null;
                     console.log(`%c[AI Manager] Player ${playerIndex + 1} is now Human control`, 'color: #3498db; font-weight: bold;');
-                    return { name: "You", avatar: "src/assets/avatars/avatar_you.png", type: "Human", isLLM: false };
+                    return { name: "You", avatar: "src/assets/avatars/avatar_you.png", type: "Human" };
                 } else {
                     const newCharacter = new candidateBlueprint(this.gameLogic);
                     this.characters[playerIndex] = newCharacter;
@@ -60,7 +48,7 @@ class BigTwoAI {
             }
         }
 
-        return this.characters[playerIndex] || { name: "You", avatar: "src/assets/avatars/avatar_you.png", type: "Human", isLLM: false };
+        return this.characters[playerIndex] || { name: "You", avatar: "src/assets/avatars/avatar_you.png", type: "Human" };
     }
 
     async findPlay(playerIndex, context) {
@@ -75,20 +63,11 @@ class BigTwoAI {
         return this.characters[playerIndex];
     }
 
-    setAICharacterSettings(playerIndex, settings) {
-        const char = this.characters[playerIndex];
-        if (char && char.isLLM && typeof char.setSettings === 'function') {
-            char.setSettings(settings);
-            return true;
-        }
-        return false;
-    }
-
     getNames() {
         const getCharData = (i) => {
             const char = this.characters[i];
             if (!char) return null;
-            return { name: char.name, avatar: char.avatar, type: char.type, isLLM: char.isLLM, isDynamic: char.isDynamic };
+            return { name: char.name, avatar: char.avatar, type: char.type, isDynamic: char.isDynamic };
         };
         return {
             0: getCharData(0),
@@ -98,32 +77,6 @@ class BigTwoAI {
         };
     }
 
-    postGameReflection(gameLog, winnerIndex, finalHands) {
-        const names = this.getNames();
-
-        // Helper to get a readable name for any slot
-        const getPlayerName = (idx) => {
-            if (names[idx]) return names[idx].name;
-            return "Player (Human)";
-        };
-
-        const winnerName = getPlayerName(winnerIndex);
-
-        const characterNames = {
-            0: getPlayerName(0),
-            1: getPlayerName(1),
-            2: getPlayerName(2),
-            3: getPlayerName(3)
-        };
-
-        for (let i = 0; i < 4; i++) {
-            const char = this.characters[i];
-            if (char && char.isLLM && typeof char.reflect === 'function') {
-                const didWin = (i === winnerIndex);
-                char.reflect(gameLog, didWin, winnerName, characterNames, i, finalHands ? finalHands[i] : []);
-            }
-        }
-    }
 }
 
 // Electron/Browser Export Logic

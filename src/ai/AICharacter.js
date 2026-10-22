@@ -6,7 +6,6 @@ class AICharacter {
         this.GameLogic = gameLogic;
         this.name = name;
         this.type = "NPC";
-        this.isLLM = false;
     }
 
     getLogic() {

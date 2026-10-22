@@ -189,12 +189,7 @@ function updateLanguage() {
 
             if (aiData[i]) {
                 const data = aiData[i];
-                let suffix = '';
-                if (data.isLLM) {
-                    suffix = ' (AI)';
-                } else {
-                    suffix = t('npcSuffix');
-                }
+                const suffix = t('npcSuffix');
 
                 let nameKey = data.name;
                 if (data.name === '橘貓' || data.name === 'OrangeCat' || data.name === 'Orange Cat') nameKey = 'charOrangeCat';
@@ -242,14 +237,6 @@ function updateLanguage() {
                             avatarEl.textContent = data.avatar;
                         }
                     }
-                    if (data.isLLM) avatarEl.classList.add('llm-glow');
-                    else avatarEl.classList.remove('llm-glow');
-                }
-
-                const gearIcon = playerEl.querySelector('.settings-icon');
-                if (gearIcon) {
-                    if (data.isLLM) gearIcon.classList.remove('hidden');
-                    else gearIcon.classList.add('hidden');
                 }
             } else {
                 PLAYER_NAMES[i] = t('youName');
@@ -307,9 +294,6 @@ function updateLanguage() {
     updateTrialStatusUI();
     renderAll();
     
-    if (window.AISummary && typeof window.AISummary.updateLanguage === 'function') {
-        window.AISummary.updateLanguage();
-    }
 }
 window.updateLanguage = updateLanguage;
 
@@ -405,327 +389,40 @@ if (gameRuleModeInput) {
     };
 }
 
-window.currentEditingIndex = -1;
-
 function setupAvatarClickListeners() {
-    const settingsModal = document.getElementById('ai-settings-modal');
-    const apiUrlInput = document.getElementById('ai-api-url');
-    const modelIdInput = document.getElementById('ai-model-id');
-    const extraPromptInput = document.getElementById('ai-extra-prompt');
-    const resetBtn = document.getElementById('ai-settings-reset');
-    const clearLearningsBtn = document.getElementById('ai-clear-learnings');
-    const learningsContainer = document.getElementById('ai-learnings-container');
-
-    function updateLearningsUI(char) {
-        if (!learningsContainer) return;
-        learningsContainer.innerHTML = '';
-        const learnings = char.learnings || [];
-        if (learnings.length > 0) {
-            learnings.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'learning-item';
-
-                const tipText = typeof item === 'string' ? item : item.tip;
-                const priority = typeof item === 'string' ? 'P1' : (item.priority || 'P1');
-                const count = typeof item === 'string' ? 1 : (item.count || 1);
-
-                div.innerHTML = `
-                    <div class="learning-header">
-                        <span class="badge ${priority.toLowerCase()}">${priority}</span>
-                        <span class="count-badge">x${count}</span>
-                    </div>
-                    <div class="learning-text">${tipText}</div>
-                `;
-                learningsContainer.appendChild(div);
-            });
-        } else {
-            const div = document.createElement('div');
-            div.className = 'learning-empty';
-            div.textContent = t('noLearningsYet');
-            learningsContainer.appendChild(div);
-        }
-    }
-
+    // 點頭像＝換一位對手角色（純本機規則 AI，沒有大模型設定）
     for (let i = 0; i <= 3; i++) {
         const playerEl = document.getElementById(i === 0 ? 'human-area' : `player-${i + 1}`);
         if (!playerEl) continue;
 
         const avatarEl = playerEl.querySelector('.avatar');
-        const gearIcon = playerEl.querySelector('.settings-icon');
+        if (!avatarEl) continue;
 
-        if (avatarEl) {
-            avatarEl.style.cursor = 'pointer';
-            avatarEl.title = "Left click: Swap";
+        avatarEl.style.cursor = 'pointer';
+        avatarEl.title = 'Left click: Swap';
+        avatarEl.onclick = () => {
+            if (!window.AI || typeof window.AI.swapCharacter !== 'function') return;
+            const newChar = window.AI.swapCharacter(i);
+            if (!newChar) return;
 
-            avatarEl.onclick = (e) => {
-                if (window.AI && typeof window.AI.swapCharacter === 'function') {
-                    const newChar = window.AI.swapCharacter(i);
-                    if (newChar) {
-                        avatarEl.style.transform = 'scale(1.2)';
-                        setTimeout(() => { avatarEl.style.transform = ''; }, 200);
-                        updateLanguage();
-                        AudioPlayer.playCardSelect();
+            avatarEl.style.transform = 'scale(1.2)';
+            setTimeout(() => { avatarEl.style.transform = ''; }, 200);
+            updateLanguage();
+            AudioPlayer.playCardSelect();
 
-                        if (gameState.turn === i) {
-                            if (aiTurnTimeout) clearTimeout(aiTurnTimeout);
-                            if (newChar.type !== "Human") {
-                                updatePlayButtonVisibility();
-                                updateStatus();
-                                window.aiTurnTimeout = setTimeout(aiTurn, 500);
-                            } else {
-                                updateStatus();
-                                updatePlayButtonVisibility();
-                            }
-                        }
-                    }
-                }
-            };
-            avatarEl.oncontextmenu = null;
-        }
-
-        if (gearIcon) {
-            gearIcon.onclick = async (e) => {
-                e.stopPropagation();
-                if (!window.AI) return;
-
-                const char = window.AI.getCharacter(i);
-                if (char && char.isLLM) {
-                    window.currentEditingIndex = i;
-                    const settings = char.getSettings();
-                    apiUrlInput.value = settings.apiUrl || '';
-                    const apiKeyInput = document.getElementById('ai-api-key');
-                    if (apiKeyInput) {
-                        apiKeyInput.value = settings.apiKey || '';
-                    }
-                    const useWebGpuCheckbox = document.getElementById('ai-use-webgpu');
-                    if (useWebGpuCheckbox) {
-                        useWebGpuCheckbox.checked = AppStorage.getItem('useLocalWebGPU') === 'true';
-                    }
-
-                    extraPromptInput.value = settings.extraPrompt || '';
-                    settingsModal.classList.remove('hidden');
-
-                    fetchAvailableModels(apiUrlInput.value, settings.apiKey || '', settings.modelId || '');
-                    updateLearningsUI(char);
-                }
-            };
-        }
-    }
-
-    if (clearLearningsBtn) {
-        clearLearningsBtn.onclick = () => {
-            if (currentEditingIndex !== -1 && window.AI) {
-                const char = window.AI.getCharacter(currentEditingIndex);
-                if (char && char.isLLM) {
-                    const msg = t('clearMemoryPrompt');
-                    if (confirm(msg)) {
-                        char.learnings = [];
-                        if (typeof char.saveMemory === 'function') char.saveMemory();
-                        updateLearningsUI(char);
-                        AudioPlayer.playPass();
-                    }
+            if (gameState.turn === i) {
+                if (aiTurnTimeout) clearTimeout(aiTurnTimeout);
+                if (newChar.type !== 'Human') {
+                    updatePlayButtonVisibility();
+                    updateStatus();
+                    window.aiTurnTimeout = setTimeout(aiTurn, 500);
+                } else {
+                    updateStatus();
+                    updatePlayButtonVisibility();
                 }
             }
         };
-    }
-
-    const exportLearningsBtn = document.getElementById('ai-export-learnings');
-    if (exportLearningsBtn) {
-        exportLearningsBtn.onclick = async () => {
-            if (currentEditingIndex !== -1 && window.AI) {
-                const char = window.AI.getCharacter(currentEditingIndex);
-                if (char && char.isLLM) {
-                    const exportData = {
-                        character: char.name,
-                        timestamp: new Date().toISOString(),
-                        learnings: char.learnings,
-                        stats: char.stats
-                    };
-
-                    const defaultFilename = `${char.name}_Memory_${new Date().toLocaleDateString().replace(/\//g, '-')}.json`;
-                    
-                    try {
-                        const result = await window.SystemService.writeFile(defaultFilename, exportData);
-                        if (result.success) {
-                            AudioPlayer.playCardSelect();
-                            console.log("[Export] Saved to: ", result.path || 'Web Download');
-                        }
-                    } catch (err) {
-                        showAlert(t('exportFailed'));
-                        console.error(err);
-                    }
-                }
-            }
-        };
-    }
-
-    const importLearningsBtn = document.getElementById('ai-import-learnings');
-    if (importLearningsBtn) {
-        importLearningsBtn.onclick = async () => {
-            if (currentEditingIndex !== -1 && window.AI) {
-                const char = window.AI.getCharacter(currentEditingIndex);
-                if (char && char.isLLM) {
-                    try {
-                        const result = await window.SystemService.readFile({ accept: '.json' });
-                        if (result.success && result.data) {
-                            const data = result.data;
-                            
-                            if (Array.isArray(data.learnings)) {
-                                char.learnings = data.learnings;
-                                if (data.stats) char.stats = data.stats;
-                                
-                                if (typeof char.saveMemory === 'function') char.saveMemory();
-                                
-                                updateLearningsUI(char);
-                                showAlert(t('importSuccess'));
-                                AudioPlayer.playCardSelect();
-                            } else {
-                                throw new Error("Invalid format");
-                            }
-                        }
-                    } catch (err) {
-                        showAlert(t('importFailedFormat'));
-                        console.error(err);
-                    }
-                }
-            }
-        };
-    }
-
-    let _modelFetchController = null;
-    async function fetchAvailableModels(apiUrl, apiKey = '', savedModelId = '') {
-        const useLocalWebGPU = AppStorage.getItem('useLocalWebGPU') === 'true';
-        const modelList = document.getElementById('ai-model-id');
-        if (!modelList) return;
-        modelList.innerHTML = '';
-
-        const statusEl = document.getElementById('ai-api-connection-status');
-
-        if (useLocalWebGPU) {
-            const { WebLlmCacheManager } = await import('../services/WebLlmCacheManager.js');
-            const localModels = await WebLlmCacheManager.getFullyCachedStandardModels();
-
-            if (localModels.length === 0) {
-                if (statusEl) {
-                    statusEl.textContent = t('builtInAiEngineActiveNeedsDownload');
-                    statusEl.style.color = '#ef4444';
-                }
-                const placeholder = document.createElement('option');
-                placeholder.value = '';
-                placeholder.textContent = t('noModelsDownloaded');
-                modelList.appendChild(placeholder);
-            } else {
-                if (statusEl) {
-                    statusEl.textContent = t('builtInAiEngineActive');
-                    statusEl.style.color = '#10b981';
-                }
-                localModels.forEach(m => {
-                    const option = document.createElement('option');
-                    option.value = m.id;
-                    option.textContent = m.name;
-                    modelList.appendChild(option);
-                });
-            }
-
-            if (savedModelId && !localModels.some(m => m.id === savedModelId)) {
-                const cachedList = await WebLlmCacheManager.listCachedModels();
-                const isSavedCached = cachedList.some(c => c.toLowerCase() === savedModelId.toLowerCase());
-                if (isSavedCached) {
-                    const completion = await WebLlmCacheManager.getCacheCompletion(savedModelId);
-                    if (completion === 100) {
-                        const customOption = document.createElement('option');
-                        customOption.value = savedModelId;
-                        customOption.textContent = savedModelId;
-                        modelList.appendChild(customOption);
-                    }
-                }
-            }
-
-            modelList.value = savedModelId || (localModels.length > 0 ? localModels[0].id : '');
-            if (modelList.value !== savedModelId && modelList.value) {
-                autoSave();
-            }
-            return;
-        }
-
-        if (_modelFetchController) {
-            _modelFetchController.abort();
-        }
-        _modelFetchController = new AbortController();
-        const controller = _modelFetchController;
-
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = t('autoDetect');
-        modelList.appendChild(defaultOption);
-
-        if (!apiUrl) {
-            modelList.value = savedModelId;
-            return;
-        }
-
-        if (statusEl) {
-            statusEl.textContent = t('connectionTesting');
-            statusEl.style.color = '#f59e0b';
-        }
-
-        try {
-            const urlObj = new URL(apiUrl);
-            const modelsUrl = `${urlObj.protocol}//${urlObj.host}/v1/models`;
-
-            console.log(`[UI] Fetching models from: ${modelsUrl}`);
-            const headers = {};
-            if (apiKey) {
-                headers['Authorization'] = `Bearer ${apiKey}`;
-            }
-            const response = await fetch(modelsUrl, { headers, signal: controller.signal });
-            if (response.ok) {
-                const data = await response.json();
-                if (statusEl) {
-                    statusEl.textContent = t('connectionSuccess');
-                    statusEl.style.color = '#10b981';
-                }
-
-                if (modelList) {
-                    const seen = new Set();
-                    let hasSavedModel = false;
-                    if (data && data.data) {
-                        data.data.forEach((model) => {
-                            const mId = model.id;
-                            if (!mId || seen.has(mId)) return;
-                            seen.add(mId);
-                            if (mId === savedModelId) hasSavedModel = true;
-                            const option = document.createElement('option');
-                            option.value = mId;
-                            option.textContent = mId;
-                            modelList.appendChild(option);
-                        });
-                    }
-                    if (savedModelId && !hasSavedModel) {
-                        const customOption = document.createElement('option');
-                        customOption.value = savedModelId;
-                        customOption.textContent = savedModelId;
-                        modelList.appendChild(customOption);
-                    }
-                    modelList.value = savedModelId;
-                }
-            } else {
-                throw new Error('Response not OK');
-            }
-        } catch (e) {
-            console.warn("[UI] Failed to fetch models for dropdown:", e);
-            if (statusEl) {
-                statusEl.textContent = t('connectionFailed');
-                statusEl.style.color = '#ef4444';
-            }
-            if (modelList && savedModelId) {
-                const customOption = document.createElement('option');
-                customOption.value = savedModelId;
-                customOption.textContent = savedModelId;
-                modelList.appendChild(customOption);
-                modelList.value = savedModelId;
-            }
-        }
+        avatarEl.oncontextmenu = null;
     }
 }
 window.setupAvatarClickListeners = setupAvatarClickListeners;
