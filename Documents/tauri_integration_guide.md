@@ -1,5 +1,8 @@
 # Tauri 跨平台整合與環境適配層 (Adapter Layer) 架構設計
 
+> ⚠️ **本文件說明的是上游桌面版（Electron／Tauri）功能，本分支（`android-portrait`）不驗證、也不使用。**
+> 本分支只發佈安卓豎屏 APK，且已移除大模型與商店授權相關模組；請以根目錄 `README.md` 與 `Documents/BuildnRun.md` 為準。
+
 本指南專為 **Taiwan Big2 AI** 專案設計，旨在建立一套優雅、低耦合的「環境偵測與功能適配層 (Adapter Layer)」。確保單一前端程式碼庫能同時在 **Web 瀏覽器**、**Electron 桌面端**、**Tauri 桌面端** 以及 **Capacitor 行動端 (Android)** 完美運行，並維持既有 API 的相容性與無痛轉換。
 
 ---

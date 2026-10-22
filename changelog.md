@@ -1,5 +1,27 @@
 # Changelog
 
+## [android-portrait] - 2026-10-22
+
+### Changed
+- **改名**：遊戲更名為「廣東鋤大地 / Guangdong Chu Da Di」（UI、說明頁、Android 應用名稱、套件顯示名稱）。
+- **預設規則改為大陸鋤大地**：花色 ♠ > ♥ > ♣ > ♦（梅花大於方塊）、♦3 先手、開放同花與三條；舊存檔自動遷移。
+- **計分改寫**：剩 8-9 張 ×2、10-12 張 ×3、13 張 ×4；只有剩「黑桃 2」加倍；贏家結尾含 2 加倍。
+- **手牌分排**：牌型模式自動聚組五張牌型並壓成兩排（13 張 = 7+6），另有「5張」「單排」兩態。
+- **豎屏牌桌**：深色地毯 + 木框 + 絨面；柴犬在上、河狸在左、橘貓在右、自己在下方；各家出牌落在桌面。
+- **緊湊版面**：矮屏再壓縮座位、手牌與按鈕，整體高度約降 22%。
+
+### Removed
+- **所有大模型功能**：`BaseLLMAI`、`LLMCharacters`（Diana/Ares）、`AiServiceFactory`、WebLLM／LM Studio 服務與快取、賽後 AI 復盤、AI 設定與模型管理分頁、CORS 指引、`.llm-glow` 樣式、Diana/Ares 頭像資源。
+- 依賴 LLM 的 UI 測試（Playwright/Electron）；`npm test` 改為只跑規則引擎測試。
+
+### Fixed
+- **選牌遮住鄰牌**：手牌疊排時選中的牌不再提升 z-index，只抬起 + 描邊，鄰牌點數保持可讀；觸控裝置關閉 `:hover` 抬起。
+- **座位被桌面遮住**：座位 z-index 提高至牌桌之上。
+- **規則說明與實際計分不符**：規則窗文字同步為現行計分（含「鐵支/同花順不再額外加倍」）。
+
+### Build
+- `android/app/build.gradle` 支援 `android/keystore.properties` 的 release 簽名（v1+v2+v3），密鑰檔不入庫。
+
 All notable changes to this project will be documented in this file.
 
 ## [1.5.52] - 2026-06-17

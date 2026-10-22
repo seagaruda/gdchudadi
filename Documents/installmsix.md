@@ -1,5 +1,8 @@
 # Microsoft Store 試用版集成指南 (MSIX)
 
+> ⚠️ **本文件說明的是上游桌面版（Electron／Tauri）功能，本分支（`android-portrait`）不驗證、也不使用。**
+> 本分支只發佈安卓豎屏 APK，且已移除大模型與商店授權相關模組；請以根目錄 `README.md` 與 `Documents/BuildnRun.md` 為準。
+
 本文件說明如何為 **Taiwan Big2 AI** 集成 Microsoft Store 的試用版 (Time-limited Trial) 功能。我們採用了微軟官方推薦的 `@microsoft/winappcli` 工具鏈配合 C++ 原生插件橋接方案。
 
 ---

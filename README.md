@@ -1,192 +1,198 @@
-# Taiwan Big2 AI (台灣大老二 AI 版)
+# 廣東鋤大地 · Guangdong Chu Da Di (Android Portrait)
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Version](https://img.shields.io/badge/Version-1.5.52-blue.svg)](./changelog.md)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Electron%20%7C%20Tauri%20%7C%20Android%20%7C%20Browser-brightgreen.svg)](https://capacitorjs.com/)
-[![Ko-fi](https://img.shields.io/badge/Sponsor-Ko--fi-F16061?style=flat&logo=ko-fi)](https://ko-fi.com/mesmerli)
+[![Platform](https://img.shields.io/badge/Platform-Android%20(portrait)-brightgreen.svg)](https://capacitorjs.com/)
+[![Version](https://img.shields.io/badge/Version-1.5.24-orange.svg)](./Documents/changelog.md)
+[![AI](https://img.shields.io/badge/AI-100%25%20local%20rules-lightgrey.svg)](#-local-ai-no-network)
 
-A modernized **Taiwanese & Hong Kong Big Two** card game built with Tauri (also supporting Electron, Android, and Web). This project integrates sophisticated heuristic algorithms with an advanced multi-persona research engine powered by **Large Language Models (LLM)**, designed for autonomous strategic gameplay analysis, local WebGPU execution, and evolutionary learning.
+A **portrait-only Android build of Guangdong Chu Da Di (广东锄大地)** — the mainland Chinese variant of Big Two — built with [Capacitor](https://capacitorjs.com/).
 
-<p align="center">
-  <a href="https://mesmerli.github.io/taiwan-big-two-ai/">🌐 <b>Play Online Directly</b></a> &nbsp;|&nbsp;
-  <a href="./release/Windows/">🖥️ <b>Download Windows MSI</b></a> &nbsp;|&nbsp;
-  <a href="./release/Android/">🤖 <b>Download Android APK</b></a>
-</p>
+Based on the open-source project **Taiwan Big2 AI** by [mesmerli](https://github.com/mesmerli/taiwan-big-two-ai) (AGPL-3.0). This branch strips every Large-Language-Model (LLM) feature and turns the game into a small, offline, rule-based card game optimised for one-handed play on a phone.
 
 <p align="center">
-  <a href="https://apps.microsoft.com/detail/9PM1S8GKBLK9">
-    <img src="https://get.microsoft.com/images/en-us%20dark.svg" height="50" alt="Download from Microsoft Store" />
-  </a>
+  <img src="./screenshots/android-portrait-game.png" width="31%" alt="Portrait game table" />
+  <img src="./screenshots/android-portrait-rules.png" width="31%" alt="Rules and scoring" />
 </p>
 
-### 💡 How to get this game:
-* **Support the Developer**: Purchase the official version on the **[Microsoft Store](https://apps.microsoft.com/detail/9PM1S8GKBLK9)** for automatic updates and easy installation.
-* **Windows Version**: Browse the **[Windows Release Folder](./release/Windows/)** to download and install the latest **`taiwan-big2-ai_1.5.52_x64_en-US.msi`** (built with Tauri).
-* **Android Version**: Browse the **[Android Release Folder](./release/Android/)** to download and install the latest **`twbig2ai-1.5.52.apk`** installation package.
-* **Open Source**: This game is licensed under **AGPLv3**. You are welcome to clone this repository and build it yourself for free. Check out our [Build & Run Guide](./Documents/BuildnRun.md) and [Architecture Overview](./Documents/architecture.md) for more details.
-* **Sponsor**: If you find my AI logic helpful for your own projects, please consider supporting the developer:
-
-  [![Ko-fi](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/mesmerli)
-
-### 📸 Screenshots
-
-<p align="center">
-  <img src="./screenshots/playground-en.png" width="48%" />
-  <img src="./screenshots/aisetting-en.png" width="48%" />
-</p>
-<p align="center">
-  <img src="./screenshots/gamerule-en.png" width="24%" />
-  <img src="./screenshots/keyboard-en.png" width="24%" />
-  <img src="./screenshots/matchreview-en.png" width="24%" />
-  <img src="./screenshots/about-en.png" width="24%" />
-</p>
+> Table centre = cards played by each seat (top = 柴犬, left = 河狸, right = 橘貓, bottom = you). Bottom panel = your hand, grouped into rows.
 
 ---
 
-## 🚀 Core Features
+## ✨ What this branch changes
 
-### 1. Multi-Persona Research Architecture
-The project supports isolated AI personalities, each with its own memory, strategic bias, and distinct character:
-- **Diana (Adaptive Learning)**: Focuses on balanced gameplay and tactical evolution.
-- **Ares (The God of War)**: A high-aggression persona that prioritizes power dominance and pressure.
-- **BaseLLMAI Engine**: A unified class handling card counting, board state evaluation, and **Post-Game Reflection**.
-
-### 2. Autonomous "Self-Play" & Evolution
-- **AFK Mode**: The game can run in a continuous loop, allowing AI agents to play against each other 24/7.
-- **Memory Evolution**: Agents analyze losses to generate structured **"Learning Notes"** (Rule Extraction) stored in persistent JSON memory.
-- **Keyword Matching**: A refined keyword similarity engine ensures strategic rules accumulate without redundancy.
-
-### 3. Dynamic Ruleset Engine (Taiwanese vs. Hong Kong)
-The engine implements the **Strategy Pattern** to dynamically switch between rulesets:
-- **Taiwanese Rules**:
-  - **No Flush**: Five cards of the same suit are NOT a valid hand.
-  - **No Standalone Triples**: Three-of-a-kind cannot be played alone; they are only valid in Full House.
-  - **Monsters (Bombs)**: Four of a Kind / Straight Flush can beat Singles or Pairs at any time.
-  - **Suit Strength**: Spade ♠ > Heart ♥ > Diamond ♦ > Club ♣.
-  - **Start Card**: Club 3 ♣.
-  - **Straight Order**: Specialized Taiwanese straight rankings (e.g. `2-3-4-5-6` is largest, `A-2-3-4-5` is smallest).
-- **Hong Kong Rules**:
-  - **Flush Allowed**: Standalone Flushes are valid 5-card hands.
-  - **Standalone Triples Allowed**: Standalone Triples (3 cards) are valid hands.
-  - **Monsters (Bombs)**: Do not beat Singles or Pairs.
-  - **Suit Strength**: Spade ♠ > Heart ♥ > Club ♣ > Diamond ♦.
-  - **Start Card**: Diamond 3 ♦.
-
-### 4. Adaptive Responsive UI (Mobile Layout)
-- **Automatic Layout Toggle**: Dynamically checks window size and automatically switches between the premium widescreen desktop grid layout and the vertical stack mobile layout when width drops below `900px`.
-- **Cross-Platform Consistency**: Synchronized assets and styles across Tauri/Electron (desktop) and Capacitor (Android) wrappers to guarantee a fluid responsive gaming experience on all screen sizes and orientations.
-- **Premium Brand Integration**: Rules and settings modal headers are updated with a high-fidelity stylized logo, complete with a purple-themed ambient glow filter.
+| | Upstream (Taiwan Big2 AI) | This branch |
+|---|---|---|
+| Name | 台灣大老二 AI | **廣東鋤大地** |
+| Orientation | desktop / landscape | **portrait-locked Android** |
+| Rules | Taiwanese + Hong Kong | **Mainland (大陆锄大地) by default** |
+| Opponents | heuristic + LLM (WebGPU / OpenAI-compatible) | **heuristic AI only** |
+| LLM features | AI settings, model cache, post-game review | **all removed** (no network, no API key) |
+| Scoring | bombs multiply | **bombs no longer multiply**; card-count ladder |
+| Hand layout | single row | **auto 2–3 rows, grouped by 5-card combos** |
+| Played cards | small slot next to each seat | **laid out on the table by seat position** |
 
 ---
 
-## 🎮 Controls & Interaction
+## 🎴 Rules (mainland 锄大地)
 
-### 🖱️ Mouse Interface
-- **New Game**: Click the **New Game** button in the top-right corner.
-- **Selecting Cards**: Click on cards in your hand to select/deselect them.
-- **Play / Pass**: Use the primary buttons on the human player area.
-- **Mandatory Shout LA!**: If a move leaves you with exactly **one card**, you must use the **"Shout LA!"** button.
-- **Visual Guide**: Click the **"i"** icon to access a tabbed guide containing both game rules and keyboard shortcuts.
+- **Rank order**: 2 > A > K > Q > J > 10 > 9 > 8 > 7 > 6 > 5 > 4 > 3
+- **Suit order**: ♠ Spade > ♥ Heart > ♣ Club > ♦ Diamond — i.e. **club beats diamond** (梅花大于方块)
+- **Starting card**: the holder of **♦3** must lead the first round, and that play must contain ♦3
+- **Hand types**: single, pair, triple, five-card hands (straight, flush, full house, four-of-a-kind, straight flush), plus **Dragon** (13-card run → instant win)
+- **Five-card ranking**: Straight Flush > Four-of-a-Kind > Full House > Flush > Straight
+- **Bombs**: four-of-a-kind / straight flush may only beat five-card hands (not singles, pairs or triples) — this affects legality only, **not scoring**
+- **Shout "La" (拉)**: if a play leaves you with one card, you must shout; the last card must then be your highest card
 
-### ⌨️ Keyboard Mastery (Pro Mode)
-For a more efficient and professional experience, use the following shortcuts:
-- **Arrow Left / Right**: Cycle through all **legal move combinations** currently in your hand.
-- **Arrow Up**: Play selected cards (automatically triggers "Shout LA!" if needed).
-- **Enter**: Play selected cards and shout "La" (active when shouting is possible).
-- **Arrow Down**: 
-  - **In-Game**: Deselect all currently selected cards.
-  - **Post-Game**: Rapidly press **three times** to immediately start a new match.
-- **Spacebar**: Pass your turn (valid only when you are not the leader).
-- **Any Key**: Close the "Winner" alert modal after a match.
-- **ESC**: Close any open modal (Rules, Settings, About).
+### Scoring
 
----
+| Situation | Multiplier |
+|---|---|
+| Base | 1 point per remaining card |
+| Loser left with 8–9 cards | ×2 |
+| Loser left with 10–12 cards | ×3 |
+| Loser left with 13 cards (played nothing) | ×4 |
+| Loser holds the **2 of Spades (黑桃 2)** | ×2 (only that card — ♣2/♦2/♥2 do not count) |
+| Winner's final play contains a **2** | ×2 |
+| Four-of-a-Kind / Straight Flush | **no extra multiplier** (removed in this branch) |
 
-## 🛠️ Developer & Research Tools
-
-### Character & AI Management
-- **Avatar Swap**: Click any player's **Avatar** to cycle through personalities.
-- **AI Settings (⚙️)**: Configure API URL and Model ID with real-time **Connection Monitoring**.
-- **Memory Management**: Export or Import learned strategic rules as JSON files.
-
-### Build & Test Pipeline
-- **Unified Testing**: Run `npm test` for full suite (Logic & UI).
-- **Microsoft Store Readiness**: Full MSIX/AppX compliance with **Time-limited Trial** support.
-- **Trial Interaction**: Displays remaining trial days in the top-left; supports one-click jump to the Store for purchase.
-- **Native Store Bridge**: Powered by a C++ native addon (`StoreBridge`) for secure licensing.
-- **Auto-Build**: Build version and artifact filenames increment automatically.
-- **Icon Factory**: Automated resource generation using `winapp manifest update-assets`.
+The winner collects the sum of all three losers' losses.
 
 ---
 
-## 🛡️ Quality Assurance & Stability
+## 📱 UI highlights
 
-The project includes a robust testing suite (25+ tests) to ensure rules and performance remain top-tier:
-- **Automated Logic Tests**: 12 logic tests covering every card combination (Dragon, Special Straights, etc.).
-- **UI & System Tests**: 18-step automated sequence verifying audio, BGM transitions, and keyboard responsiveness.
-- **Asset Verification**: Automated checks for missing avatars, icons, or audio files at runtime.
-- **Resilience Engine**:
-  - **AI Fallback**: LLM characters automatically switch to local logic if the API is offline.
-  - **Audio Safety**: Missing voice files automatically fallback to synthesized tones.
-- **Scoring Accuracy**: Verified complex Taiwanese scoring formulas including 10-card and '2' multipliers.
+- **Portrait locked** (`android:screenOrientation="portrait"`) — no rotation, no letterboxing
+- **Real table feel**: dark carpet → wooden rim → green felt; three opponents sit along the table edge (top / left / right), you at the bottom
+- **Played cards land on the table**, positioned by seat, with the current best hand outlined in green; empties are hidden and passes show as a small chip
+- **Hand grouping**: your cards are auto-arranged into rows of five-card combos (straight flush > four-of-a-kind > full house > flush > straight), so a five-card hand is obvious at a glance
+  - Layout button cycles **牌型 (smart 2-row) → 5張 (strict rows of 5) → 單排 (single row)**
+  - 13 cards → 7+6, 10 cards → 5+5, 7 cards → 4+3
+- **Selection never hides a neighbour**: cards overlap, but a selected card is only lifted + outlined, so the neighbouring rank stays readable
+- **Compact layout** for short screens (≤760 px viewport height): smaller cards, thinner seats, tighter paddings — nothing gets clipped
+- Language switch (Traditional Chinese / English), sound effects, keyboard shortcuts on desktop
 
-Run tests anytime with:
+---
+
+## 🤖 Local AI, no network
+
+All three opponents (柴犬 / 河狸 / 橘貓, plus Alex / Bella / Chris) run on **local heuristics** in `src/ai/HeuristicAI.js`:
+
+- **Alex** — balanced / positional
+- **Bella** — defensive, keeps bombs for later
+- **Chris** — aggressive, dumps high cards early
+- Animal personas (Beaver / Shiba / Orange Cat) — mixed strategies with distinct voices
+
+There is **no HTTP request, no API key, no model download, no telemetry**. `window.AISummary`, WebLLM and the LM Studio bridge are gone from this branch.
+
+Tap any avatar to swap that seat's personality — the whole roster is local.
+
+---
+
+## 🛠️ Build
+
+### Requirements
+
+| Tool | Version |
+|---|---|
+| Node.js | ≥ 18 |
+| JDK | **21** (Gradle 8.14 needs it) |
+| Android SDK | platform 36 + build-tools 35/36 |
+| Gradle | 8.14.x (or the project wrapper) |
+
+### 1. Web assets
+
 ```bash
-npm test
+npm install
+npm run sync-www          # src/ + index.html → www/  (single source of truth)
 ```
 
----
+### 2. Debug APK
 
-## ⚙️ Running AI Models Locally (WebGPU / LM Studio)
-
-The "Deep Learning" AI characters (Diana & Ares) can run fully offline in the browser using WebGPU or connect to an OpenAI-compatible REST server (such as LM Studio).
-
-### Option A: Built-in AI Engine Mode - Recommended 🚀
-This option utilizes WebGPU to load and run models directly in your browser's hardware-accelerated background worker.
-1. Make sure your browser/environment supports **WebGPU**.
-2. Open **AI Settings (⚙️)** in the game.
-3. Check the **"Enable Built-in AI Engine"** checkbox.
-4. Select a model (e.g. `Qwen2.5-1.5B-Instruct-q4f32_1-MLC` or an f16 performance version). The model will download directly to your browser's cache on the first launch, displaying a progress bar, and will run completely offline thereafter.
-5. **FP16 / shader-f16 Acceleration**: Electron builds automatically enable WebGPU experimental command line switches (`enable-unsafe-webgpu` and `enable-webgpu-developer-features`). Combined with a prototype hook on device creation, this allows compatible hardware GPUs (such as AMD Radeon 780M / 8945HS) to perform high-performance FP16 execution in WGSL shaders.
-6. **Manage Cache & Downloads**: Open the Game Rules/Info (**"i"**) modal and navigate to the **"Manage" (管理)** tab to view downloaded model details, monitor progress, and free up disk space by deleting unwanted model weights.
-
-### Option B: Remote / Local API Server (LM Studio)
-1. **Download LM Studio**: Visit [lmstudio.ai](https://lmstudio.ai/).
-2. **Download a Model**: Search and download a GGUF model (e.g. `gemma-2-2b-it` or `Qwen2.5-1.5B-Instruct`).
-3. **Start Local Server**: Go to the **Local Server** tab and click **Start Server** on port `1234`.
-4. **Connect to Game**: In the game's **AI Settings (⚙️)**, uncheck the local WebGPU mode and input your local URL (`http://127.0.0.1:1234/v1/chat/completions`). It will auto-detect the active server model.
-
----
-
-## 📜 Changelog & License
-- For a detailed history, see [changelog.md](./changelog.md).
-- This project is licensed under the **GNU AGPL-3.0 License**.
-
----
-
-## 📱 Android Mobile Build (Capacitor)
-
-This project uses the [Capacitor](https://capacitorjs.com/) framework to package the modern web frontend as a native Android application.
-
-### 1. Sync & Build Web Assets
 ```bash
-# Sync web code to the native Android project
 npx cap sync android
-```
-
-### 2. Compile Android Installation File (.apk) in Terminal
-If you want to compile the installation file directly in the command line, you can use the built-in Gradle tool (it will automatically borrow the built-in Java environment from Android Studio):
-```powershell
-$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
 cd android
-./gradlew assembleDebug
+export JAVA_HOME=/path/to/jdk-21
+export ANDROID_HOME=/path/to/android-sdk
+./gradlew assembleDebug          # or: gradle assembleDebug
 ```
-* Once compiled, the APK file will be generated at: `android/app/build/outputs/apk/debug/app-debug.apk`.
 
-### 3. Using Android Studio for Development & Debugging
-1. Open Android Studio.
-2. Select **Open an Existing Project**, and choose the `android` folder.
-3. Once Gradle sync completes, click the **green triangle Play button (Run)** at the top to deploy and run it on an emulator or physical phone!
+Output: `android/app/build/outputs/apk/debug/app-debug.apk`
+
+### 3. Release APK (signed)
+
+Create `android/keystore.properties` (already git-ignored):
+
+```properties
+storeFile=/absolute/path/to/release.jks
+storePassword=******
+keyAlias=******
+keyPassword=******
+```
+
+```bash
+cd android && ./gradlew assembleRelease
+```
+
+Output: `android/app/build/outputs/apk/release/app-release.apk` (v2 + v3 signed)
+
+> The release signature differs from the debug one — uninstall a debug build before installing a release build of the same `applicationId`.
+
+### 4. Install
+
+```bash
+adb install -r android/app/build/outputs/apk/release/app-release.apk
+```
 
 ---
-*Created with ❤️ by mesmerli for AI Strategic Research & Mobile Experience*
+
+## 🧪 Tests
+
+```bash
+npm test                  # node tests/logic.test.js — rules engine (17 cases)
+```
+
+Tests cover card comparison, hand types, first-play ♦3 enforcement, bomb legality and the mainland suit order (♣ > ♦).
+
+---
+
+## 📁 Project structure
+
+```text
+index.html                 # game view (single page)
+src/
+├── renderer.js            # bootstrap: controllers + views wiring
+├── gameLogic.js           # rules: BaseRules / TaiwanRules / HongKongRules / MainlandRules
+├── ai/
+│   ├── AICharacter.js     # persona base (name, avatar, decision hook)
+│   ├── HeuristicAI.js     # local rule-based brains (Alex/Bella/Chris + animal seats)
+│   └── BigTwoAI.js        # 4-seat manager, exposed as window.AI
+├── controllers/
+│   ├── GameController.js  # dealing, turn flow, legality checks, scoring
+│   ├── SettingsController.js
+│   └── KeyboardController.js
+├── views/GameView.js      # hand rows, table plays, seats, responsive switching
+├── services/              # license / system helpers
+├── styles.css             # desktop grid + portrait mobile layout
+└── i18n.js                # zh / en strings
+android/                   # Capacitor Android project (portrait-locked)
+www/                       # generated copy of the web app (do not edit)
+Documents/                 # architecture, build guide, branch notes
+```
+
+---
+
+## 🧭 Scope of this branch
+
+- Android portrait is the **only** supported target. The Electron / Tauri desktop shells are still in the repo but are **not tested on this branch**.
+- Upstream's Microsoft Store build, MSIX, trial licensing and StoreBridge are unused here.
+- Chinese UI is Traditional; strings for Simplified can be added in `src/i18n.js`.
+
+---
+
+## 📜 License & credits
+
+- Original project: [Taiwan Big2 AI](https://github.com/mesmerli/taiwan-big-two-ai) by **mesmerli**, licensed **AGPL-3.0**.
+- This fork keeps the same license: **GNU AGPL-3.0** — derivative works must stay open source.
+- Rule adaptations, portrait layout and LLM removal: this branch (`android-portrait`, maintained by seagaruda).
+
+See [changelog](./Documents/changelog.md) and [architecture notes](./Documents/architecture.md).

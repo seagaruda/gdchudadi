@@ -1,5 +1,8 @@
 # Tauri 商店版授權與試用期測試指南 (Tauri License & Trial Testing Guide)
 
+> ⚠️ **本文件說明的是上游桌面版（Electron／Tauri）功能，本分支（`android-portrait`）不驗證、也不使用。**
+> 本分支只發佈安卓豎屏 APK，且已移除大模型與商店授權相關模組；請以根目錄 `README.md` 與 `Documents/BuildnRun.md` 為準。
+
 本文件說明如何測試與模擬 **Taiwan Big2 AI** 在 Tauri 架構下的 Windows Store 授權、試用版剩餘天數判定及過期引導購買邏輯。
 
 ---

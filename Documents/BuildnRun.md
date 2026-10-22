@@ -1,126 +1,139 @@
 # 執行與建置指南 (Build & Run Guide)
 
-本專案支援多個執行平台（Electron, Tauri, Capacitor Android），以下整理各個平台的**執行 (Run)**、**測試 (Test)** 與**建置 (Build)** 的命令行指令。
+> **本分支（`android-portrait`）以「安卓豎屏 APK」為唯一交付目標。**
+> Electron／Tauri 桌面外殼仍留在 repo，但未在本分支驗證；不會用到的段落已標註。
 
 ---
 
-## 1. Electron (主要桌面版)
-這是本專案最主要的開發與測試平台，並支援打包至 Microsoft Store。
+## 0. 快速上手（Android）
 
-*   **執行開發模式**：
-    ```bash
-    npm start
-    ```
-*   **測試**：
-    執行所有測試 (包含遊戲邏輯測試與 Playwright UI 測試)：
-    ```bash
-    npm test
-    ```
-    僅執行 UI 測試：
-    ```bash
-    npm run test:ui
-    ```
-*   **建置**：
-    打包成免安裝目錄（用於開發除錯）：
-    ```bash
-    npm run pack
-    ```
-    打包成一般 Windows 安裝檔（NSIS / Portable 等）：
-    ```bash
-    npm run dist
-    ```
-    打包成 **GitHub 側載版 (Sideloaded)** (會包含 GitHub Sponsors 贊助連結與側載授權提示)：
-    ```bash
-    npm run dist:github
-    ```
-    打包成 **Microsoft Store 商店版** (會隱藏贊助連結，並整合微軟商店試用版天數及授權檢查)：
-    ```bash
-    npm run dist:store
-    ```
-    打包成 **Microsoft Store** 專用的 MSIX 格式：
-    ```bash
-    npm run dist:msix
-    ```
-    > 💡 **輸出位置**：所有 Electron 建置產生的檔案（包含免安裝目錄、安裝檔與 MSIX）都會集中存放在專案根目錄的 `dist/` 資料夾下。
-    >
-    > 💡 **商店版與側載版之免安裝目錄測試 (win-unpacked)**：
-    > 打包後的獨立執行檔在運行時，會讀取建置時寫入 `package.json` 的 `"buildTarget"` 欄位以區分版本。若要在打包後測試不同版本的免安裝目錄：
-    > - **測試商店版**：請執行 `npx cross-env BUILD_TARGET=STORE npm run pack`，再開啟 `dist/win-unpacked/Taiwan Big2 AI.exe`。
-    > - **測試側載版**：請執行 `npx cross-env BUILD_TARGET=GITHUB npm run pack`，再開啟 `dist/win-unpacked/Taiwan Big2 AI.exe`。
+```bash
+# 1) 安裝前端依賴
+npm install
+
+# 2) 前端 → www/（src/ 是唯一來源，改完必做）
+npm run sync-www
+
+# 3) www/ → android 原生專案
+npx cap sync android
+
+# 4) 編譯 debug APK
+cd android
+export JAVA_HOME=/path/to/jdk-21
+export ANDROID_HOME=/path/to/android-sdk
+export ANDROID_SDK_ROOT=$ANDROID_HOME
+./gradlew assembleDebug
+```
+
+產物：`android/app/build/outputs/apk/debug/app-debug.apk`
+
+環境需求：
+
+| 工具 | 版本 | 備註 |
+|---|---|---|
+| Node.js | ≥ 18 | |
+| JDK | **21** | Gradle 8.14 需要；JDK 17 會報「無效的源發行版：21」 |
+| Android SDK | platform 36、build-tools 35/36 | `compileSdk 36` |
+| Gradle | 8.14.x | 專案無 wrapper 時直接呼叫 `gradle` |
+
+> 在中國大陸網路環境下，Google Maven / Gradle 官方站點常超時，可改用阿里雲 Maven 鏡像與騰訊 Gradle 鏡像；SDK 授權檔放在 `$ANDROID_HOME/licenses`。
 
 ---
 
-## 2. Tauri (輕量級桌面版)
-Tauri 提供比 Electron 更輕巧、記憶體佔用更低的桌面應用版本。
+## 1. Release 簽名包
 
-*   **執行社群開發模式 (自動同步網頁資源至 www 目錄，免授權檢查)**：
-    ```bash
-    npm run tauri:dev
-    ```
-*   **執行商店開發模式 (自動同步網頁資源，包含商店授權與試用期模擬)**：
-    ```bash
-    npm run tauri:dev:store
-    ```
-*   **建置社群直裝版 (GitHub 發佈，打包成一般安裝檔，免授權檢查)**：
-    ```bash
-    npm run tauri:build:github
-    ```
-*   **建置微軟商店版 (打包成 MSIX 封裝檔，內嵌商店授權檢查)**：
-    ```bash
-    npm run tauri:build:store
-    ```
-    > 💡 **輸出位置**：打包完成的安裝程式（社群版 `.msi`/`.exe` 或商店版 `.msix`）會存放在 `src-tauri/target/release/bundle/` 資料夾下；單純編譯出的可執行檔則在 `src-tauri/target/release/` 內。
-    >
-    > 💡 **授權與試用期測試**：關於如何模擬與測試商店版的授權/天數機制，請參閱 [Tauri 商店版授權與試用期測試指南](file:///c:/Users/julia/workspace/TwBig2/Documents/TauriLicenseTest.md)。
+### 1.1 產生 keystore（只需一次）
 
----
+```bash
+mkdir -p ~/.android-keys
+keytool -genkeypair -v \
+  -keystore ~/.android-keys/release.jks \
+  -alias <alias> -keyalg RSA -keysize 2048 -validity 36500 \
+  -dname "CN=Guangdong Chu Da Di, O=<you>, C=CN"
+```
 
-## 3. Capacitor (Android 行動版)
-Capacitor 用來將網頁遊戲畫面打包為原生的 Android 應用程式。
+### 1.2 建立 `android/keystore.properties`（已 gitignore）
 
-*   **同步網頁資源至 Android 專案**：
-    每次修改前端程式碼後，需執行此指令將更新同步到原生層。
-    ```bash
-    npx cap sync
-    ```
-*   **產生並更新應用程式圖示 (Logo) 與啟動畫面 (Splash)**：
-    若要更新圖示或啟動畫面，請確保 `Assets/` 目錄中已有 `icon.png`（與 `icon-only.png`）做為來源圖檔，然後執行：
-    ```bash
-    npx @capacitor/assets generate --android --iconBackgroundColor "#1e293b" --iconBackgroundColorDark "#0f172a"
-    ```
-*   **在命令列編譯安裝檔 (.apk)**：
-    若想直接透過命令列編譯 APK，可使用專案內置的 Gradle Wrapper 工具（會自動借用 Android Studio 內置的 Java 運行環境）：
-    *   **編譯偵錯版 (Debug APK)**：
-        ```powershell
-        $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
-        cd android
-        ./gradlew assembleDebug
-        ```
-    *   **編譯發佈版 (Release APK)**：
-        ```powershell
-        $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
-        cd android
-        ./gradlew assembleRelease
-        ```
-        > 💡 **輸出位置**：編譯出的 APK 會存放在 `android/app/build/outputs/apk/debug/app-debug.apk` 或 `android/app/build/outputs/apk/release/app-release-unsigned.apk`。
-*   **執行並部署到 Android 設備 / 模擬器**：
-    ```bash
-    npx cap run android
-    ```
-*   **開啟 Android Studio**：
-    用於進階的 Java/Kotlin 除錯、憑證設定或輸出發佈版 APK/AAB。
-    ```bash
-    npx cap open android
-    ```
+```properties
+storeFile=/absolute/path/to/release.jks
+storePassword=******
+keyAlias=******
+keyPassword=******
+```
+
+`android/app/build.gradle` 會讀取此檔配置 `signingConfigs.release`（v1/v2/v3）。
+檔案不存在時會退回「unsigned release」，不會報錯。
+
+### 1.3 編譯
+
+```bash
+cd android && ./gradlew assembleRelease
+```
+
+產物：`android/app/build/outputs/apk/release/app-release.apk`
+
+驗證：
+
+```bash
+$ANDROID_HOME/build-tools/36.0.0/apksigner verify --verbose --print-certs app-release.apk
+$ANDROID_HOME/build-tools/36.0.0/aapt2 dump badging app-release.apk | head -3
+```
+
+期望：`Verifies`、v2 與 v3 為 true、憑證 CN 為自己的、`application-label` 為「廣東鋤大地」。
+
+> minSdk 24 時 Gradle 會自動跳過 v1（JAR signing），顯示 `false` 屬正常。
+> release 與 debug 簽名不同，換簽名安裝前必須先卸載舊版。
 
 ---
 
-## 4. C++ 原生擴充模組 (StoreBridge)
-這是專門處理 Windows Store 授權、試用版判定與購買跳轉的原生模組。
+## 2. 開發預覽（瀏覽器）
 
-*   **編譯 StoreBridge 模組**：
-    若修改了 `StoreBridge.cc` 等 C++ 檔案，請執行以下指令重新編譯。
-    ```bash
-    npm run build-StoreBridge
-    ```
-    > 💡 **輸出位置**：編譯成功後，產生的 Node 原生擴充模組會存放在 `StoreBridge/build/Release/StoreBridge.node`。
+```bash
+npm run sync-www
+cd www && python3 -m http.server 8080
+# 瀏覽器開 http://127.0.0.1:8080/index.html
+```
+
+除錯小技巧：
+
+- `window.gameState` 可直接改（手牌、`playerLastActions`）後呼叫 `renderAll()`
+- 想讓四個座位都由 AI 打：`window.AI.swapCharacter(0)`，再 `aiTurn()`
+- 豎屏版面要固定 393px 寬驗證，否則瀏覽器視窗一寬就切回桌面版面
+
+---
+
+## 3. 測試
+
+```bash
+npm test          # node tests/logic.test.js（規則引擎 17 項）
+```
+
+---
+
+## 4. Android Studio（可選）
+
+1. Android Studio → **Open an Existing Project** → 選擇 `android/`
+2. 等 Gradle sync 完成
+3. 上方綠色 ▶ 執行到模擬器或實機
+
+> Android Studio 內建 JBR 通常已 ≥ 21，可直接使用；若版本過舊請在 `Settings → Build → Gradle → Gradle JDK` 指定 JDK 21。
+
+---
+
+## 5. Electron（上游功能，本分支未驗證）
+
+```bash
+npm start                 # 開發模式
+npm run package           # electron-packager 打包
+```
+
+## 6. Tauri（上游功能，本分支未驗證）
+
+```bash
+npm run tauri dev
+npm run tauri build
+```
+
+## 7. Microsoft Store / MSIX（本分支不使用）
+
+上游的 MSIX 打包、試用授權與 `StoreBridge` 原生外掛在本分支已無對應功能（大模型與商店授權相關模組均已移除），可忽略 `Documents/installmsix.md`、`Documents/tauri_integration_guide.md`。
