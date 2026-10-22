@@ -367,17 +367,9 @@ function calculateScores(winnerIndex) {
     const info = GameLogic.getHandInfo(winnerHand);
     let winnerMult = 1;
 
-    if (info) {
-        const ranks = winnerHand.map(c => GameLogic.getRank(c));
-        const has2 = ranks.includes(12); // 2 is Rank 12
-
-        if (info.type === 'FOUR_OF_A_KIND') {
-            winnerMult = has2 ? 4 : 2;
-        } else if (info.type === 'STRAIGHT_FLUSH') {
-            winnerMult = (info.special === '23456') ? 4 : 2;
-        } else if (has2) {
-            winnerMult = 2;
-        }
+    // 鐵支 / 同花順的額外翻倍已取消：只有打出含 2 的牌仍算 ×2
+    if (info && winnerHand.some(c => GameLogic.getRank(c) === 12)) {
+        winnerMult = 2;
     }
 
     let totalGained = 0;
