@@ -1755,3 +1755,190 @@ input:checked + .slider:before {
     transform: translateX(22px);
     background-color: white;
 }
+
+/* ==========================================
+   🪑 MOBILE SEAT LAYOUT（豎屏牌桌座位排布）
+   參考手機棋牌桌：綠色絨面牌桌居中，三名對手座位沿上緣弧形排列
+   （頭像 + 金色虛線環 + 下方分數），自己座位固定在下方。
+   ========================================== */
+.mobile-layout #game-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    gap: 0;
+    height: 100vh;
+    padding: calc(228px + env(safe-area-inset-top, 0px)) 10px calc(6px + env(safe-area-inset-bottom, 0px));
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse 120% 80% at 50% 34%, #10834a 0%, #0a6b3a 38%, #064d2a 66%, #032a17 100%);
+}
+
+/* 桌面絨面外框（木質桌沿氛圍） */
+.mobile-layout #game-container::before {
+    content: "";
+    position: absolute;
+    inset: calc(180px + env(safe-area-inset-top, 0px)) 4px calc(2px + env(safe-area-inset-bottom, 0px)) 4px;
+    border-radius: 28px;
+    border: 1px solid rgba(250, 204, 21, 0.18);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+}
+
+/* --- 對手座位：上緣弧形 --- */
+.mobile-layout #player-2,
+.mobile-layout #player-3,
+.mobile-layout #player-4 {
+    position: absolute;
+    width: calc(33.33% - 8px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    height: auto;
+}
+
+.mobile-layout #player-2 { left: 6px; top: 86px; }
+.mobile-layout #player-3 { left: 50%; transform: translateX(-50%); top: 66px; }
+.mobile-layout #player-4 { right: 6px; top: 86px; }
+
+.mobile-layout .player.ai .avatar {
+    width: 54px;
+    height: 54px;
+    font-size: 26px;
+    border-radius: 50%;
+    padding: 2px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px dashed rgba(250, 204, 21, 0.7);
+    box-sizing: border-box;
+}
+
+.mobile-layout .player.ai.active .avatar {
+    border-color: #34d399;
+    box-shadow: 0 0 14px rgba(52, 211, 153, 0.6);
+}
+
+.mobile-layout .player.ai .info {
+    min-width: 0;
+    align-items: center;
+    text-align: center;
+    gap: 0;
+}
+
+.mobile-layout .player.ai .name {
+    font-size: 12px;
+    line-height: 1.2;
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mobile-layout .player.ai .cards-count {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fbbf24;
+    min-height: auto;
+    margin-top: 0;
+    line-height: 1.2;
+}
+
+.mobile-layout .player.ai .score {
+    font-size: 10px;
+    color: rgba(226, 232, 240, 0.65);
+    margin-top: 0;
+}
+
+/* 對手打出的牌：座位下方的小牌槽 */
+.mobile-layout .player.ai .played-cards-slot {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    margin-top: 4px !important;
+    padding: 1px 2px;
+    background: rgba(0, 0, 0, 0.16);
+    border-radius: 8px;
+}
+
+.mobile-layout .player.ai .played-cards-slot:empty {
+    background: transparent;
+    border-color: transparent;
+}
+
+.mobile-layout .slot-card {
+    width: 30px !important;
+    height: 42px !important;
+    margin-right: -14px !important;
+    font-size: 0.7em;
+    padding: 2px;
+    border-radius: 3px;
+}
+
+.mobile-layout .slot-card .rank {
+    font-size: 11px;
+}
+
+.mobile-layout .slot-card .suit {
+    font-size: 11px;
+}
+
+/* 中央牌桌：狀態訊息 */
+.mobile-layout #table-center {
+    order: 0;
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.mobile-layout #status-message {
+    font-size: 13px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(4px);
+}
+
+/* 自己的座位：固定在下方，金色桌沿看起來像「你的座位」 */
+.mobile-layout #human-area {
+    order: 1;
+    flex: 0 0 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 6px;
+    align-items: center;
+    padding: 8px 8px 6px;
+    border-radius: 16px 16px 12px 12px;
+    background: rgba(3, 34, 21, 0.55);
+    border: 1px solid rgba(250, 204, 21, 0.22);
+    box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.mobile-layout #human-area .avatar {
+    width: 46px;
+    height: 46px;
+    font-size: 22px;
+    border-radius: 50%;
+    padding: 2px;
+    border: 2px dashed rgba(250, 204, 21, 0.7);
+    box-sizing: border-box;
+}
+
+.mobile-layout #human-area .name {
+    font-size: 13px;
+}
+
+.mobile-layout #human-area .score {
+    font-size: 10px;
+}
