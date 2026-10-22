@@ -530,19 +530,37 @@ class HongKongRules extends BaseRules {
     }
 }
 
+/**
+ * 大陸鋤大地規則：花色 黑桃 > 紅桃 > 梅花 > 方塊（梅花大於方塊）、方塊3 先手、
+ * 允許 5 張同花與 3 張出牌。與港式規則的差別主要在起手牌與計分倍數，
+ * 因此直接沿用 HongKongRules 的花色/牌型判定。
+ */
+class MainlandRules extends HongKongRules {
+    // 花色強度 [梅花, 方塊, 紅桃, 黑桃] → 方塊最小、梅花次之
+    getSuitStrength(cardId) {
+        const suit = this.getSuit(cardId);
+        const mainlandStrengths = [1, 0, 2, 3];
+        return mainlandStrengths[suit];
+    }
+}
+
 class GameLogic {
     static taiwanStrategy = new TaiwanRules();
     static hkStrategy = new HongKongRules();
+    static mainlandStrategy = new MainlandRules();
 
     static getRuleMode() {
         if (typeof AppStorage !== 'undefined' && typeof AppStorage.getItem === 'function') {
-            return AppStorage.getItem('ruleMode') || 'taiwan';
+            return AppStorage.getItem('ruleMode') || 'mainland';
         }
-        return 'taiwan';
+        return 'mainland';
     }
 
     static getStrategy() {
-        return this.getRuleMode() === 'hongkong' ? this.hkStrategy : this.taiwanStrategy;
+        const mode = this.getRuleMode();
+        if (mode === 'taiwan') return this.taiwanStrategy;
+        if (mode === 'hongkong') return this.hkStrategy;
+        return this.mainlandStrategy;
     }
 
     static getRank(cardId) {

@@ -81,7 +81,7 @@ function initGame() {
     gameState.players[0] = GameLogic.sortCards(gameState.players[0]);
 
     // Find who has the starting card (Club 3 = 0 for Taiwan, Diamond 3 = 13 for HK)
-    const ruleMode = AppStorage.getItem('ruleMode') || 'taiwan';
+    const ruleMode = AppStorage.getItem('ruleMode') || 'mainland';
     const startCard = ruleMode === 'taiwan' ? 0 : 13;
     for (let i = 0; i < 4; i++) {
         if (gameState.players[i].includes(startCard)) {
@@ -167,7 +167,7 @@ function playCards(shoutArg = false) {
     }
 
     // Special rule: first play must have starting card if it's the very first turn
-    const ruleMode = AppStorage.getItem('ruleMode') || 'taiwan';
+    const ruleMode = AppStorage.getItem('ruleMode') || 'mainland';
     const startCard = ruleMode === 'taiwan' ? 0 : 13;
     if (gameState.lastPlayerIndex === -1 && !selected.includes(startCard)) {
         const msg = ruleMode === 'taiwan' ? t('mustInclude3C') : t('mustInclude3D');
@@ -363,7 +363,6 @@ async function aiTurn() {
 window.aiTurn = aiTurn;
 
 function calculateScores(winnerIndex) {
-    const ruleMode = AppStorage.getItem('ruleMode') || 'taiwan';
     const winnerHand = gameState.lastPlay;
     const info = GameLogic.getHandInfo(winnerHand);
     let winnerMult = 1;
@@ -389,13 +388,10 @@ function calculateScores(winnerIndex) {
         let baseLost = hand.length;
         let loserMult = 1;
 
-        if (ruleMode === 'taiwan') {
-            if (baseLost >= 10) loserMult *= 2;
-        } else {
-            if (baseLost === 13) loserMult *= 4;
-            else if (baseLost >= 10) loserMult *= 3;
-            else if (baseLost >= 8) loserMult *= 2;
-        }
+        // 依剩餘張數加倍：8-9 張 ×2、10-12 張 ×3、13 張（一張未出）×4
+        if (baseLost === 13) loserMult *= 4;
+        else if (baseLost >= 10) loserMult *= 3;
+        else if (baseLost >= 8) loserMult *= 2;
 
         const twosCount = hand.filter(c => GameLogic.getRank(c) === 12).length;
         loserMult *= Math.pow(2, twosCount);

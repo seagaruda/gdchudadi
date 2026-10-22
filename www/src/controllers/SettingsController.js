@@ -9,7 +9,7 @@ function t(key, params = {}) {
 window.t = t;
 
 function updateRulesDescription() {
-    const ruleMode = AppStorage.getItem('ruleMode') || 'taiwan';
+    const ruleMode = AppStorage.getItem('ruleMode') || 'mainland';
     const suffix = ruleMode === 'taiwan' ? 'TW' : 'HK';
 
     const elements = {
@@ -375,7 +375,7 @@ if (muteToggle) {
 
 const gameRuleModeInput = document.getElementById('game-rule-mode');
 if (gameRuleModeInput) {
-    const savedRuleMode = AppStorage.getItem('ruleMode') || 'taiwan';
+    const savedRuleMode = AppStorage.getItem('ruleMode') || 'mainland';
     gameRuleModeInput.value = savedRuleMode;
     gameRuleModeInput.onchange = () => {
         const val = gameRuleModeInput.value;

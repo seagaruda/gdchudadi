@@ -27,7 +27,7 @@ class AICharacter {
         // --- Handle Lead (No active play to beat) ---
         if (!lastPlay || lastPlay.length === 0) {
             // First turn rule: Must include the starting card (Club 3 = 0 for Taiwan, Diamond 3 = 13 for HK)
-            const ruleMode = typeof AppStorage !== 'undefined' ? (AppStorage.getItem('ruleMode') || 'taiwan') : 'taiwan';
+            const ruleMode = typeof AppStorage !== 'undefined' ? (AppStorage.getItem('ruleMode') || 'mainland') : 'taiwan';
             const startCard = ruleMode === 'taiwan' ? 0 : 13;
             const hasStartCard = hand.includes(startCard);
             if (hasStartCard && (lastPlayerIndex === -1 || lastPlayerIndex === undefined)) {

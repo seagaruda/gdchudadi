@@ -3,6 +3,14 @@
  * Orchestrates event bindings and invokes sub-controllers
  */
 
+// 一次性遷移：舊存檔若是台灣規則，切換為大陸鋤大地（梅花 > 方塊）
+try {
+    if (typeof AppStorage !== 'undefined' && AppStorage.getItem('ruleModeMigratedMainland') !== '1') {
+        AppStorage.setItem('ruleMode', 'mainland');
+        AppStorage.setItem('ruleModeMigratedMainland', '1');
+    }
+} catch (e) { /* ignore */ }
+
 // Bind actions to DOM elements
 if (window.btnPlay) btnPlay.onclick = () => playCards();
 if (window.btnPass) btnPass.onclick = () => passTurn();

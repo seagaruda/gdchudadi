@@ -202,7 +202,7 @@ let fiveCardComboCache = new Map();
 
 function findFiveCardCombos(cards) {
     if (!cards || cards.length < 5) return [];
-    const ruleMode = (typeof AppStorage !== 'undefined' && AppStorage.getItem('ruleMode')) || 'taiwan';
+    const ruleMode = (typeof AppStorage !== 'undefined' && AppStorage.getItem('ruleMode')) || 'mainland';
     const cacheKey = `${ruleMode}|${GameLogic.sortCards(cards).join(',')}`;
     if (fiveCardComboCache.has(cacheKey)) return fiveCardComboCache.get(cacheKey);
 
@@ -545,7 +545,7 @@ function updatePlayButtonVisibility() {
             if (GameLogic.compareHands(selected, gameState.lastPlay) <= 0) return false;
         }
         // First turn rule: Must include the starting card (Club 3 = 0 for Taiwan, Diamond 3 = 13 for HK)
-        const ruleMode = AppStorage.getItem('ruleMode') || 'taiwan';
+        const ruleMode = AppStorage.getItem('ruleMode') || 'mainland';
         const startCard = ruleMode === 'taiwan' ? 0 : 13;
         if (gameState.lastPlayerIndex === -1 && !selected.includes(startCard)) return false;
         return true;
