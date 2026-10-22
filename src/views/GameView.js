@@ -55,6 +55,32 @@ function currentLangKey() {
     return (typeof window.currentLang === 'string' && window.currentLang.startsWith('en')) ? 'en' : 'zh';
 }
 
+// 手機豎屏：把四家的出牌槽搬進桌面中央（左/上/右/下按座位方位擺放）
+// 桌面版維持原本「出牌槽貼在座位旁」的排版。
+function setupTablePlays() {
+    const wrap = document.getElementById('table-plays');
+    if (!wrap) return;
+    const mobile = document.body.classList.contains('mobile-layout');
+
+    ['played-1', 'played-2', 'played-3', 'played-4'].forEach(id => {
+        const slot = document.getElementById(id);
+        if (!slot) return;
+
+        if (mobile) {
+            if (slot.parentElement !== wrap) {
+                slot._originParent = slot.parentElement;
+                slot._originNext = slot.nextSibling;
+                wrap.appendChild(slot);
+            }
+        } else if (slot.parentElement === wrap) {
+            const parent = slot._originParent;
+            if (parent) {
+                parent.insertBefore(slot, slot._originNext && slot._originNext.parentElement === parent ? slot._originNext : null);
+            }
+        }
+    });
+}
+
 // Dynamically handle mobile-layout based on environment and window width
 function updateResponsiveLayout() {
     const isAndroid = (typeof AppEnv !== 'undefined' && AppEnv.isAndroid);
@@ -68,6 +94,8 @@ function updateResponsiveLayout() {
         document.body.classList.remove('mobile-layout');
         document.documentElement.classList.remove('mobile-layout');
     }
+    // 出牌槽跟著版面切換位置（桌面中央 / 座位旁）
+    setupTablePlays();
     // Re-render the hand so the multi-row split follows the active layout
     if (wasMobile !== useMobile && window.gameState && Array.isArray(window.gameState.players) &&
         Array.isArray(window.gameState.players[0]) && typeof renderHumanHand === 'function') {
