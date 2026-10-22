@@ -127,3 +127,10 @@ node tests/logic.test.js      # 17/17
 ```
 
 > 註：`package.json` 的 `"test"` 腳本已改為只跑 `tests/logic.test.js`。
+
+## 名稱與計分調整
+
+* 遊戲名稱改為 **廣東鋤大地**（`index.html` / `about.html` / `i18n.js` / `capacitor.config.json` / Android `strings.xml`）
+* 預設規則為大陸鋤大地：花色 **黑桃 > 紅桃 > 梅花 > 方塊**（梅花大於方塊）、方塊 3 先手
+* 結算依剩餘張數：8-9 張 ×2、10-12 張 ×3、13 張 ×4；手上剩的 2 仍加倍
+* **已取消**鐵支、同花順在結算時的額外翻倍

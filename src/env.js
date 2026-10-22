@@ -1,5 +1,5 @@
 /**
- * Taiwan Big2 AI - Environment & Storage Module
+ * Guangdong Chu Da Di - Environment & Storage Module
  * Supports Electron, Android (Capacitor), and general web browsers.
  */
 

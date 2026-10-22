@@ -1,7 +1,7 @@
 const I18N = {
     en: {
-        title: "Taiwan Big2 AI",
-        rulesTitle: "Game Rules (Taiwan Big2)",
+        title: "Guangdong Chu Da Di",
+        rulesTitle: "Game Rules (Guangdong Chu Da Di)",
         handsTitle: "Hands",
         scoringTitle: "Scoring",
         rank: "Rank",
@@ -39,10 +39,10 @@ const I18N = {
         yes: "Yes",
         no: "No",
         ok: "OK",
-        aboutTitle: "About Taiwan Big2 AI",
+        aboutTitle: "About Guangdong Chu Da Di",
         aboutDetail: "Author: {author}\n\nA modern Big Two game with LLM-powered AI integration.",
         aboutSourceSponsor: "The core logic of this game is open-source under the AGPLv3 license. You can obtain the source code on <a href=\"#\" class=\"about-link\" id=\"github-link\">GitHub</a>. If you like this work, please consider supporting the developer via the <a href=\"#\" class=\"about-link\" id=\"sponsor-link\">Sponsorship Link</a> or <a href=\"#\" class=\"about-link\" id=\"store-link\">Microsoft Store</a>.",
-        menuAbout: "About Taiwan Big2 AI",
+        menuAbout: "About Guangdong Chu Da Di",
         aiSettingsTitle: "AI Settings",
         aiUseWebGpuLabel: "Enable Built-in AI Engine",
         reviewUseWebGpuLabel: "Use Built-in AI Engine for Review",
@@ -170,8 +170,8 @@ const I18N = {
         ruleLoserSpecialHK: "Loser x2: Per 4-of-a-Kind or Straight Flush in hand."
     },
     'zh': {
-        title: "台灣大老二 AI",
-        rulesTitle: "台灣大老二 AI",
+        title: "廣東鋤大地",
+        rulesTitle: "廣東鋤大地",
         handsTitle: "牌型",
         scoringTitle: "計分",
         rank: "點數",
@@ -209,10 +209,10 @@ const I18N = {
         yes: "是",
         no: "否",
         ok: "確定",
-        aboutTitle: "關於台灣大老二 AI",
-        aboutDetail: "作者: {author}\n\n這是一款結合了 LLM AI 技術的現代化台灣大老二遊戲。",
+        aboutTitle: "關於廣東鋤大地",
+        aboutDetail: "作者: {author}\n\n這是一款採用大陸鋤大地規則（梅花大於方塊）的廣東鋤大地遊戲，內建本機規則 AI。",
         aboutSourceSponsor: "本遊戲之核心邏輯依據 AGPLv3 協議開源，您可以在 <a href=\"#\" class=\"about-link\" id=\"github-link\">GitHub</a> 取得原始碼。如果您喜歡本作品，歡迎透過 <a href=\"#\" class=\"about-link\" id=\"sponsor-link\">贊助連結</a> 或 <a href=\"#\" class=\"about-link\" id=\"store-link\">微軟商店</a> 支持開發者。",
-        menuAbout: "關於台灣大老二 AI",
+        menuAbout: "關於廣東鋤大地",
         aiSettingsTitle: "AI 設定",
         aiUseWebGpuLabel: "啟用內建 AI 引擎",
 

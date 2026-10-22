@@ -11,7 +11,7 @@
     "dist:store": "cross-env BUILD_TARGET=STORE npm run dist",
     "dist:github": "cross-env BUILD_TARGET=GITHUB npm run dist",
     "dist:msix": "cross-env BUILD_TARGET=STORE npm run increment-build && electron-builder --win appx",
-    "package": "npm run increment-build && electron-packager . \"Taiwan Big2 AI\" --platform=win32 --arch=x64 --out=dist --overwrite",
+    "package": "npm run increment-build && electron-packager . \"Guangdong Chu Da Di\" --platform=win32 --arch=x64 --out=dist --overwrite",
     "increment-build": "node scripts/increment-build.js",
     "test": "node tests/logic.test.js",
     "build-StoreBridge": "node-gyp clean configure build --directory=StoreBridge",
@@ -27,7 +27,7 @@
     "appId": "mesmerli.TaiwanBig2AI",
     "buildVersion": "1.5.54.0",
     "buildNumber": "54",
-    "productName": "Taiwan Big2 AI",
+    "productName": "Guangdong Chu Da Di",
     "directories": {
       "output": "dist"
     },
@@ -38,7 +38,7 @@
         "appx"
       ],
       "icon": "src/assets/logo.png",
-      "artifactName": "Taiwan Big2 AI_1.5.54.0.${ext}"
+      "artifactName": "Guangdong Chu Da Di_1.5.54.0.${ext}"
     },
     "appx": {
       "identityName": "mesmerli.TaiwanBig2AI",

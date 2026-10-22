@@ -393,14 +393,9 @@ function calculateScores(winnerIndex) {
         else if (baseLost >= 10) loserMult *= 3;
         else if (baseLost >= 8) loserMult *= 2;
 
+        // 手上剩的 2 仍然加倍；鐵支 / 同花順的額外翻倍已取消
         const twosCount = hand.filter(c => GameLogic.getRank(c) === 12).length;
         loserMult *= Math.pow(2, twosCount);
-
-        const fkCount = GameLogic.countFourOfAKinds(hand);
-        loserMult *= Math.pow(2, fkCount);
-
-        const sfCount = GameLogic.countStraightFlushes(hand);
-        loserMult *= Math.pow(2, sfCount);
 
         const finalLost = baseLost * winnerMult * loserMult;
         gameState.scores[i] -= finalLost;
