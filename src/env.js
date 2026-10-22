@@ -88,7 +88,7 @@
                         }
                     } else {
                         // Pre-load manual keys as fallback
-                        const keysToLoad = ['soundMode', 'ai_settings_Diana', 'ai_memory_Diana', 'ai_settings_Ares', 'ai_memory_Ares'];
+                        const keysToLoad = ['soundMode'];
                         for (const key of keysToLoad) {
                             const { value } = await plugin.get({ key });
                             if (value !== null) {
