@@ -1942,3 +1942,186 @@ input:checked + .slider:before {
 .mobile-layout #human-area .score {
     font-size: 10px;
 }
+
+/* ==========================================
+   📏 COMPACT PASS（整體再壓縮：座位更小、下方手牌區更薄、留白收緊）
+   ========================================== */
+.mobile-layout #game-container {
+    padding-top: calc(184px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.mobile-layout #game-container::before {
+    inset: calc(158px + env(safe-area-inset-top, 0px)) 4px 2px 4px;
+}
+
+/* 座位縮小 */
+.mobile-layout #player-2,
+.mobile-layout #player-3,
+.mobile-layout #player-4 {
+    width: calc(33.33% - 6px);
+    gap: 1px;
+}
+
+.mobile-layout #player-2 { top: 68px; }
+.mobile-layout #player-3 { top: 52px; }
+.mobile-layout #player-4 { top: 68px; }
+
+.mobile-layout .player.ai .avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 19px;
+}
+
+.mobile-layout .player.ai .name { font-size: 11px; }
+.mobile-layout .player.ai .cards-count { font-size: 13px; }
+.mobile-layout .player.ai .score { font-size: 9px; }
+
+.mobile-layout .player.ai .played-cards-slot {
+    min-height: 32px;
+    margin-top: 2px !important;
+    padding: 0 2px;
+}
+
+.mobile-layout .slot-card {
+    width: 24px !important;
+    height: 33px !important;
+    margin-right: -11px !important;
+}
+
+.mobile-layout .slot-card .rank,
+.mobile-layout .slot-card .suit { font-size: 9px; }
+
+/* 狀態提示貼近下方手牌區，中央絨面保持乾淨 */
+.mobile-layout #table-center {
+    align-items: flex-end;
+    padding-bottom: 2px;
+}
+
+.mobile-layout #status-message {
+    font-size: 12px;
+    padding: 3px 12px;
+}
+
+/* 自己座位整體變薄 */
+.mobile-layout #human-area {
+    gap: 3px;
+    padding: 5px 8px 3px;
+}
+
+.mobile-layout #human-area .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+}
+
+.mobile-layout #human-area .played-cards-slot {
+    min-height: 34px;
+    padding: 0 4px;
+}
+
+.mobile-layout #human-area .slot-card {
+    width: 26px !important;
+    height: 36px !important;
+    margin-right: -12px !important;
+}
+
+.mobile-layout #human-area .name { font-size: 12px; }
+.mobile-layout #human-area .score { font-size: 9px; }
+
+.mobile-layout #human-area .hand.multi-row {
+    gap: 2px;
+    padding: 0;
+}
+
+.mobile-layout #human-area .hand.multi-row .hand-row {
+    padding-top: 8px;
+}
+
+.mobile-layout #human-area .hand.multi-row .card {
+    width: 40px !important;
+    height: 50px !important;
+    margin-right: -22px !important;
+}
+
+.mobile-layout #human-area .hand.multi-row .card.selected {
+    transform: translateY(-7px);
+}
+
+/* 牌型模式（兩排）：省下的高度用來放大牌面，讀牌更清楚 */
+.mobile-layout #human-area .hand.multi-row.combo-mode .hand-row {
+    padding-top: 10px;
+}
+
+.mobile-layout #human-area .hand.multi-row.combo-mode .card {
+    width: 46px !important;
+    height: 60px !important;
+    margin-right: -24px !important;
+}
+
+.mobile-layout #human-area .hand.multi-row.combo-mode .card .rank {
+    font-size: 15px;
+}
+
+.mobile-layout #human-area .hand.multi-row.combo-mode .card .suit {
+    font-size: 16px;
+}
+
+@media (max-height: 760px) {
+    .mobile-layout #human-area .hand.multi-row.combo-mode .hand-row {
+        padding-top: 8px;
+    }
+
+    .mobile-layout #human-area .hand.multi-row.combo-mode .card {
+        width: 42px !important;
+        height: 54px !important;
+        margin-right: -23px !important;
+    }
+
+    .mobile-layout #human-area .hand.multi-row.combo-mode .card .rank { font-size: 14px; }
+    .mobile-layout #human-area .hand.multi-row.combo-mode .card .suit { font-size: 14px; }
+}
+
+.mobile-layout #controls {
+    gap: 8px;
+    margin-top: 0;
+}
+
+.mobile-layout #controls .premium-btn {
+    height: 30px;
+    font-size: 13px;
+    padding: 3px 12px;
+}
+
+.mobile-layout #controls #btn-hand-layout {
+    min-width: 50px;
+    padding: 3px 8px;
+    font-size: 12px;
+}
+
+/* 矮螢幕再收一級（360x640 等） */
+@media (max-height: 760px) {
+    .mobile-layout #game-container {
+        padding-top: calc(158px + env(safe-area-inset-top, 0px));
+    }
+
+    .mobile-layout #player-2 { top: 56px; }
+    .mobile-layout #player-3 { top: 42px; }
+    .mobile-layout #player-4 { top: 56px; }
+
+    .mobile-layout .player.ai .avatar { width: 36px; height: 36px; font-size: 16px; }
+    .mobile-layout .player.ai .played-cards-slot { min-height: 28px; }
+    .mobile-layout .slot-card { width: 22px !important; height: 30px !important; margin-right: -10px !important; }
+
+    .mobile-layout #human-area .hand.multi-row .hand-row { padding-top: 7px; }
+    .mobile-layout #human-area .hand.multi-row .card {
+        width: 36px !important;
+        height: 44px !important;
+        margin-right: -20px !important;
+    }
+    .mobile-layout #human-area .hand.multi-row .card.selected { transform: translateY(-6px); }
+
+    .mobile-layout #controls .premium-btn { height: 28px; font-size: 12px; }
+}

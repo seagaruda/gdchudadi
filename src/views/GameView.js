@@ -235,18 +235,35 @@ function chunkHandIntoRows(cards) {
 }
 
 // 依模式組出「列」：每列 = { cards, combo }
+// smart：先放 5 張牌型組（整組不拆、置於該排最前），其餘散牌補在後面，
+//        總張數 >6 時盡量壓成兩排（13 張 = 7+6），比三排更省高度。
+// five ：嚴格每排 5 張。
 function buildHandRows(cards, mode) {
     if (mode === 'smart') {
         const combos = findFiveCardCombos(cards);
+        const total = cards.length;
+        const rowCount = total <= 6 ? 1 : Math.max(2, Math.ceil(total / 7));
+        const capacity = Math.ceil(total / rowCount);
+
         const rows = [];
-        if (combos.length) {
-            const used = new Set();
-            combos.forEach(combo => combo.cards.forEach(id => used.add(id)));
-            combos.forEach(combo => rows.push({ cards: combo.cards, combo }));
-            const rest = cards.filter(id => !used.has(id));
-            chunkHandIntoRows(rest).forEach(chunk => rows.push({ cards: chunk, combo: null }));
-            return rows;
-        }
+        combos.forEach(combo => {
+            if (rows.length < rowCount) rows.push({ cards: [...combo.cards], combo });
+        });
+
+        const used = new Set();
+        combos.forEach(combo => combo.cards.forEach(id => used.add(id)));
+        const rest = cards.filter(id => !used.has(id));
+
+        rest.forEach(id => {
+            let target = rows.find(row => row.cards.length < capacity);
+            if (!target) {
+                target = { cards: [], combo: null };
+                rows.push(target);
+            }
+            target.cards.push(id);
+        });
+
+        if (rows.length) return rows;
     }
     return chunkHandIntoRows(cards).map(chunk => ({ cards: chunk, combo: null }));
 }
