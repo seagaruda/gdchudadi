@@ -28,6 +28,33 @@ const RANK_LABELS = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'
 const HAND_ROW_SIZE = 5;          // 每排最多 5 張，讓 5 張牌型能被完整看見
 const HAND_ROW_MIN_CARDS = 7;     // 6 張以下單排還放得下，不需要拆排
 
+// 排列模式：smart = 依鋤大地 5 張牌型自動聚組；five = 每 5 張一排；single = 原本單排
+const HAND_LAYOUT_MODES = ['smart', 'five', 'single'];
+const HAND_LAYOUT_STORAGE_KEY = 'handLayoutMode';
+
+// 5 張牌型的辨識優先度（數值越大越先聚組）
+const FIVE_CARD_PRIORITY = {
+    STRAIGHT_FLUSH: 5,
+    FOUR_OF_A_KIND: 4,
+    FULL_HOUSE: 3,
+    FLUSH: 2,
+    STRAIGHT: 1
+};
+
+const COMBO_LABELS = {
+    zh: { STRAIGHT_FLUSH: '同花順', FOUR_OF_A_KIND: '鐵支', FULL_HOUSE: '葫蘆', FLUSH: '同花', STRAIGHT: '順子' },
+    en: { STRAIGHT_FLUSH: 'StraightFlush', FOUR_OF_A_KIND: 'FourKind', FULL_HOUSE: 'FullHouse', FLUSH: 'Flush', STRAIGHT: 'Straight' }
+};
+
+const LAYOUT_MODE_LABELS = {
+    zh: { smart: '牌型', five: '5張', single: '單排' },
+    en: { smart: 'Combos', five: '5/row', single: 'Row' }
+};
+
+function currentLangKey() {
+    return (typeof window.currentLang === 'string' && window.currentLang.startsWith('en')) ? 'en' : 'zh';
+}
+
 // Dynamically handle mobile-layout based on environment and window width
 function updateResponsiveLayout() {
     const isAndroid = (typeof AppEnv !== 'undefined' && AppEnv.isAndroid);
@@ -118,12 +145,110 @@ function isMobileLayout() {
     return document.body.classList.contains('mobile-layout');
 }
 
+function getHandLayoutMode() {
+    const saved = (typeof AppStorage !== 'undefined' && AppStorage.getItem(HAND_LAYOUT_STORAGE_KEY)) || 'smart';
+    return HAND_LAYOUT_MODES.includes(saved) ? saved : 'smart';
+}
+
+function cycleHandLayoutMode() {
+    const current = getHandLayoutMode();
+    const next = HAND_LAYOUT_MODES[(HAND_LAYOUT_MODES.indexOf(current) + 1) % HAND_LAYOUT_MODES.length];
+    if (typeof AppStorage !== 'undefined') AppStorage.setItem(HAND_LAYOUT_STORAGE_KEY, next);
+    renderHumanHand();
+    return next;
+}
+
+function updateHandLayoutButton() {
+    const btn = document.getElementById('btn-hand-layout');
+    if (!btn) return;
+    const mode = getHandLayoutMode();
+    const labels = LAYOUT_MODE_LABELS[currentLangKey()] || LAYOUT_MODE_LABELS.zh;
+    btn.textContent = `🃏 ${labels[mode] || labels.smart}`;
+    btn.dataset.mode = mode;
+}
+
+// 在整手牌裡找出可以打出的 5 張牌型（鐵支 / 同花順 / 葫蘆 / 同花 / 順子），
+// 以「牌型強度優先」貪婪地挑出不重疊的組合（最多 3 組）。
+// 判定完全交給 GameLogic.getHandInfo()，所以台港規則差異（例如台版不能單打同花）自動生效。
+let fiveCardComboCache = new Map();
+
+function findFiveCardCombos(cards) {
+    if (!cards || cards.length < 5) return [];
+    const ruleMode = (typeof AppStorage !== 'undefined' && AppStorage.getItem('ruleMode')) || 'taiwan';
+    const cacheKey = `${ruleMode}|${GameLogic.sortCards(cards).join(',')}`;
+    if (fiveCardComboCache.has(cacheKey)) return fiveCardComboCache.get(cacheKey);
+
+    const pool = [...cards];
+    const combos = [];
+    for (let round = 0; round < 3; round++) {
+        const best = findBestFiveCardCombo(pool);
+        if (!best) break;
+        combos.push(best);
+        const used = new Set(best.cards);
+        for (let i = pool.length - 1; i >= 0; i--) {
+            if (used.has(pool[i])) pool.splice(i, 1);
+        }
+    }
+
+    if (fiveCardComboCache.size > 60) fiveCardComboCache.clear();
+    fiveCardComboCache.set(cacheKey, combos);
+    return combos;
+}
+
+function findBestFiveCardCombo(cards) {
+    const n = cards.length;
+    if (n < 5) return null;
+    let best = null;
+    for (let a = 0; a < n - 4; a++) {
+        for (let b = a + 1; b < n - 3; b++) {
+            for (let c = b + 1; c < n - 2; c++) {
+                for (let d = c + 1; d < n - 1; d++) {
+                    for (let e = d + 1; e < n; e++) {
+                        const combo = [cards[a], cards[b], cards[c], cards[d], cards[e]];
+                        const info = GameLogic.getHandInfo(combo);
+                        if (!info) continue;
+                        const priority = FIVE_CARD_PRIORITY[info.type];
+                        if (!priority) continue;
+                        if (!best || priority > best.priority ||
+                            (priority === best.priority && info.value > best.value)) {
+                            best = {
+                                cards: GameLogic.sortCards(combo),
+                                type: info.type,
+                                priority,
+                                value: info.value
+                            };
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return best;
+}
+
 function chunkHandIntoRows(cards) {
     const rows = [];
     for (let i = 0; i < cards.length; i += HAND_ROW_SIZE) {
         rows.push(cards.slice(i, i + HAND_ROW_SIZE));
     }
     return rows;
+}
+
+// 依模式組出「列」：每列 = { cards, combo }
+function buildHandRows(cards, mode) {
+    if (mode === 'smart') {
+        const combos = findFiveCardCombos(cards);
+        const rows = [];
+        if (combos.length) {
+            const used = new Set();
+            combos.forEach(combo => combo.cards.forEach(id => used.add(id)));
+            combos.forEach(combo => rows.push({ cards: combo.cards, combo }));
+            const rest = cards.filter(id => !used.has(id));
+            chunkHandIntoRows(rest).forEach(chunk => rows.push({ cards: chunk, combo: null }));
+            return rows;
+        }
+    }
+    return chunkHandIntoRows(cards).map(chunk => ({ cards: chunk, combo: null }));
 }
 
 function createHumanCardElement(cardId) {
@@ -149,21 +274,29 @@ function createHumanCardElement(cardId) {
 function renderHumanHand() {
     if (!humanCardsContainer) return;
     humanCardsContainer.innerHTML = '';
+    updateHandLayoutButton();
 
     const cards = gameState.players[0] || [];
-    const useRows = isMobileLayout() && cards.length >= HAND_ROW_MIN_CARDS;
+    const mode = isMobileLayout() ? getHandLayoutMode() : 'single';
+    const useRows = isMobileLayout() && mode !== 'single' && cards.length >= HAND_ROW_MIN_CARDS;
     humanCardsContainer.classList.toggle('multi-row', useRows);
+    humanCardsContainer.classList.toggle('combo-mode', useRows && mode === 'smart');
 
     if (!useRows) {
         cards.forEach(cardId => humanCardsContainer.appendChild(createHumanCardElement(cardId)));
         return;
     }
 
-    chunkHandIntoRows(cards).forEach((rowCards, rowIndex) => {
+    const lang = currentLangKey();
+    buildHandRows(cards, mode).forEach((row, rowIndex) => {
         const rowEl = document.createElement('div');
         rowEl.className = 'hand-row';
         rowEl.dataset.row = String(rowIndex + 1);
-        rowCards.forEach(cardId => rowEl.appendChild(createHumanCardElement(cardId)));
+        if (row.combo) {
+            rowEl.classList.add('combo-row');
+            rowEl.dataset.combo = (COMBO_LABELS[lang] || COMBO_LABELS.zh)[row.combo.type] || '';
+        }
+        row.cards.forEach(cardId => rowEl.appendChild(createHumanCardElement(cardId)));
         humanCardsContainer.appendChild(rowEl);
     });
 }
@@ -567,3 +700,24 @@ window.showConfirm = showConfirm;
 window.showPassIndicator = showPassIndicator;
 window.triggerShoutEffect = triggerShoutEffect;
 window.showAlert = showAlert;
+
+// 手牌排列切換按鈕（牌型 → 5張 → 單排 → 牌型 …）
+(function setupHandLayoutToggle() {
+    const btn = document.getElementById('btn-hand-layout');
+    if (!btn) return;
+    const activate = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        cycleHandLayoutMode();
+    };
+    btn.addEventListener('click', activate);
+    btn.addEventListener('touchstart', activate, { passive: false });
+    updateHandLayoutButton();
+})();
+
+window.updateHandLayoutButton = updateHandLayoutButton;
+window.cycleHandLayoutMode = cycleHandLayoutMode;
+window.getHandLayoutMode = getHandLayoutMode;
+window.findFiveCardCombos = findFiveCardCombos;

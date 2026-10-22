@@ -1516,11 +1516,46 @@ body {
 }
 
 .mobile-layout #human-area .hand.multi-row .hand-row {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: flex-end;
     width: 100%;
     padding-top: 13px; /* 保留選牌上浮的空間，避免被裁切 */
+}
+
+/* 牌型聚組的排：左上角標出「順子 / 葫蘆 / 同花 / 鐵支 / 同花順」 */
+.mobile-layout #human-area .hand .hand-row.combo-row::before {
+    content: attr(data-combo);
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 10px;
+    line-height: 1.4;
+    padding: 0 5px;
+    border-radius: 5px;
+    color: #6ee7b7;
+    background: rgba(16, 185, 129, 0.16);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* 手牌排列切換鈕：桌面版隱藏，只在手機豎屏出現 */
+#btn-hand-layout {
+    display: none;
+}
+
+.mobile-layout #controls #btn-hand-layout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    max-width: none;
+    min-width: 56px;
+    padding: 8px 10px;
+    font-size: 13px;
+    letter-spacing: 0;
 }
 
 .mobile-layout #human-area .hand.multi-row .card {
