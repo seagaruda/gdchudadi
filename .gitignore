@@ -51,3 +51,4 @@ StoreBridge/build/
 *.sln
 *.filters
 *.user
+android/keystore.properties
