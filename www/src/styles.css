@@ -2338,3 +2338,34 @@ input:checked + .slider:before {
     transform: translateX(-50%);
     z-index: 2;
 }
+
+/* ==========================================
+   🖐️ 選牌不再遮住旁邊的牌
+   牌是疊排的（下一張壓住上一張右半），選中時若把 z-index 提到 10，
+   就會反過來蓋住右邊那張的牌面（只剩邊條，看不到點數）。
+   改為維持原本的疊放順序，只做「抬起 + 描邊 + 陰影」。
+   ========================================== */
+.mobile-layout #human-area .card.selected {
+    z-index: auto;
+    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.85), 0 -4px 12px rgba(0, 0, 0, 0.45);
+}
+
+.mobile-layout #human-area .hand.multi-row .card.selected {
+    z-index: auto;
+}
+
+/* 觸控裝置：點過的牌不要殘留 hover 抬起，否則會壓到下一排 */
+@media (hover: none) {
+    .mobile-layout #human-area .card:hover {
+        transform: none;
+    }
+    .mobile-layout #human-area .card.selected:hover {
+        transform: translateY(-11px);
+    }
+}
+
+@media (hover: none) and (max-height: 760px) {
+    .mobile-layout #human-area .card.selected:hover {
+        transform: translateY(-7px);
+    }
+}
