@@ -2369,3 +2369,17 @@ input:checked + .slider:before {
         transform: translateY(-7px);
     }
 }
+
+/* ==========================================
+   🔘 頂部控制列：手機版「新遊戲」靠左、圖示留在右邊
+   ========================================== */
+.mobile-layout #top-controls {
+    left: calc(12px + env(safe-area-inset-left, 0px));
+    right: calc(12px + env(safe-area-inset-right, 0px));
+    justify-content: flex-start;
+}
+
+.mobile-layout #btn-new {
+    margin-right: auto;      /* 把語言／音效／規則圖示推到最右側 */
+    margin-left: 0;
+}
