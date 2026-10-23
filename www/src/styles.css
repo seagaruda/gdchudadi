@@ -2118,7 +2118,7 @@ input:checked + .slider:before {
 }
 
 .mobile-layout #player-2 { left: 14px; top: 80px; }
-.mobile-layout #player-3 { top: 62px; }
+.mobile-layout #player-3 { top: 72px; } /* 柴犬（上家）往下移，貼近左右兩家 */
 .mobile-layout #player-4 { right: 14px; top: 80px; }
 
 .mobile-layout #table-center {
@@ -2299,7 +2299,7 @@ input:checked + .slider:before {
     .mobile-layout #player-4 { width: 46px; }
     .mobile-layout #player-2 .avatar,
     .mobile-layout #player-4 .avatar { width: 34px; height: 34px; font-size: 15px; }
-    .mobile-layout #player-3 { top: 44px; }
+    .mobile-layout #player-3 { top: 52px; }
     .mobile-layout #table-plays #played-2 { left: 22px; }
     .mobile-layout #table-plays #played-4 { right: 22px; }
 }

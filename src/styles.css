@@ -2254,7 +2254,7 @@ input:checked + .slider:before {
 .mobile-layout #player-4 { right: -2px; left: auto; }
 
 .mobile-layout #player-3 {
-    top: 56px;
+    top: 66px; /* 柴犬（上家）往下移一點 */
     bottom: auto;
 }
 
@@ -2299,7 +2299,7 @@ input:checked + .slider:before {
     .mobile-layout #player-4 { width: 46px; }
     .mobile-layout #player-2 .avatar,
     .mobile-layout #player-4 .avatar { width: 34px; height: 34px; font-size: 15px; }
-    .mobile-layout #player-3 { top: 44px; }
+    .mobile-layout #player-3 { top: 52px; }
     .mobile-layout #table-plays #played-2 { left: 22px; }
     .mobile-layout #table-plays #played-4 { right: 22px; }
 }
