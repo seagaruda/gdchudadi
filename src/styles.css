@@ -1291,6 +1291,45 @@ body {
     padding-top: 10px;
 }
 
+/* 說明視窗（右上角 i 按鈕）字級與字距收斂，看起來更協調 */
+#rules-modal .modal-content li {
+    font-size: 13px;
+    line-height: 1.45;
+    letter-spacing: -0.2px;
+    margin-bottom: 10px;
+}
+
+#rules-modal .rules-sections h3 {
+    font-size: 14px;
+    letter-spacing: -0.2px;
+    margin-bottom: 8px;
+}
+
+#rules-modal .rules-sections li strong {
+    letter-spacing: 0;
+    margin-right: 4px;
+}
+
+#rules-modal .rules-footer {
+    font-size: 11px;
+    letter-spacing: -0.1px;
+}
+
+#rules-modal select,
+#rules-modal .rule-mode-selector-container label {
+    font-size: 12px !important;
+}
+
+/* 三個分頁標籤：字級收小 + 不換行（原本「版權與贊助」會被擠成兩行） */
+#rules-modal .modal-tabs { gap: 6px; }
+
+#rules-modal .tab-btn {
+    font-size: 13px;
+    padding: 7px 10px;
+    white-space: nowrap;
+    letter-spacing: -0.2px;
+}
+
 .mobile-layout #game-container {
     display: flex;
     flex-direction: column;
@@ -2124,6 +2163,9 @@ input:checked + .slider:before {
 .mobile-layout #table-center {
     align-items: center;
     justify-content: center;
+    /* width:100% 加上左右 4px margin 會往右溢出 8px，桌面對不齊 → 扣掉 margin 並置中 */
+    width: calc(100% - 8px);
+    align-self: center;
     margin: 2px 4px 8px;
     padding: 6px;
     min-height: 84px;
@@ -2323,6 +2365,12 @@ input:checked + .slider:before {
     width: 26px !important;
     height: 36px !important;
     margin-right: -12px !important;
+}
+
+/* 最後一張不帶負邊距：否則右家的牌會多凸出 12px，看起來比左家更貼桌沿 */
+.mobile-layout #table-plays #played-2 .slot-card:last-child,
+.mobile-layout #table-plays #played-4 .slot-card:last-child {
+    margin-right: 0 !important;
 }
 
 .mobile-layout #table-plays #played-2 .slot-card .rank,

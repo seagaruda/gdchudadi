@@ -2,6 +2,11 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Fixed
+- **左右兩家出牌離桌沿不一致**：`#played-2/#played-4` 的 `.slot-card:last-child` 仍帶 `-12px` 負邊距，右家的牌多凸出 12px（實測左 82px／右 70px）→ 補 `margin-right: 0`，現在左右皆 82px。
+- **牌桌沒有置中**：`width: 100%` 加上左右 4px margin 讓桌面向右溢出 8px（左邊距 12px／右 4px）→ 改 `width: calc(100% - 8px)` + `align-self: center`，桌面對稱、左右座位與桌沿距離一致。
+- **說明視窗排版**：`i` 彈窗正文 14px→13px、行高 1.5→1.45、字距 -0.2px；標題 16px→14px；分頁標籤 16px（會被擠成兩行）→ 13px + `nowrap`，規則內容高度 606→505px，852 高螢幕不用滾動；版本號 11px。
+
 ### Changed
 - **出牌順序改為逆時針**：你（下）→ 橘貓（右）→ 柴犬（上）→ 河狸（左）→ 你（`GameController.nextTurn()` 改為索引 −1）。
 - **上/下家的出牌往桌心收**：`#played-3`（柴犬）`top: 2px → 16px`、`#played-1`（自己）`bottom: 2px → 16px`，離桌沿由 10px 增為 24px；桌面狀態提示同步上移（`bottom: 54px → 68px`）避免與自己的出牌重疊。
