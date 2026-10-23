@@ -1,5 +1,12 @@
 # Changelog
 
+## [android-portrait] - 2026-10-23
+
+### Changed
+- **出牌順序改為逆時針**：你（下）→ 橘貓（右）→ 柴犬（上）→ 河狸（左）→ 你（`GameController.nextTurn()` 改為索引 −1）。
+- **上/下家的出牌往桌心收**：`#played-3`（柴犬）`top: 2px → 16px`、`#played-1`（自己）`bottom: 2px → 16px`，離桌沿由 10px 增為 24px；桌面狀態提示同步上移（`bottom: 54px → 68px`）避免與自己的出牌重疊。
+- **上家座位下移**：豎屏 `#player-3`（柴犬）`top: 56px → 86px`（分兩次 10px + 20px 調整），矮屏分支 `44px → 60px`。
+
 ## [android-portrait] - 2026-10-22
 
 ### Changed

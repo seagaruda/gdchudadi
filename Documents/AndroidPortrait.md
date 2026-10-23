@@ -32,8 +32,10 @@
 
 - 版面層次：深色地毯（`#game-container`）→ 木質桌沿 → 綠色絨面（`#table-center`）
 - 座位：柴犬在上、河狸在左、橘貓在右、自己在下方
+- 出牌順序：**逆時針**（自己 → 橘貓 → 柴犬 → 河狸 → 自己），`nextTurn()` 以索引 −1 遞進
 - `setupTablePlays()` 在豎屏時把四個出牌槽搬進 `#table-plays`，按方位絕對定位：
-  上＝`#played-3`、左＝`#played-2`、右＝`#played-4`、下＝`#played-1`
+  上＝`#played-3`（`top: 16px`）、左＝`#played-2`、右＝`#played-4`、下＝`#played-1`（`bottom: 16px`），
+  上下兩家離桌沿各留 24px；桌面狀態提示 `bottom: 68px` 疊在下方出牌之上
 - 空牌槽自動隱藏；「過牌」以小膠囊呈現；當前最大一手加綠色描邊
 - 座位 `z-index` 高於牌桌，否則會被桌子背景蓋掉一半
 

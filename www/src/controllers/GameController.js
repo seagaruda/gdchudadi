@@ -270,7 +270,9 @@ function nextTurn() {
         aiTurnTimeout = null;
     }
 
-    gameState.turn = (gameState.turn + 1) % 4;
+    // 出牌順序：逆時針。座位索引 0=你(下) 1=河狸(左) 2=柴犬(上) 3=橘貓(右)，
+    // 順時針是 0→1→2→3，逆時針就是索引 -1，即 你→橘貓→柴犬→河狸→你。
+    gameState.turn = (gameState.turn + 3) % 4;
     resetCycleState();
     renderAll();
     updateStatus();

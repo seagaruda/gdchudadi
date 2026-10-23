@@ -2192,10 +2192,10 @@ input:checked + .slider:before {
 }
 
 /* 上（柴犬）、左（河狸）、右（橘貓）、下（自己） */
-.mobile-layout #table-plays #played-3 { top: 2px; left: 50%; transform: translateX(-50%) !important; }
+.mobile-layout #table-plays #played-3 { top: 16px; left: 50%; transform: translateX(-50%) !important; }
 .mobile-layout #table-plays #played-2 { left: 4px; top: 50%; transform: translateY(-50%) !important; }
 .mobile-layout #table-plays #played-4 { right: 4px; top: 50%; transform: translateY(-50%) !important; }
-.mobile-layout #table-plays #played-1 { bottom: 2px; left: 50%; transform: translateX(-50%) !important; }
+.mobile-layout #table-plays #played-1 { bottom: 16px; left: 50%; transform: translateX(-50%) !important; }
 
 .mobile-layout #table-plays .slot-card {
     width: 32px !important;
@@ -2333,7 +2333,7 @@ input:checked + .slider:before {
 /* 狀態提示固定貼在桌面底部（自己的出牌上方），不佔通道 */
 .mobile-layout #status-message {
     position: absolute;
-    bottom: 54px;
+    bottom: 68px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 2;
