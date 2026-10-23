@@ -2,6 +2,9 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Added
+- **每局開 App 隨機座位**：`BigTwoAI` 建構時以 Fisher–Yates 洗牌三個電腦玩家（河狸／柴犬／橘貓）在左（`#player-2`）／上（`#player-3`）／右（`#player-4`）的位置；名字、頭像、出牌槽都跟著角色走，每次啟動 App 重新抽一次。
+
 ### Changed
 - **英文說明標題**：`i18n.js` 的 `rulesTitle`（en）由 `Game Rules (Guangdong Chu Da Di)` 改為 `Guangdong Chudadi`。
 

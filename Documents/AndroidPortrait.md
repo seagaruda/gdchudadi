@@ -32,7 +32,10 @@
 
 - 版面層次：深色地毯（`#game-container`）→ 木質桌沿 → 綠色絨面（`#table-center`）
 - 座位：柴犬在上、河狸在左、橘貓在右、自己在下方
-- 出牌順序：**逆時針**（自己 → 橘貓 → 柴犬 → 河狸 → 自己），`nextTurn()` 以索引 −1 遞進
+- **每局開 App 隨機座位**：`BigTwoAI` 建構子用 Fisher–Yates 把河狸／柴犬／橘貓洗到 1（左）／2（上）／3（右）三格，
+  名字（`updateLanguage()` 從 `AI.getNames()` 取名）、頭像（動態 sprite canvas）、出牌槽都跟著角色走；
+  每次啟動 App 抽一次，局中「新遊戲」不重抽
+- 出牌順序：**逆時針**（自己 → 右家 → 上家 → 左家 → 自己，按座位不按角色；`nextTurn()` 以索引 −1 遞進）
 - `setupTablePlays()` 在豎屏時把四個出牌槽搬進 `#table-plays`，按方位絕對定位：
   上＝`#played-3`（`top: 16px`）、左＝`#played-2`、右＝`#played-4`、下＝`#played-1`（`bottom: 16px`），
   上下兩家離桌沿各留 24px；左右兩家各 82px（最後一張牌不帶負邊距，否則右家會多凸 12px）
