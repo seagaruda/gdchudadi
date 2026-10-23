@@ -1,7 +1,7 @@
 const I18N = {
     en: {
         title: "Guangdong Chu Da Di",
-        rulesTitle: "Game Rules (Guangdong Chu Da Di)",
+        rulesTitle: "Guangdong Chudadi",
         handsTitle: "Hands",
         scoringTitle: "Scoring",
         rank: "Rank",

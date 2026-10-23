@@ -2,6 +2,9 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Changed
+- **英文說明標題**：`i18n.js` 的 `rulesTitle`（en）由 `Game Rules (Guangdong Chu Da Di)` 改為 `Guangdong Chudadi`。
+
 ### Fixed
 - **左右兩家出牌離桌沿不一致**：`#played-2/#played-4` 的 `.slot-card:last-child` 仍帶 `-12px` 負邊距，右家的牌多凸出 12px（實測左 82px／右 70px）→ 補 `margin-right: 0`，現在左右皆 82px。
 - **牌桌沒有置中**：`width: 100%` 加上左右 4px margin 讓桌面向右溢出 8px（左邊距 12px／右 4px）→ 改 `width: calc(100% - 8px)` + `align-self: center`，桌面對稱、左右座位與桌沿距離一致。
