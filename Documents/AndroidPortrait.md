@@ -78,12 +78,17 @@
 
 ---
 
-## 2.5 音效（BGM 已移除）
+## 2.5 音效（BGM 已移除，改成報牌配音）
 
-- 背景音樂三首（`Cards_On_The_Line`／`Iron_in_the_Gale`／`Sovereign_Ascent`）與 `playBGM/switchBGM` 全部刪除，
-  `src/assets/mp3` 由 2.4MB 降到 324KB
-- 右上角喇叭鈕改為「報牌配音 開／關」兩態（`soundMode` 只有 0／2），開啟時即時試聽
-- 報單時播放該角色語音：`la_cat.mp3`／`la_dog.mp3`／`la_beaver.mp3`，人類 `la_you.mp3`，失敗回退 `la_default.mp3`
+- 背景音樂三首（`Cards_On_The_Line`／`Iron_in_the_Gale`／`Sovereign_Ascent`）與 `playBGM/switchBGM` 全部刪除
+- 右上角喇叭鈕為「報牌配音 開／關」兩態（`soundMode` 只有 0／2），開啟時試聽「對二」
+- **AI 報牌名**：`AudioPlayer.playHandName(info, cards)` 在 AI 出牌時念牌型
+  - 單張／對子／三條帶點數：`single_0..12.mp3`（一張三…一張二）、`pair_*.mp3`（對三…對二）、`triple_*.mp3`（三條三…三條二）
+  - 五張牌型只念類型：`straight.mp3`、`flush.mp3`、`fullhouse.mp3`、`fourwithone.mp3`、`straightflush.mp3`、`dragon.mp3`
+  - 連續出牌會先 `pause()` 上一聲，避免疊音
+- **報單語音**：`declare_cat/dog/beaver/you.mp3`（橘貓／柴犬／河狸／你 四種音色），失敗回退 `declare_you.mp3`；角色若不是這四隻（Alex／Bella…）也回退人類音
+- 語音檔由 `edge-tts` 產生（`zh-CN-YunjianNeural` 播報腔、`+6%` 語速），靜音裁切後共 49 檔 **200KB**，`src/assets/mp3` 全目錄 296KB
+- 說明頁只剩「遊戲規則」一個分頁：`#tab-keyboard`、`#tab-license` 與兩顆 tab 按鈕已刪除
 
 ---
 

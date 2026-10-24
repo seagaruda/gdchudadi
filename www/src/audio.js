@@ -99,14 +99,16 @@ class SoundEngine {
         setTimeout(() => this.playTone(400, 'sawtooth', 0.2, 0.1), 50);
         
         const personaKeyRaw = persona.toLowerCase().split(' ')[0];
-        const personaKey = PERSONA_VOICE_MAP[personaKeyRaw] || personaKeyRaw;
+        const mapped = PERSONA_VOICE_MAP[personaKeyRaw] || personaKeyRaw;
+        // 只認 cat / dog / beaver / you，其它角色（Alex、Bella…）回退人類語音
+        const personaKey = ['cat', 'dog', 'beaver', 'you'].includes(mapped) ? mapped : 'you';
 
-        const audioPath = `src/assets/mp3/la_${personaKey}.mp3`;  // 報單語音沿用 la_ 系列
+        const audioPath = `src/assets/mp3/voice/declare_${personaKey}.mp3`;
         
         const audio = new Audio(audioPath);
         audio.play().catch(err => {
             console.warn(`Failed to play declare voice (${audioPath}):`, err);
-            const fallbackPath = `src/assets/mp3/la_default.mp3`;
+            const fallbackPath = `src/assets/mp3/voice/declare_you.mp3`;
             const fallbackAudio = new Audio(fallbackPath);
             fallbackAudio.play().catch(fallbackErr => {
                 console.warn(`Failed to play default declare voice (${fallbackPath}):`, fallbackErr);
@@ -119,9 +121,39 @@ class SoundEngine {
         this.playDeclare(persona);
     }
 
-    // 右上角按鈕試聽報牌配音
+    /**
+     * 報牌名：AI 出牌時念出牌型，例如「對二」「順子」「同花」。
+     * 單張／對子／三條會帶點數（single_0..12 = 三..二），五張牌型只念類型。
+     */
+    playHandName(info, cards) {
+        if (this.soundMode === 2 || !info) return;
+
+        const typeKey = {
+            SINGLE: 'single', PAIR: 'pair', TRIPLE: 'triple',
+            STRAIGHT: 'straight', FLUSH: 'flush', FULL_HOUSE: 'fullhouse',
+            FOUR_OF_A_KIND: 'fourwithone', STRAIGHT_FLUSH: 'straightflush', DRAGON: 'dragon'
+        }[info.type];
+
+        if (!typeKey) return;
+
+        let key = typeKey;
+        if (info.type === 'SINGLE' || info.type === 'PAIR' || info.type === 'TRIPLE') {
+            const rank = (cards && cards.length) ? (cards[0] % 13) : 0;
+            key = `${typeKey}_${rank}`;
+        }
+
+        // 新的一聲蓋掉上一聲，避免連續出牌時疊音
+        if (this.handVoice) {
+            try { this.handVoice.pause(); } catch (e) { /* ignore */ }
+        }
+        const audio = new Audio(`src/assets/mp3/voice/${key}.mp3`);
+        this.handVoice = audio;
+        audio.play().catch(err => console.warn(`Hand name voice failed (${key}):`, err));
+    }
+
+    // 右上角按鈕試聽報牌配音（示範「對二」）
     playDeclareSample() {
-        this.playDeclare('you');
+        this.playHandName({ type: 'PAIR' }, [12]);
     }
 }
 

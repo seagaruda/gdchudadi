@@ -205,6 +205,12 @@ function executePlay(playerIndex, cards) {
     gameState.playedCards.push(...cards);
     gameState.gameLog.push({ turn: gameState.gameLog.length, player: playerIndex, action: cards });
 
+    // AI 報牌名：電腦出牌時念出牌型（單張/對子/三條帶點數，五張牌型念類型）
+    if (playerIndex !== 0) {
+        const playedInfo = GameLogic.getHandInfo(cards);
+        if (playedInfo) AudioPlayer.playHandName(playedInfo, cards);
+    }
+
     // 報單：任何一家手牌只剩 1 張時公告一次（公告後其上家出單張必須頂大）
     for (let i = 0; i < 4; i++) {
         if (gameState.players[i].length === 1 && !gameState.declared[i]) {
