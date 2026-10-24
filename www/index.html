@@ -51,6 +51,7 @@
             <div id="lang-toggle" class="control-icon" title="Switch Language">🌐</div>
             <div id="mute-toggle" class="control-icon" title="Mute">🔊</div>
 
+            <div id="stats-btn" class="control-icon" title="Session Record">🏆</div>
             <div id="info-icon" class="control-icon" title="Game Rules">i</div>
         </div>
 
@@ -115,6 +116,25 @@
                     <span id="rules-version"></span>
                     <span id="rules-author"></span>
                 </div>
+            </div>
+        </div>
+
+        <!-- 本次開 App 的戰績 -->
+        <div id="stats-modal" class="modal hidden">
+            <div class="modal-content score-modal-content">
+                <span class="close-btn" id="stats-close-btn">&times;</span>
+                <h2 id="stats-title">本次開 App 戰績</h2>
+                <p id="stats-rounds" class="score-winner"></p>
+                <table class="score-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="thPlayer">玩家</th>
+                            <th data-i18n="thWins">勝局</th>
+                            <th data-i18n="thTotalShort">累計</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stats-table-body"></tbody>
+                </table>
             </div>
         </div>
 

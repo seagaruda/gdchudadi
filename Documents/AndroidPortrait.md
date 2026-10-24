@@ -102,9 +102,15 @@
 
 - `#score-modal`（`index.html`）+ `.score-table`（`styles.css`），由 `GameController.showScoreTable(winnerIndex, roundScores)` 填充
 - 三欄：玩家／本局／累計（本次開 App）；正分綠、負分紅、0 灰；自己名字藍、贏家行金色底
-- 「下一局」按鈕（`#score-next-btn` → `initGame()`）
-- 累計：`window.sessionScores`（4 項）與 `window.roundsPlayed`，每局結束累加，**只有重開 App（頁面重載）才歸零**；`initGame()` 刻意不清空
-- 實測：第 1 局 `你 +14 / 柴犬 -5 / 橘貓 -3 / 河狸 -6`，按「下一局」後第 2 局為 `+13 / -6 / 0 / -7`，累計正確變為 `+27 / -11 / -3 / -13`
+- 「下一局」按鈕（`#score-next-btn` → `initGame()`）；**點彈窗外圍遮罩也會關閉**
+- 累計：`window.sessionScores` / `window.sessionWins` / `window.roundsPlayed`，每局結束累加，**只有重開 App 才歸零**
+- ⚠️ **`initGame()` 必須清空 `gameState.scores`**（1.5.34 漏了，導致「本局」其實是累計、`sessionScores` 又重複累加）
+- 實測：第 1 局 `你 -1 / 橘貓 +35 / 河狸 -30 / 柴犬 -4`（合計 0），第 2 局 `+7 / -2 / -1 / -4`，累計 `+6 / +33 / -31 / -8` 正確
+
+### 3.1.1 戰績按鈕
+
+- 「i」左側 🏆 `#stats-btn` → `#stats-modal`（`showSessionStats()`）：本次開 App 局數、每人勝局、每人累計分
+- 同樣支援點外圍關閉；英文版 `Session Record` / `{n} rounds played since app launch`（1 局時用單數句）
 
 ### 3.2 計分公式
 

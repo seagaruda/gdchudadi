@@ -36,6 +36,7 @@ window.aiProcessing = false;
 
 // 本次開啟 App 的累計分（每局結束累加，「開 App」才會歸零）
 window.sessionScores = [0, 0, 0, 0];
+window.sessionWins = [0, 0, 0, 0];
 window.roundsPlayed = 0;
 
 // Keyboard interaction cycle index
@@ -60,6 +61,8 @@ function initGame() {
     gameState.playerLastActions = [null, null, null, null];
     gameState.playedCards = [];
     gameState.gameLog = [];
+    // 每局重新開始：清空本局分數（sessionScores 才是跨局累計）
+    gameState.scores = [0, 0, 0, 0];
 
     // Generate deck
     let deck = Array.from({ length: 52 }, (_, i) => i);
@@ -233,6 +236,7 @@ function executePlay(playerIndex, cards) {
         // 記錄本局分數並累加到本次開 App 的總分
         const roundScores = gameState.scores.slice();
         for (let i = 0; i < 4; i++) window.sessionScores[i] += roundScores[i];
+        window.sessionWins[playerIndex] += 1;
         window.roundsPlayed += 1;
 
         renderAll();
@@ -304,6 +308,52 @@ function showScoreTable(winnerIndex, roundScores) {
     modal.classList.remove('hidden');
 }
 window.showScoreTable = showScoreTable;
+
+/**
+ * 本次開啟 App 的戰績：局數、每人的勝局數與累計分。
+ */
+function showSessionStats() {
+    const modal = document.getElementById('stats-modal');
+    const body = document.getElementById('stats-table-body');
+    if (!modal || !body) return;
+
+    const titleEl = document.getElementById('stats-title');
+    if (titleEl) titleEl.textContent = t('statsTitle');
+
+    const roundsEl = document.getElementById('stats-rounds');
+    if (roundsEl) {
+        const n = window.roundsPlayed;
+        const oneLine = (window.currentLang === 'en' && n === 1) ? t('statsRoundsLineOne') : null;
+        roundsEl.textContent = oneLine || t('statsRoundsLine', { n });
+    }
+
+    body.innerHTML = '';
+    for (let i = 0; i < 4; i++) {
+        const tr = document.createElement('tr');
+        if (i === 0) tr.classList.add('is-you');
+
+        const rawName = PLAYER_NAMES[i] || ('P' + (i + 1));
+        const nameTd = document.createElement('td');
+        nameTd.textContent = rawName.replace(/\s*[\(（].*?[\)）]\s*$/, '');
+
+        const winsTd = document.createElement('td');
+        winsTd.className = 'score-cell';
+        winsTd.textContent = window.sessionWins[i] || 0;
+
+        const total = window.sessionScores[i] || 0;
+        const totalTd = document.createElement('td');
+        totalTd.textContent = (total > 0 ? '+' : '') + total;
+        totalTd.className = 'score-cell ' + (total > 0 ? 'pos' : total < 0 ? 'neg' : 'zero');
+
+        tr.appendChild(nameTd);
+        tr.appendChild(winsTd);
+        tr.appendChild(totalTd);
+        body.appendChild(tr);
+    }
+
+    modal.classList.remove('hidden');
+}
+window.showSessionStats = showSessionStats;
 
 function nextTurn() {
     if (gameState.gameEnded) return;
@@ -425,7 +475,9 @@ function calculateScores(winnerIndex) {
 
         // 黑 2 規則：只有手上剩「黑桃 2」才觸發加倍（其他花色的 2 不算）
         // 52 張牌裡黑桃 2 唯一，所以最多只乘一次 2
-        const hasSpadeTwo = hand.some(c => GameLogic.getRank(c) === 12 && GameLogic.getSuit(c) === 3);
+        // 大陸規則：手上「還有 8 張或以上」且含黑桃 2 才加倍
+        const hasSpadeTwo = baseLost >= 8 &&
+            hand.some(c => GameLogic.getRank(c) === 12 && GameLogic.getSuit(c) === 3);
         if (hasSpadeTwo) loserMult *= 2;
 
         const finalLost = baseLost * winnerMult * loserMult;

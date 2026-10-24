@@ -2,6 +2,17 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Fixed（計分錯誤）
+- **`initGame()` 沒有清空 `gameState.scores`**：導致計分表的「本局」欄其實是跨局累加值，而 `sessionScores` 又把這個累加值再加一次 → 累計被重複計算、數字虛高（曾出現第 1 局就 +215 的情況）。現在每局開始歸零，四家「本局」相加必為 0，累計 = 各局本局之和。
+- **黑桃 2 加倍條件**：依大陸規則改為「手上剩 8 張或以上 **且** 含黑桃 2」才 ×2（原本 3 張帶黑桃 2 也會加倍）。
+
+### Added（戰績按鈕）
+- 「i」按鈕左側新增 **🏆 戰績按鈕**（`#stats-btn`）→ 開啟 `#stats-modal`：本次開 App 已玩 N 局、每人勝局數、每人累計分（`window.sessionWins` / `window.sessionScores`）
+
+### Changed（彈窗操作）
+- 計分表、戰績、說明三個彈窗**點外圍遮罩即可關閉**（`renderer.js` 中對 `#score-modal`／`#stats-modal`／`#rules-modal` 綁 `click`，`ev.target === el` 時隱藏）
+
+
 ### Added（每局計分表）
 - **局末計分表**：新增 `#score-modal`，每局結束自動彈出（延遲 350ms 讓最後一手動畫先跑完）
   - 標題「本局計分 · 第 N 局」，下方贏家句，三列表格：玩家／本局／累計（本次開 App）
