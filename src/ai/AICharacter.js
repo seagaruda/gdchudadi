@@ -15,24 +15,137 @@ class AICharacter {
         return this.GameLogic || window.GameLogic || (typeof GameLogic !== 'undefined' ? GameLogic : null);
     }
 
-    // ── 博弈評估：把每個選擇換算成「期望得分」，取最大 ─────────────
-    // 期望得分 = p(我贏) × 別人輸分總和 − (1 − p) × 我的輸分
-    // 再疊加：甩牌價值、牌權價值、對 >=8 張者的加壓、對剩 1 張者的封鎖
-    _penalty(count) {
-        if (count >= 13) return count * 4;
-        if (count >= 10) return count * 3;
-        if (count >= 8) return count * 2;
-        return Math.max(0, count);
+    // ── 依論文《锄大地(广东规则)的不完全信息博弈建模与最优策略求解》重寫 ──
+    //  §7 手牌拆牌 DP：f(H) = 打完這手牌最少需要幾輪
+    //  V(H) = −α·f(H) + β·κ(H) − γ·ω(H)（κ 控制力、ω 孤張小單）
+    //  §2.3 收益 u_i = Σ_{j≠i} p_j − 3·p_i（p 為聯衆牌分，含黑桃2 翻倍）
+    //  §8 命題2：下家報單時，領多張牌型（他接不上），不要領單張
+    //  §8 黑桃2 止損：預期終局剩 ≥8 張時，早點把黑桃2 打掉，避免牌分翻倍
+
+    /** 用「手牌內索引」做位元遮罩（n ≤ 13，避免 1<<51 這種 32 位溢位） */
+    _maskOf(cards, table) {
+        let m = 0;
+        for (const c of cards) {
+            const i = table.ids.indexOf(c);
+            if (i >= 0) m |= (1 << i);
+        }
+        return m;
     }
 
-    _winProb(counts, me) {
-        let total = 0;
-        const w = counts.map(n => {
-            const v = 1 / Math.pow(Math.max(1, n), 1.5);
-            total += v;
-            return v;
+    /** 建一次拆牌表，之後查 f[mask] 就是「打完這個子集最少幾輪」 */
+    _buildShedTable(hand) {
+        const Logic = this.getLogic();
+        const ids = hand.slice();
+        const n = ids.length;
+        const full = (1 << n) - 1;
+
+        const toMask = (cards) => {
+            let m = 0;
+            const used = new Array(n).fill(false);
+            for (const c of cards) {
+                for (let i = 0; i < n; i++) {
+                    if (!used[i] && ids[i] === c) { used[i] = true; m |= (1 << i); break; }
+                }
+            }
+            return m;
+        };
+
+        const plays = [];
+        for (let i = 0; i < n; i++) plays.push({ mask: 1 << i, cards: [ids[i]], size: 1 });
+        for (const p of Logic.findPairs(ids)) {
+            const m = toMask(p);
+            if (m) plays.push({ mask: m, cards: p, size: p.length });
+        }
+        for (const f of Logic.findFiveCardHands(ids)) {
+            const m = toMask(f);
+            if (m) plays.push({ mask: m, cards: f, size: f.length });
+        }
+
+        const INF = 99;
+        const f = new Uint8Array(1 << n);
+        f.fill(INF);
+        f[0] = 0;
+        for (let mask = 1; mask <= full; mask++) {
+            let best = INF;
+            for (let pi = 0; pi < plays.length; pi++) {
+                const pm = plays[pi].mask;
+                if ((pm & mask) !== pm) continue;
+                const v = f[mask ^ pm] + 1;
+                if (v < best) best = v;
+            }
+            f[mask] = best;
+        }
+        return { f, full, ids, plays, n };
+    }
+
+    /** 從拆牌表取某個子集的手牌特徵 */
+    _handFeatures(table, mask) {
+        const Logic = this.getLogic();
+        const f = table.f[mask];
+        let kappa = 0;
+        let omega = 0;
+        let count = 0;
+        let hasSpade2 = false;
+        const comboMasks = [];
+
+        for (let i = 0; i < table.n; i++) {
+            if (!(mask & (1 << i))) continue;
+            const c = table.ids[i];
+            count += 1;
+            if (c === 51) hasSpade2 = true;            // 3*13+12 = 黑桃2
+            const r = Logic.getRank(c);
+            if (r === 12) kappa += 1.0;                // 2
+            else if (r === 11) kappa += 0.55;          // A
+        }
+        // 大牌型（四帶一 / 同花順 / 葫蘆 / 同花）也算控制力
+        let hasBigFive = false;
+        for (const p of table.plays) {
+            if (p.size !== 5) continue;
+            if ((p.mask & mask) !== p.mask) continue;
+            comboMasks.push(p.mask);
+            if (!hasBigFive) {
+                const info = Logic.getHandInfo(p.cards);
+                if (info && info.strength >= 3) { kappa += 0.5; hasBigFive = true; }
+            }
+        }
+        // 孤張小單：點數 ≤ 5 又不屬於任何多張牌型
+        for (let i = 0; i < table.n; i++) {
+            if (!(mask & (1 << i))) continue;
+            if (Logic.getRank(table.ids[i]) > 5) continue;
+            const inCombo = table.plays.some(p => p.size > 1 && (p.mask & mask) === p.mask && (p.mask & (1 << i)));
+            if (!inCombo) omega += 1;
+        }
+        return { f, kappa, omega, count, hasSpade2 };
+    }
+
+    /** V(H) = −α·f(H) + β·κ(H) − γ·ω(H) */
+    _handValue(feat) {
+        return -1.0 * feat.f + 0.55 * feat.kappa - 0.28 * feat.omega;
+    }
+
+    /** 聯衆牌分：n 張的牌分（8 張以上含黑桃2 再 ×2） */
+    _penalty(count, hasSpade2) {
+        if (count <= 0) return 0;
+        const m = count >= 13 ? 4 : count >= 10 ? 3 : count >= 8 ? 2 : 1;
+        let p = count * m;
+        // 黑桃2 止損（論文 §8）：只有在「剩 8~10 張、真的可能帶著 ≥8 張結束」時才把翻倍算進來。
+        // 11 張以上時間还够，先专心甩牌，不要为了怕翻倍把黑桃2 早早丢掉。
+        if (count >= 8 && count <= 10 && hasSpade2) p *= 2;
+        return p;
+    }
+
+    /** 用 V(H) 的 softmax 估計四家勝率（對手只知道張數，用 f≈n/1.9 估） */
+    _winProbs(feat, counts, me) {
+        const T = 1.2;
+        const vals = [0, 0, 0, 0].map((_, i) => {
+            if (i === me) return this._handValue(feat);
+            const n = counts[i] || 0;
+            return -1.0 * (n / 1.9) - 0.28 * 0.25 * n;
         });
-        return total > 0 ? w[me] / total : 0.25;
+        const mx = Math.max.apply(null, vals);
+        const ex = vals.map(v => Math.exp((v - mx) / T));
+        const sum = ex.reduce((a, b) => a + b, 0) || 1;
+        return ex.map(v => v / sum);
     }
 
     _playStrength(cards) {
@@ -62,50 +175,51 @@ class AICharacter {
         return out.filter(cs => cs.length === lastPlay.length && Logic.compareHands(cs, lastPlay) > 0);
     }
 
-    _evaluate(cards, context) {
-        const Logic = this.getLogic();
+    /** 期望收益：Σ_{j≠i}(1−p_j)·p_j牌分 − 3·(1−p_i)·p_i牌分 + 拆牌進度 + 命題2 修正 */
+    _evaluate(cards, context, table) {
         const me = (typeof context.playerIndex === 'number') ? context.playerIndex : 0;
         const counts = [0, 1, 2, 3].map(i => (context.players[i] ? context.players[i].length : 0));
         const k = cards ? cards.length : 0;
-        const myAfter = Math.max(0, counts[me] - k);
+
+        const maskAfter = cards ? (table.full ^ this._maskOf(cards, table)) : table.full;
+        const feat = this._handFeatures(table, maskAfter);
         const after = counts.slice();
-        after[me] = myAfter;
+        after[me] = feat.count;
 
-        const others = [0, 1, 2, 3].filter(i => i !== me);
-        const pot = others.reduce((a, i) => a + this._penalty(after[i]), 0);
-        const p = myAfter === 0 ? 1 : this._winProb(after, me);
+        const pen = [0, 1, 2, 3].map(i => this._penalty(after[i], i === me ? feat.hasSpade2 : false));
+        const probs = this._winProbs(feat, after, me);
 
-        let u = p * pot - (1 - p) * this._penalty(myAfter);
+        let u = 0;
+        for (let j = 0; j < 4; j++) {
+            if (j === me) continue;
+            u += (1 - probs[j]) * pen[j];
+        }
+        u -= 3 * (1 - probs[me]) * pen[me];
 
-        // 甩牌價值：越早離手越安全（五張牌型最划算）
-        u += 0.34 * k;
+        // 拆牌進度：這一手有沒有真的推進最優拆牌
+        const fNow = table.f[table.full];
+        u += 0.35 * (fNow - feat.f);
 
-        // 牌權價值：這手壓得住 → 下一輪我還能領出繼續甩
-        if (k > 0) {
-            const strength = this._playStrength(cards);
-            u += 0.06 * strength * Math.max(0, myAfter - 1) * (0.5 + this.traits.aggr);
-
-            // 保留大牌：手上還很多牌時，太早丟 K/A/2 會後繼無力
-            if (myAfter >= 4) {
-                const bigCost = cards.reduce((a, c) => {
-                    const r = Logic.getRank(c);
-                    return a + (r >= 12 ? 0.30 : r >= 11 ? 0.18 : r === 10 ? 0.08 : 0);
-                }, 0);
-                u -= bigCost * (1 - this.traits.aggr * 0.5);
-            }
-
-            // 加壓：場上有 >=8 張的人時，出小牌等於給他機會甩牌 → 未來彩池縮水
-            const fattest = Math.max.apply(null, others.map(i => after[i]));
-            if (fattest >= 8) {
-                const shrink = this._penalty(fattest) - this._penalty(Math.max(0, fattest - 2));
-                u -= (1 - strength) * shrink * 0.30;
-            }
+        // 命題2：下家只剩 1 張 → 領多張牌型（他接不上），別領單張
+        const nextIdx = (me + 3) % 4;
+        if (after[nextIdx] === 1) {
+            if (k === 0) u -= 1.2;
+            else if (k === 1) u -= 0.9;
+            else u += 0.7;
         }
 
-        // 封鎖：有人只剩 1 張，讓他拿回牌權就是直接把勝利送出去
-        const oneCardLeader = context.lastPlayerIndex >= 0 && after[context.lastPlayerIndex] === 1;
-        if (k === 0 && oneCardLeader) u -= 1.5;
-        if (k > 0 && after[context.lastPlayerIndex] === 1) u += 0.5;
+        // 有人剩 1 張還拿牌權：直接過牌等於送他贏
+        if (context.lastPlayerIndex >= 0 && after[context.lastPlayerIndex] === 1 && k === 0) u -= 1.5;
+
+        // 保留控制力：手上還很多牌時，丟大牌要付出一點代價（κ 已經在 V 裡，這裡再加一點）
+        if (k > 0 && feat.count >= 4) {
+            const Logic = this.getLogic();
+            const bigCost = cards.reduce((a, c) => {
+                const r = Logic.getRank(c);
+                return a + (r >= 12 ? 0.22 : r === 11 ? 0.12 : 0);
+            }, 0);
+            u -= bigCost * (1 - this.traits.aggr * 0.5);
+        }
 
         return u;
     }
@@ -136,27 +250,22 @@ class AICharacter {
             }
         }
 
-        // 規則（非策略）：報單頂大 —— 下家只剩 1 張時只能出最大單張
-        if (context.mustTopSingle) {
-            const maxCard = sorted[sorted.length - 1];
-            if (isLead) { window.__lastAIReason = 'rule-top-single'; return [maxCard]; }
-            if (lastPlay.length === 1 && Logic.compareHands([maxCard], lastPlay) > 0) {
-                window.__lastAIReason = 'rule-top-single';
-                return [maxCard];
-            }
-        }
+        // 規則（非策略）：報單頂大由 GameController 強制（出單張時必須打最大單張）。
+        // 這裡不提前返回，否則「下家報單」時就永遠只能領單張——論文 §8 命題2 明確說
+        // 這種局面應該優先領多張牌型（他只剩一張，接不上），單張才受頂大限制。
 
         // 其餘：博弈 —— 每個合法選擇都算期望得分
+        const table = this._buildShedTable(sorted);
         const candidates = this.buildCandidates(sorted, isLead ? null : lastPlay);
         let bestCards = null;
         let bestScore = -Infinity;
         for (const cs of candidates) {
-            const score = this._evaluate(cs, context);
+            const score = this._evaluate(cs, context, table);
             if (score > bestScore + 1e-9) { bestScore = score; bestCards = cs; }
         }
 
         if (!isLead) {
-            const passScore = this._evaluate(null, context);
+            const passScore = this._evaluate(null, context, table);
             if (passScore > bestScore + 1e-9) {
                 window.__lastAIReason = 'utility-pass';
                 return null;
