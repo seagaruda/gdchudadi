@@ -355,6 +355,16 @@ function createCardElement(cardId) {
     return cardEl;
 }
 
+/**
+ * 頭像下方的分數＝本次開 App 的累計總分（不是單局分；單局分只在計分表顯示）
+ */
+function formatTotalScore(playerIndex) {
+    const total = (window.sessionScores || [])[playerIndex] || 0;
+    const signed = (total > 0 ? '+' : '') + total;
+    return `${t('scoreTotal')} ${signed}`;
+}
+window.formatTotalScore = formatTotalScore;
+
 function renderAIPlayers() {
     for (let i = 1; i < 4; i++) {
         const el = document.getElementById(`player-${i + 1}`);
@@ -363,7 +373,10 @@ function renderAIPlayers() {
         const nameEl = el.querySelector('.name');
         const scoreEl = el.querySelector('.score') || createScoreElement(el);
 
-        scoreEl.textContent = `Score: ${gameState.scores[i]}`;
+        scoreEl.textContent = formatTotalScore(i);
+        scoreEl.classList.remove('pos', 'neg');
+        if ((window.sessionScores || [])[i] > 0) scoreEl.classList.add('pos');
+        else if ((window.sessionScores || [])[i] < 0) scoreEl.classList.add('neg');
 
         // Show cards if game ended, otherwise show count
         if (gameState.gameEnded) {
@@ -409,7 +422,10 @@ function renderAIPlayers() {
 
         if (humanNameEl) {
             humanNameEl.textContent = PLAYER_NAMES[0];
-            humanScoreEl.textContent = `Score: ${gameState.scores[0]}`;
+            humanScoreEl.textContent = formatTotalScore(0);
+            humanScoreEl.classList.remove('pos', 'neg');
+            if ((window.sessionScores || [])[0] > 0) humanScoreEl.classList.add('pos');
+            else if ((window.sessionScores || [])[0] < 0) humanScoreEl.classList.add('neg');
             if (gameState.players[0] && gameState.players[0].length === 1) {
                 humanNameEl.classList.add('shouted-name');
             } else {

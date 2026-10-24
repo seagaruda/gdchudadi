@@ -2,6 +2,12 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Fixed（頭像下方分數）
+- 原本四個座位下方顯示 `Score: 0`（讀 `gameState.scores`，這是**單局**分，每局開始歸零，所以幾乎永遠是 0）
+- 改為顯示**本次開 App 的累計總分**：`累計 +15` / `累計 -6`，正分綠色、負分紅色（`formatTotalScore()` 讀 `window.sessionScores`）
+- 開 App 未開局時顯示 `累計 0`；每局結束結算後立即更新為新累計，下一局進行中維持顯示累計值
+
+
 ### Changed（戰績表與每局計分表對齊）
 - 兩個表現在**共用同一份資料**：`finalizeRound()` 只做一次 `gameState.scores.slice()` 快照 → push 進 `window.roundHistory`，計分表與戰績表都從這份快照渲染（不再各自算）
 - 戰績表「累計」改為**把上面每一列相加**得出（而非另一個累加器），並與 `sessionScores` 對帳：若有落差會 `console.warn('[stats] 累計與本局紀錄不一致', {...})`

@@ -2566,3 +2566,7 @@ input:checked + .slider:before {
     margin-top: 1px;
     white-space: nowrap;
 }
+
+/* 頭像下方的累計分數 */
+.score.pos { color: #4ade80; }
+.score.neg { color: #f87171; }
