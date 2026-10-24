@@ -2,6 +2,14 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Changed（戰績表改成矩陣）
+- 戰績表改為：**橫排是四位玩家**（名字下方標勝局數），**豎排每一局一行**，**最下面一列是累計總分**
+- 新增 `window.roundHistory`：`finalizeRound()` 每局 push 一份四家分數，戰績表由此渲染
+- 表格放在 `.stats-scroll`（`max-height: 54vh`）內，局數多時可滾動，打開時自動滾到底
+- 一局都還沒打時顯示「尚無對局 / No rounds yet」
+- 英文：`Session Record` / 表頭 `Round` / 末列 `Total` / 勝局 `{n}W`
+
+
 ### Fixed（全代碼檢查）
 - **一條龍結算漏統計**：`handleDragonWin()` 直接改 `gameState.scores` 後只彈 `alert`，沒有累加 `sessionScores`／`sessionWins`／`roundsPlayed`，也沒有計分表 → 一條龍那局在戰績裡「消失」。改成一般贏局與一條龍都走新的 `finalizeRound(winnerIndex, winnerText)`。
 - 中文缺 `statsRoundsLineOne`（英文有、中文 fallback 到 key 名）→ 補上。

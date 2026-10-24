@@ -2485,3 +2485,74 @@ input:checked + .slider:before {
 .score-modal-actions .premium-btn {
     min-width: 140px;
 }
+
+/* ===== 戰績表：玩家橫排、每局一列、最後一列累計 ===== */
+.stats-content {
+    max-width: 362px;
+}
+
+.stats-scroll {
+    max-height: 54vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 2px;
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 5px 3px;
+    font-size: 12px;
+}
+
+.stats-table .round-col {
+    width: 46px;
+    white-space: nowrap;
+    text-align: left;
+    padding-left: 6px;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.stats-table th.name-col {
+    text-align: center;
+    line-height: 1.2;
+    padding-bottom: 4px;
+}
+
+.stats-table .stats-pname {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.stats-table th.is-you .stats-pname {
+    color: #38bdf8;
+}
+
+.stats-table .stats-pwins {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.stats-table tr.stats-total-row td {
+    border-top: 2px solid rgba(251, 191, 36, 0.35);
+    border-bottom: none;
+    background: rgba(251, 191, 36, 0.07);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.stats-table tr.stats-total-row td.round-col {
+    color: #fbbf24;
+}
+
+.stats-table td.stats-empty {
+    text-align: center;
+    color: #94a3b8;
+    padding: 20px 0;
+    font-size: 12px;
+}

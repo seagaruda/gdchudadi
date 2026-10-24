@@ -109,8 +109,10 @@
 
 ### 3.1.1 戰績按鈕
 
-- 「i」左側 🏆 `#stats-btn` → `#stats-modal`（`showSessionStats()`）：本次開 App 局數、每人勝局、每人累計分
-- 同樣支援點外圍關閉；英文版 `Session Record` / `{n} rounds played since app launch`（1 局時用單數句）
+- 「i」左側 🏆 `#stats-btn` → `#stats-modal`（`showSessionStats()`）
+- **表格為矩陣**：橫排四位玩家（名字下方小字顯示勝局），豎排每局一行（`window.roundHistory`），最下面一列 **累計** 總分；正分綠／負分紅
+- 表格容器 `.stats-scroll`（`max-height: 54vh; overflow-y: auto`），局數多可滾動並自動滾到底；局數 0 顯示「尚無對局」
+- 同樣支援點外圍關閉；英文版 `Session Record` / `Round` / `Total` / `{n}W`
 
 ### 3.2 計分公式
 

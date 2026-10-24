@@ -38,6 +38,7 @@ window.aiProcessing = false;
 window.sessionScores = [0, 0, 0, 0];
 window.sessionWins = [0, 0, 0, 0];
 window.roundsPlayed = 0;
+window.roundHistory = [];   // 每局四家分數，戰績表用（第 1 局、第 2 局…）
 
 // Keyboard interaction cycle index
 window.cycleIndex = -1;
@@ -249,6 +250,7 @@ function finalizeRound(winnerIndex, winnerText) {
     for (let i = 0; i < 4; i++) window.sessionScores[i] += roundScores[i];
     window.sessionWins[winnerIndex] += 1;
     window.roundsPlayed += 1;
+    window.roundHistory.push(roundScores);
 
     renderAll();
     AudioPlayer.playWin();
@@ -320,6 +322,7 @@ window.showScoreTable = showScoreTable;
  */
 function showSessionStats() {
     const modal = document.getElementById('stats-modal');
+    const head = document.getElementById('stats-table-head');
     const body = document.getElementById('stats-table-body');
     if (!modal || !body) return;
 
@@ -333,31 +336,80 @@ function showSessionStats() {
         roundsEl.textContent = oneLine || t('statsRoundsLine', { n });
     }
 
-    body.innerHTML = '';
-    for (let i = 0; i < 4; i++) {
+    const shortName = (i) => (PLAYER_NAMES[i] || ('P' + (i + 1))).replace(/\s*[\(（].*?[\)）]\s*$/, '');
+
+    // 表頭：局 / 四位玩家（各帶勝局數）
+    if (head) {
+        head.innerHTML = '';
         const tr = document.createElement('tr');
-        if (i === 0) tr.classList.add('is-you');
-
-        const rawName = PLAYER_NAMES[i] || ('P' + (i + 1));
-        const nameTd = document.createElement('td');
-        nameTd.textContent = rawName.replace(/\s*[\(（].*?[\)）]\s*$/, '');
-
-        const winsTd = document.createElement('td');
-        winsTd.className = 'score-cell';
-        winsTd.textContent = window.sessionWins[i] || 0;
-
-        const total = window.sessionScores[i] || 0;
-        const totalTd = document.createElement('td');
-        totalTd.textContent = (total > 0 ? '+' : '') + total;
-        totalTd.className = 'score-cell ' + (total > 0 ? 'pos' : total < 0 ? 'neg' : 'zero');
-
-        tr.appendChild(nameTd);
-        tr.appendChild(winsTd);
-        tr.appendChild(totalTd);
-        body.appendChild(tr);
+        const corner = document.createElement('th');
+        corner.textContent = t('thRoundNo');
+        corner.className = 'round-col';
+        tr.appendChild(corner);
+        for (let i = 0; i < 4; i++) {
+            const th = document.createElement('th');
+            th.className = 'name-col' + (i === 0 ? ' is-you' : '');
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'stats-pname';
+            nameSpan.textContent = shortName(i);
+            const winSpan = document.createElement('span');
+            winSpan.className = 'stats-pwins';
+            winSpan.textContent = t('statsWinsShort', { n: window.sessionWins[i] || 0 });
+            th.appendChild(nameSpan);
+            th.appendChild(winSpan);
+            tr.appendChild(th);
+        }
+        head.appendChild(tr);
     }
 
+    // 內容：每一局一行，最後一列為累計
+    body.innerHTML = '';
+    const history = window.roundHistory || [];
+    if (!history.length) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 5;
+        td.className = 'stats-empty';
+        td.textContent = t('statsEmpty');
+        tr.appendChild(td);
+        body.appendChild(tr);
+    } else {
+        history.forEach((scores, idx) => {
+            const tr = document.createElement('tr');
+            const label = document.createElement('td');
+            label.className = 'round-col';
+            label.textContent = String(idx + 1);
+            tr.appendChild(label);
+            for (let i = 0; i < 4; i++) {
+                const v = scores[i] || 0;
+                const td = document.createElement('td');
+                td.textContent = (v > 0 ? '+' : '') + v;
+                td.className = 'score-cell ' + (v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero');
+                tr.appendChild(td);
+            }
+            body.appendChild(tr);
+        });
+    }
+
+    // 最後一列：累計總分
+    const totalTr = document.createElement('tr');
+    totalTr.className = 'stats-total-row';
+    const totalLabel = document.createElement('td');
+    totalLabel.className = 'round-col';
+    totalLabel.textContent = t('statsTotalRow');
+    totalTr.appendChild(totalLabel);
+    for (let i = 0; i < 4; i++) {
+        const v = window.sessionScores[i] || 0;
+        const td = document.createElement('td');
+        td.textContent = (v > 0 ? '+' : '') + v;
+        td.className = 'score-cell ' + (v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero');
+        totalTr.appendChild(td);
+    }
+    body.appendChild(totalTr);
+
     modal.classList.remove('hidden');
+    const scroller = modal.querySelector('.stats-scroll');
+    if (scroller) scroller.scrollTop = scroller.scrollHeight;
 }
 window.showSessionStats = showSessionStats;
 
