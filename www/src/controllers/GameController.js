@@ -205,8 +205,8 @@ function executePlay(playerIndex, cards) {
     gameState.playedCards.push(...cards);
     gameState.gameLog.push({ turn: gameState.gameLog.length, player: playerIndex, action: cards });
 
-    // AI 報牌名：電腦出牌時念出牌型（單張/對子/三條帶點數，五張牌型念類型）
-    if (playerIndex !== 0) {
+    // 報牌名：不分玩家，任何人出牌都念出牌型（單張/對子/三條帶點數，五張牌型念類型）
+    {
         const playedInfo = GameLogic.getHandInfo(cards);
         if (playedInfo) AudioPlayer.playHandName(playedInfo, cards);
     }

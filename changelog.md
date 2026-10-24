@@ -2,6 +2,12 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Changed（報牌配音）
+- **本機出牌也會報牌名**：`executePlay()` 拿掉 `playerIndex !== 0` 限制，任何人出牌都念牌型（實測本機出黑桃 2 → `single_12.mp3`，接著剩 1 張自動 `declare_you.mp3`）。
+- **Pass 改成 TTS「過」**：新增 `voice/pass_cat|dog|beaver|you.mp3`（四種音色），`playPass()` 改讀 `src/assets/mp3/voice/pass_*.mp3`，非四隻角色（Alex/Bella…）回退 `pass_you.mp3`。
+- **刪除原本的動物配音**：`src/assets/mp3/pass_*.mp3`（9 個）全部移除，`src/assets/mp3` 根目錄現在只剩 `voice/`（220KB）。
+
+
 ### Changed（說明頁）
 - **刪除「按鍵操作」「版權與贊助」兩個分頁**（中英文共用同一份 DOM）：`index.html` 移除兩顆 tab 按鈕與 `#tab-keyboard`、`#tab-license` 兩個面板，說明頁只剩「遊戲規則」。
 

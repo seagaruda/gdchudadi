@@ -61,18 +61,17 @@ class SoundEngine {
         // Always play SFX (Tone)
         this.playTone(200, 'sine', 0.2, 0.1);
 
-        // Play Voice only in Mode 0 (All)
-        if (this.soundMode !== 0) return;
-
+        // 語音：一律用 TTS 念「過」（原本的動物配音已刪除）
         const personaKeyRaw = persona.toLowerCase().split(' ')[0];
-        const personaKey = PERSONA_VOICE_MAP[personaKeyRaw] || personaKeyRaw;
+        const mapped = PERSONA_VOICE_MAP[personaKeyRaw] || personaKeyRaw;
+        const personaKey = ['cat', 'dog', 'beaver', 'you'].includes(mapped) ? mapped : 'you';
 
-        const audioPath = `src/assets/mp3/pass_${personaKey}.mp3`;
+        const audioPath = `src/assets/mp3/voice/pass_${personaKey}.mp3`;
 
         const audio = new Audio(audioPath);
         audio.play().catch(err => {
-            console.warn(`Failed to play character-specific Pass (${audioPath}):`, err);
-            const fallbackPath = `src/assets/mp3/pass_default.mp3`;
+            console.warn(`Failed to play Pass voice (${audioPath}):`, err);
+            const fallbackPath = `src/assets/mp3/voice/pass_you.mp3`;
             const fallbackAudio = new Audio(fallbackPath);
             fallbackAudio.play().catch(fallbackErr => {
                 console.warn(`Failed to play default Pass (${fallbackPath}):`, fallbackErr);

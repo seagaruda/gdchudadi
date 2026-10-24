@@ -82,12 +82,13 @@
 
 - 背景音樂三首（`Cards_On_The_Line`／`Iron_in_the_Gale`／`Sovereign_Ascent`）與 `playBGM/switchBGM` 全部刪除
 - 右上角喇叭鈕為「報牌配音 開／關」兩態（`soundMode` 只有 0／2），開啟時試聽「對二」
-- **AI 報牌名**：`AudioPlayer.playHandName(info, cards)` 在 AI 出牌時念牌型
+- **AI 報牌名**：`AudioPlayer.playHandName(info, cards)` 在**任何人**出牌時念牌型（含本機）
   - 單張／對子／三條帶點數：`single_0..12.mp3`（一張三…一張二）、`pair_*.mp3`（對三…對二）、`triple_*.mp3`（三條三…三條二）
   - 五張牌型只念類型：`straight.mp3`、`flush.mp3`、`fullhouse.mp3`、`fourwithone.mp3`、`straightflush.mp3`、`dragon.mp3`
   - 連續出牌會先 `pause()` 上一聲，避免疊音
 - **報單語音**：`declare_cat/dog/beaver/you.mp3`（橘貓／柴犬／河狸／你 四種音色），失敗回退 `declare_you.mp3`；角色若不是這四隻（Alex／Bella…）也回退人類音
-- 語音檔由 `edge-tts` 產生（`zh-CN-YunjianNeural` 播報腔、`+6%` 語速），靜音裁切後共 49 檔 **200KB**，`src/assets/mp3` 全目錄 296KB
+- **Pass 語音**：`voice/pass_cat|dog|beaver|you.mp3` 念「過」，舊動物配音 `src/assets/mp3/pass_*.mp3` 已全部刪除
+- 語音檔由 `edge-tts` 產生（`zh-CN-YunjianNeural` 播報腔、`+6%` 語速），靜音裁切後共 53 檔 **216KB**，`src/assets/mp3` 全目錄 220KB
 - 說明頁只剩「遊戲規則」一個分頁：`#tab-keyboard`、`#tab-license` 與兩顆 tab 按鈕已刪除
 
 ---
