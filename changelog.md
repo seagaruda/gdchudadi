@@ -2,6 +2,15 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Added（每局計分表）
+- **局末計分表**：新增 `#score-modal`，每局結束自動彈出（延遲 350ms 讓最後一手動畫先跑完）
+  - 標題「本局計分 · 第 N 局」，下方贏家句，三列表格：玩家／本局／累計（本次開 App）
+  - 正分綠色、負分紅色、0 分灰色；自己一行名字藍色；贏家整行金色底
+  - 按鈕「下一局」直接開新局並關閉表格
+- **累計分**：`window.sessionScores` + `window.roundsPlayed`，每局結束累加，只有重新開啟 App（頁面重載）才歸零；`initGame()` 不清空
+- 英文介面同步：`Round Score · Round N` / `Player` / `This round` / `Session total` / `Next round`
+
+
 ### Changed（英文語音 / 喇叭鈕）
 - **英文界面用英文語音**：新增 `src/assets/mp3/voice_en/` 共 53 檔（`en-US-GuyNeural` 播報，角色報單用 Aria／Guy／Steffan／Jenny），`AudioPlayer.voiceDir()` 依 `window.currentLang` 切換 `voice/` ↔ `voice_en/`；切語言即時生效。
   - 牌名：`Three/Four/…/Ace/Two`、`Pair of twos`、`Three twos`、`Straight`、`Flush`、`Full house`、`Four with one`、`Straight flush`、`Dragon`

@@ -13,6 +13,10 @@ try {
 
 // Bind actions to DOM elements
 if (window.btnPlay) btnPlay.onclick = () => playCards();
+
+// 局末計分表的「下一局」
+const scoreNextBtn = document.getElementById('score-next-btn');
+if (scoreNextBtn) scoreNextBtn.onclick = () => initGame();
 if (window.btnPass) btnPass.onclick = () => passTurn();
 
 if (window.btnNew) {

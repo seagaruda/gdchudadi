@@ -34,6 +34,10 @@ window.gameState = {
 window.aiTurnTimeout = null;
 window.aiProcessing = false;
 
+// 本次開啟 App 的累計分（每局結束累加，「開 App」才會歸零）
+window.sessionScores = [0, 0, 0, 0];
+window.roundsPlayed = 0;
+
 // Keyboard interaction cycle index
 window.cycleIndex = -1;
 window.downKeyCount = 0;
@@ -47,6 +51,7 @@ window.resetCycleState = resetCycleState;
 
 function initGame() {
     if (window.alertModal) window.alertModal.classList.add('hidden');
+    if (window.scoreModalEl) window.scoreModalEl.classList.add('hidden');
     gameState.gameEnded = false;
     gameState.declared = [false, false, false, false];
     gameState.selectedCards.clear();
@@ -224,9 +229,15 @@ function executePlay(playerIndex, cards) {
     if (gameState.players[playerIndex].length === 0) {
         gameState.gameEnded = true;
         calculateScores(playerIndex);
+
+        // 記錄本局分數並累加到本次開 App 的總分
+        const roundScores = gameState.scores.slice();
+        for (let i = 0; i < 4; i++) window.sessionScores[i] += roundScores[i];
+        window.roundsPlayed += 1;
+
         renderAll();
         AudioPlayer.playWin();
-        setTimeout(() => showAlert(t('winner', { name: PLAYER_NAMES[playerIndex] })), 100);
+        setTimeout(() => showScoreTable(playerIndex, roundScores), 350);
 
         // Auto-Restart logic if Slot 0 is AI-controlled
         const p0Char = window.AI ? window.AI.getCharacter(0) : null;
@@ -235,6 +246,7 @@ function executePlay(playerIndex, cards) {
             setTimeout(() => {
                 if (gameState.gameEnded) {
                     if (window.alertModal) window.alertModal.classList.add('hidden'); // Close winner alert
+                    if (window.scoreModalEl) window.scoreModalEl.classList.add('hidden');
                     initGame();
                 }
             }, 10000);
@@ -245,6 +257,53 @@ function executePlay(playerIndex, cards) {
     nextTurn();
 }
 window.executePlay = executePlay;
+
+/**
+ * 每局結束的計分表：顯示每位玩家「本局」與「本次開 App 累計」分數。
+ * 累計存在 window.sessionScores，只會在重新啟動 App（頁面重載）時歸零。
+ */
+function showScoreTable(winnerIndex, roundScores) {
+    const modal = window.scoreModalEl || document.getElementById('score-modal');
+    const body = document.getElementById('score-table-body');
+    if (!modal || !body) return;
+    window.scoreModalEl = modal;
+
+    const titleEl = modal.querySelector('h2');
+    if (titleEl) titleEl.textContent = t('roundScoreTitle') + ' · ' + t('roundNo', { n: window.roundsPlayed });
+
+    const winnerEl = document.getElementById('score-modal-winner');
+    if (winnerEl) winnerEl.textContent = t('winner', { name: PLAYER_NAMES[winnerIndex] });
+
+    body.innerHTML = '';
+    for (let i = 0; i < 4; i++) {
+        const tr = document.createElement('tr');
+        if (i === 0) tr.classList.add('is-you');
+        if (i === winnerIndex) tr.classList.add('is-winner');
+
+        const rawName = PLAYER_NAMES[i] || ('P' + (i + 1));
+        const nameTd = document.createElement('td');
+        nameTd.textContent = rawName.replace(/\s*[\(（].*?[\)）]\s*$/, '');
+
+        const roundScore = (roundScores && roundScores[i]) || 0;
+        const totalScore = window.sessionScores[i] || 0;
+
+        const roundTd = document.createElement('td');
+        roundTd.textContent = (roundScore > 0 ? '+' : '') + roundScore;
+        roundTd.className = 'score-cell ' + (roundScore > 0 ? 'pos' : roundScore < 0 ? 'neg' : 'zero');
+
+        const totalTd = document.createElement('td');
+        totalTd.textContent = (totalScore > 0 ? '+' : '') + totalScore;
+        totalTd.className = 'score-cell ' + (totalScore > 0 ? 'pos' : totalScore < 0 ? 'neg' : 'zero');
+
+        tr.appendChild(nameTd);
+        tr.appendChild(roundTd);
+        tr.appendChild(totalTd);
+        body.appendChild(tr);
+    }
+
+    modal.classList.remove('hidden');
+}
+window.showScoreTable = showScoreTable;
 
 function nextTurn() {
     if (gameState.gameEnded) return;

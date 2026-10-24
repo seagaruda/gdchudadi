@@ -98,6 +98,16 @@
 
 ## 3. 計分改動
 
+### 3.1 局末計分表（每局結束彈出）
+
+- `#score-modal`（`index.html`）+ `.score-table`（`styles.css`），由 `GameController.showScoreTable(winnerIndex, roundScores)` 填充
+- 三欄：玩家／本局／累計（本次開 App）；正分綠、負分紅、0 灰；自己名字藍、贏家行金色底
+- 「下一局」按鈕（`#score-next-btn` → `initGame()`）
+- 累計：`window.sessionScores`（4 項）與 `window.roundsPlayed`，每局結束累加，**只有重開 App（頁面重載）才歸零**；`initGame()` 刻意不清空
+- 實測：第 1 局 `你 +14 / 柴犬 -5 / 橘貓 -3 / 河狸 -6`，按「下一局」後第 2 局為 `+13 / -6 / 0 / -7`，累計正確變為 `+27 / -11 / -3 / -13`
+
+### 3.2 計分公式
+
 `src/controllers/GameController.js` → `calculateScores()`：
 
 ```text

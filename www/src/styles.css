@@ -2431,3 +2431,74 @@ input:checked + .slider:before {
     margin-right: auto;      /* 把語言／音效／規則圖示推到最右側 */
     margin-left: 0;
 }
+
+/* ===== 局末計分表（每局結束彈出）===== */
+.score-modal-content {
+    max-width: 340px;
+    text-align: center;
+}
+
+.score-modal-content h2 {
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.score-winner {
+    font-size: 13px;
+    color: #fbbf24;
+    margin: 0 0 10px;
+    letter-spacing: -0.2px;
+}
+
+.score-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.score-table th {
+    font-weight: 600;
+    color: #94a3b8;
+    padding: 6px 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 12px;
+}
+
+.score-table td {
+    padding: 7px 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    color: #e2e8f0;
+}
+
+.score-table td:first-child {
+    text-align: left;
+    padding-left: 8px;
+}
+
+.score-table tr.is-you td:first-child {
+    color: #38bdf8;
+    font-weight: 700;
+}
+
+.score-table tr.is-winner td {
+    background: rgba(251, 191, 36, 0.10);
+}
+
+.score-cell {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+
+.score-cell.pos { color: #4ade80; }
+.score-cell.neg { color: #f87171; }
+.score-cell.zero { color: #94a3b8; }
+
+.score-modal-actions {
+    margin-top: 14px;
+    display: flex;
+    justify-content: center;
+}
+
+.score-modal-actions .premium-btn {
+    min-width: 140px;
+}
