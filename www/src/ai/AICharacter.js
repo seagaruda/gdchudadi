@@ -51,6 +51,11 @@ class AICharacter {
                 window.__lastAIReason = 'feed-ally-lead';
                 return this.chooseFeedLead(sorted, context);
             }
+            // 盟友只剩 1 張：出最小單張，讓他把最後一張接過去走完
+            if (context.allianceActive && (context.oneCardAlly >= 0) && sorted.length > 2) {
+                window.__lastAIReason = 'feed-onecard-ally';
+                return this.chooseFeedLead(sorted, context);
+            }
             return await this.chooseLead(sorted, context);
         }
 

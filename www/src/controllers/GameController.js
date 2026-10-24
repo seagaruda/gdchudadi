@@ -527,16 +527,25 @@ async function aiTurn() {
         //   1) 盟友也是安全區的人（2~7 張）
         //   2) 盟友的牌不能比我多（誰牌少先讓誰跑；比我先進安全區的人才是盟友）
         //   3) 剩 2 張也算盟友（送張小單張助他先跑，一起抓倒霉蛋）；只剩 1 張（已報單）不當盟友
+        const nextIdx = nextPlayerIndex(gameState.turn);
         const allyIndices = [];
+        let oneCardAlly = -1;       // 只剩 1 張的盟友（他不是我的下家時才幫）
         if (iAmSafe) {
             for (let i = 0; i < 4; i++) {
                 if (i === gameState.turn) continue;
                 const c = gameState.players[i] ? gameState.players[i].length : 0;
-                if (c >= 2 && c <= 7 && c <= myCount && i !== pressureTarget) allyIndices.push(i);
+                if (i === pressureTarget) continue;
+                if (c >= 2 && c <= 7 && c <= myCount) {
+                    allyIndices.push(i);
+                } else if (c === 1 && i !== nextIdx) {
+                    // 剩 1 張也能當盟友：出單張讓他接過去直接走完
+                    // 但如果他是我的下家（我就是他的上家），規則要求我頂大，不能放水
+                    allyIndices.push(i);
+                    oneCardAlly = i;
+                }
             }
         }
         const allianceActive = iAmSafe && allyIndices.length > 0;
-        const nextIdx = nextPlayerIndex(gameState.turn);
 
         // AI Brain Call
         const aiContext = {
@@ -557,7 +566,8 @@ async function aiTurn() {
             iAmSafe,                           // 自己是否已在安全區（< 8 張）
             allyIndices: allianceActive ? allyIndices : [],
             allianceActive,
-            nextIsAlly: allianceActive && allyIndices.includes(nextIdx)
+            nextIsAlly: allianceActive && allyIndices.includes(nextIdx),
+            oneCardAlly                        // >= 0 → 有盟友只剩 1 張，出小單張助他跑
         };
 
         let play = null;
