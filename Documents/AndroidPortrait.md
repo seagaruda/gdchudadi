@@ -88,7 +88,10 @@
   - 連續出牌會先 `pause()` 上一聲，避免疊音
 - **報單語音**：`declare_cat/dog/beaver/you.mp3`（橘貓／柴犬／河狸／你 四種音色），失敗回退 `declare_you.mp3`；角色若不是這四隻（Alex／Bella…）也回退人類音
 - **Pass 語音**：`voice/pass_cat|dog|beaver|you.mp3` 念「過」，舊動物配音 `src/assets/mp3/pass_*.mp3` 已全部刪除
-- 語音檔由 `edge-tts` 產生（`zh-CN-YunjianNeural` 播報腔、`+6%` 語速），靜音裁切後共 53 檔 **216KB**，`src/assets/mp3` 全目錄 220KB
+- **英文語音**：`voice_en/` 共 53 檔（`en-US-GuyNeural` 播報；角色報單 Aria／Guy／Steffan／Jenny），`voiceDir()` 依 `window.currentLang` 切 `voice/` ↔ `voice_en/`
+  - `Three…Ace, Two`、`Pair of twos`、`Three twos`、`Straight`、`Flush`、`Full house`、`Four with one`、`Straight flush`、`Dragon`、`One card`、`Pass`
+- **喇叭鈕**：按下只切換開關並發一聲 880Hz 提示音（`playToggleBeep()`），不再念「對二」
+- 語音檔由 `edge-tts` 產生（`zh-CN-YunjianNeural` 播報腔、`+6%` 語速），中文 53 檔 **216KB**、英文 53 檔 **228KB**，`src/assets/mp3` 全目錄 444KB
 - 說明頁只剩「遊戲規則」一個分頁：`#tab-keyboard`、`#tab-license` 與兩顆 tab 按鈕已刪除
 
 ---

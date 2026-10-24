@@ -2,6 +2,13 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Changed（英文語音 / 喇叭鈕）
+- **英文界面用英文語音**：新增 `src/assets/mp3/voice_en/` 共 53 檔（`en-US-GuyNeural` 播報，角色報單用 Aria／Guy／Steffan／Jenny），`AudioPlayer.voiceDir()` 依 `window.currentLang` 切換 `voice/` ↔ `voice_en/`；切語言即時生效。
+  - 牌名：`Three/Four/…/Ace/Two`、`Pair of twos`、`Three twos`、`Straight`、`Flush`、`Full house`、`Four with one`、`Straight flush`、`Dragon`
+  - 報單 `One card`、過牌 `Pass`
+- **喇叭鈕不再念「對二」**：`playDeclareSample()` 刪除，改為 `playToggleBeep()`（僅一聲 880Hz 短提示音，WebAudio 產生、不需音檔），按鈕純切換報牌配音開／關。
+
+
 ### Changed（報牌配音）
 - **本機出牌也會報牌名**：`executePlay()` 拿掉 `playerIndex !== 0` 限制，任何人出牌都念牌型（實測本機出黑桃 2 → `single_12.mp3`，接著剩 1 張自動 `declare_you.mp3`）。
 - **Pass 改成 TTS「過」**：新增 `voice/pass_cat|dog|beaver|you.mp3`（四種音色），`playPass()` 改讀 `src/assets/mp3/voice/pass_*.mp3`，非四隻角色（Alex/Bella…）回退 `pass_you.mp3`。

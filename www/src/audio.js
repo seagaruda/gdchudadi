@@ -18,6 +18,11 @@ class SoundEngine {
         this.soundMode = 0; // 0: 報牌配音開, 2: 全關（音樂已移除）
     }
 
+    // 語音目錄：中文 voice/、英文 voice_en/
+    voiceDir() {
+        return (window.currentLang === 'en') ? 'voice_en' : 'voice';
+    }
+
     setSoundMode(mode) {
         this.soundMode = parseInt(mode) === 2 ? 2 : 0;
     }
@@ -66,12 +71,12 @@ class SoundEngine {
         const mapped = PERSONA_VOICE_MAP[personaKeyRaw] || personaKeyRaw;
         const personaKey = ['cat', 'dog', 'beaver', 'you'].includes(mapped) ? mapped : 'you';
 
-        const audioPath = `src/assets/mp3/voice/pass_${personaKey}.mp3`;
+        const audioPath = `src/assets/mp3/${this.voiceDir()}/pass_${personaKey}.mp3`;
 
         const audio = new Audio(audioPath);
         audio.play().catch(err => {
             console.warn(`Failed to play Pass voice (${audioPath}):`, err);
-            const fallbackPath = `src/assets/mp3/voice/pass_you.mp3`;
+            const fallbackPath = `src/assets/mp3/${this.voiceDir()}/pass_you.mp3`;
             const fallbackAudio = new Audio(fallbackPath);
             fallbackAudio.play().catch(fallbackErr => {
                 console.warn(`Failed to play default Pass (${fallbackPath}):`, fallbackErr);
@@ -102,12 +107,12 @@ class SoundEngine {
         // 只認 cat / dog / beaver / you，其它角色（Alex、Bella…）回退人類語音
         const personaKey = ['cat', 'dog', 'beaver', 'you'].includes(mapped) ? mapped : 'you';
 
-        const audioPath = `src/assets/mp3/voice/declare_${personaKey}.mp3`;
+        const audioPath = `src/assets/mp3/${this.voiceDir()}/declare_${personaKey}.mp3`;
         
         const audio = new Audio(audioPath);
         audio.play().catch(err => {
             console.warn(`Failed to play declare voice (${audioPath}):`, err);
-            const fallbackPath = `src/assets/mp3/voice/declare_you.mp3`;
+            const fallbackPath = `src/assets/mp3/${this.voiceDir()}/declare_you.mp3`;
             const fallbackAudio = new Audio(fallbackPath);
             fallbackAudio.play().catch(fallbackErr => {
                 console.warn(`Failed to play default declare voice (${fallbackPath}):`, fallbackErr);
@@ -145,19 +150,17 @@ class SoundEngine {
         if (this.handVoice) {
             try { this.handVoice.pause(); } catch (e) { /* ignore */ }
         }
-        const audio = new Audio(`src/assets/mp3/voice/${key}.mp3`);
+        const audio = new Audio(`src/assets/mp3/${this.voiceDir()}/${key}.mp3`);
         this.handVoice = audio;
         audio.play().catch(err => console.warn(`Hand name voice failed (${key}):`, err));
     }
 
-    // 右上角按鈕試聽報牌配音（示範「對二」）——不受靜音狀態影響，按下一定有聲音
-    playDeclareSample() {
-        if (this.handVoice) {
-            try { this.handVoice.pause(); } catch (e) { /* ignore */ }
+    // 右上角按鈕只切換開關：不念任何牌名，僅一聲輕提示音（避免誤以為在報牌）
+    playToggleBeep() {
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
         }
-        const audio = new Audio('src/assets/mp3/voice/pair_12.mp3');
-        this.handVoice = audio;
-        audio.play().catch(err => console.warn('Declare sample failed:', err));
+        this.playTone(880, 'sine', 0.06, 0.06);
     }
 }
 

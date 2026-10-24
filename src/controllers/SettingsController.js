@@ -359,7 +359,7 @@ if (muteToggle) {
         window.soundMode = (soundMode === 2) ? 0 : 2;
         AppStorage.setItem('soundMode', soundMode);
         updateMuteUI();
-        AudioPlayer.playDeclareSample();
+        AudioPlayer.playToggleBeep();
     };
     updateMuteUI();
 }
