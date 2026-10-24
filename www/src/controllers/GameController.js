@@ -341,16 +341,17 @@ function showScoreTable(winnerIndex, roundScores, winnerText) {
         roundTd.className = 'score-cell ' + (roundScore > 0 ? 'pos' : roundScore < 0 ? 'neg' : 'zero');
 
         // 加倍說明（幾張 × 幾倍、黑桃2、赢家結尾2）
-        const det = (gameState.roundDetail && gameState.roundDetail.losers || []).find((d) => d.playerIndex === i);
+        const det = (gameState.roundDetail && gameState.roundDetail.players || []).find((d) => d.playerIndex === i);
         const hint = document.createElement('div');
         hint.className = 'score-detail';
-        if (det) {
+        if (i === winnerIndex) {
+            hint.textContent = t('detailSum');     // 贏家：三家牌分總和
+        } else if (det) {
             const parts = [t('detailCards', { n: det.count, m: det.countMult })];
             if (det.spadeTwo) parts.push(t('detailSpade2'));
-            if (det.winnerMult > 1) parts.push(t('detailWinner2'));
+            if (gameState.roundDetail && gameState.roundDetail.winnerMult > 1) parts.push(t('detailWinner2'));
+            parts.push(t('detailPen', { p: det.pen }));
             hint.textContent = parts.join(' · ');
-        } else if (i === winnerIndex) {
-            hint.textContent = t('detailSum');
         }
         if (hint.textContent) roundTd.appendChild(hint);
 
@@ -623,53 +624,55 @@ async function aiTurn() {
 window.aiTurn = aiTurn;
 
 function calculateScores(winnerIndex) {
-    const winnerHand = gameState.lastPlay;
+    const winnerHand = gameState.lastPlay || [];
     const info = GameLogic.getHandInfo(winnerHand);
     let winnerMult = 1;
 
-    // 鐵支 / 同花順的額外翻倍已取消：只有打出含 2 的牌仍算 ×2
+    // 贏家最後一手含 2（點數 2 = rank 12）→ 三家牌分再 ×2
     if (info && winnerHand.some(c => GameLogic.getRank(c) === 12)) {
         winnerMult = 2;
     }
 
-    let totalGained = 0;
-    const detail = { winnerMult, losers: [] };
+    // ① 先算每家的「牌分」p（聯衆：剩幾張 × 張數倍率，8 張以上含黑桃2 再 ×2，贏家結尾2 再 ×2；贏家 0 分）
+    const pen = [0, 0, 0, 0];
+    const detail = { winnerMult, players: [] };
     for (let i = 0; i < 4; i++) {
-        if (i === winnerIndex) continue;
+        if (i === winnerIndex) {
+            detail.players.push({ playerIndex: i, count: 0, countMult: 1, spadeTwo: false, base: 0, pen: 0 });
+            continue;
+        }
+        const hand = gameState.players[i] || [];
+        const count = hand.length;
+        let countMult = 1;
+        if (count === 13) countMult = 4;          // 一張未出
+        else if (count >= 10) countMult = 3;
+        else if (count >= 8) countMult = 2;
 
-        let hand = gameState.players[i];
-        let baseLost = hand.length;
-        let loserMult = 1;
-
-        // 依剩餘張數加倍：8-9 張 ×2、10-12 張 ×3、13 張（一張未出）×4
-        if (baseLost === 13) loserMult *= 4;
-        else if (baseLost >= 10) loserMult *= 3;
-        else if (baseLost >= 8) loserMult *= 2;
-
-        // 黑 2 規則：只有手上剩「黑桃 2」才觸發加倍（其他花色的 2 不算）
-        // 52 張牌裡黑桃 2 唯一，所以最多只乘一次 2
-        // 大陸規則：手上「還有 8 張或以上」且含黑桃 2 才加倍
-        const hasSpadeTwo = baseLost >= 8 &&
+        const spadeTwo = count >= 8 &&
             hand.some(c => GameLogic.getRank(c) === 12 && GameLogic.getSuit(c) === 3);
-        if (hasSpadeTwo) loserMult *= 2;
 
-        const finalLost = baseLost * winnerMult * loserMult;
-        gameState.scores[i] -= finalLost;
-        totalGained += finalLost;
+        let p = count * countMult * winnerMult;
+        if (spadeTwo) p *= 2;
 
-        // 記錄明細，讓計分表能顯示「幾張 × 幾倍」
-        detail.losers.push({
-            playerIndex: i,
-            count: baseLost,
-            countMult: baseLost === 13 ? 4 : baseLost >= 10 ? 3 : baseLost >= 8 ? 2 : 1,
-            spadeTwo: hasSpadeTwo,
-            winnerMult,
-            total: finalLost
-        });
+        pen[i] = p;
+        detail.players.push({ playerIndex: i, count, countMult, spadeTwo, base: count * countMult, pen: p });
     }
-    gameState.scores[winnerIndex] += totalGained;
+
+    // ② 聯衆計分：每兩家互相都要比一次，得分 = Σ_{j≠i} (p_j − p_i)
+    //    官網算例：剩 5、8、0、12 張 → 牌分 5、16、0、36 → 得分 37、-7、57、-87
+    for (let i = 0; i < 4; i++) {
+        let gained = 0;
+        for (let j = 0; j < 4; j++) {
+            if (j === i) continue;
+            gained += pen[j] - pen[i];
+        }
+        gameState.scores[i] = gained;
+    }
+
     gameState.roundDetail = detail;
+    gameState.roundPens = pen.slice();
 }
+
 window.calculateScores = calculateScores;
 
 function handleDragonWin(playerIndex) {

@@ -19,6 +19,7 @@ function updateRulesDescription() {
         'rule-desc-fivecard': 'ruleFiveCard',
         'rule-desc-bombs': 'ruleBombs',
         'rule-desc-basescore': 'ruleBaseScore',
+        'rule-desc-pairwise': 'rulePairwise',
         'rule-desc-winner2': 'ruleWinner2',
         'rule-desc-winner4': 'ruleWinner4',
         'rule-desc-loser10': 'ruleLoser10',
