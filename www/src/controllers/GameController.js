@@ -246,6 +246,7 @@ window.executePlay = executePlay;
  * 一般贏局與一條龍都走這裡，避免只更新部分統計。
  */
 function finalizeRound(winnerIndex, winnerText) {
+    // 本局分數只取這一次快照，計分表與戰績表都從這裡來，保證兩邊一致
     const roundScores = gameState.scores.slice();
     for (let i = 0; i < 4; i++) window.sessionScores[i] += roundScores[i];
     window.sessionWins[winnerIndex] += 1;
@@ -253,6 +254,7 @@ function finalizeRound(winnerIndex, winnerText) {
     window.roundHistory.push(roundScores);
     window.roundDetails = window.roundDetails || [];
     window.roundDetails.push(gameState.roundDetail || null);
+
 
     renderAll();
     AudioPlayer.playWin();
@@ -352,6 +354,7 @@ function showSessionStats() {
         roundsEl.textContent = oneLine || t('statsRoundsLine', { n });
     }
 
+    // 姓名來源與計分表相同（PLAYER_NAMES，即當前座位角色），兩邊永遠同一組名字
     const shortName = (i) => (PLAYER_NAMES[i] || ('P' + (i + 1))).replace(/\s*[\(（].*?[\)）]\s*$/, '');
 
     // 表頭：局 / 四位玩家（各帶勝局數）
@@ -407,7 +410,16 @@ function showSessionStats() {
         });
     }
 
-    // 最後一列：累計總分
+    // 最後一列：累計總分 = 上面每一列相加（與 sessionScores 對帳，若有落差以列為準並記錄）
+    const columnSums = (history.length ? history : []).reduce(
+        (acc, row) => acc.map((v, i) => v + (row[i] || 0)),
+        [0, 0, 0, 0]
+    );
+    const drift = columnSums.map((v, i) => v - (window.sessionScores[i] || 0));
+    if (drift.some((d) => d !== 0) && typeof console !== 'undefined') {
+        console.warn('[stats] 累計與本局紀錄不一致', { columnSums, sessionScores: window.sessionScores.slice(), drift });
+    }
+
     const totalTr = document.createElement('tr');
     totalTr.className = 'stats-total-row';
     const totalLabel = document.createElement('td');
@@ -415,7 +427,7 @@ function showSessionStats() {
     totalLabel.textContent = t('statsTotalRow');
     totalTr.appendChild(totalLabel);
     for (let i = 0; i < 4; i++) {
-        const v = window.sessionScores[i] || 0;
+        const v = columnSums[i] || 0;
         const td = document.createElement('td');
         td.textContent = (v > 0 ? '+' : '') + v;
         td.className = 'score-cell ' + (v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero');

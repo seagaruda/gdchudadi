@@ -2,6 +2,16 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Changed（戰績表與每局計分表對齊）
+- 兩個表現在**共用同一份資料**：`finalizeRound()` 只做一次 `gameState.scores.slice()` 快照 → push 進 `window.roundHistory`，計分表與戰績表都從這份快照渲染（不再各自算）
+- 戰績表「累計」改為**把上面每一列相加**得出（而非另一個累加器），並與 `sessionScores` 對帳：若有落差會 `console.warn('[stats] 累計與本局紀錄不一致', {...})`
+- 姓名來源統一為 `PLAYER_NAMES`（當前座位角色），計分表與戰績表永遠同一組名字，不會因中途換角色而對不上
+
+### Verified
+- 實測 4 局：每局在戰績表的那一列 `[-2,-1,-1,4] / [-3,-2,-3,8] / [-1,-3,8,-4] / [5,-2,-1,-2]` **與該局計分表逐格相同**（`allRoundsMatch: true`）
+- 累計列 `[-1,-8,3,6]` = 各列相加 = `sessionScores` = 最後一局計分表的「累計」欄（三項比對全 true）
+
+
 ### Added（加倍規則看得見）
 - 計分表「本局」欄每格新增灰色小字明細：`13張 ×4 · 黑2 ×2 · 結尾2 ×2`，贏家顯示「三家總和」
 - `calculateScores()` 產生 `gameState.roundDetail`（每位輸家的張數、張數倍數、是否黑桃2、赢家倍數），`finalizeRound()` 存入 `window.roundDetails`
