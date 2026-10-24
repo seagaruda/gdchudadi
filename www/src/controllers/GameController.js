@@ -549,6 +549,7 @@ async function aiTurn() {
 
         // AI Brain Call
         const aiContext = {
+            playerIndex: gameState.turn,
             hand: hand,
             lastPlay: lastPlay,
             lastPlayerIndex: gameState.lastPlayerIndex,
