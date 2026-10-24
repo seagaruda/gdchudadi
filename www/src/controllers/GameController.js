@@ -505,38 +505,37 @@ async function aiTurn() {
             if (gameState.players[i].length === 1) lastCardMode = true;
         }
 
-        // 抓倒霉蛋：找出「剩牌最多」的對手，剩 >= 8 張（輸分翻倍區）且比自己多 2 張以上才成立
-        let pressureTarget = -1;
-        let pressureCount = 0;
-        for (let i = 0; i < 4; i++) {
-            if (i === gameState.turn) continue;
-            const c = gameState.players[i] ? gameState.players[i].length : 0;
-            if (c > pressureCount) { pressureCount = c; pressureTarget = i; }
-        }
-        const pressureActive = pressureTarget !== -1 && pressureCount >= 8 && pressureCount >= hand.length + 2;
-
-        // 聯盟：其他剛好剩 3 張的小戶（含玩家 0 號位，不含倒霉蛋）→ 互相配合跑牌
-        // 1) 只剩 1 張（已報單）的人不算盟友：讓牌等於直接把勝利送出去
-        // 2) 自己要先顧自己：自己就是最多牌那家（我就是倒霉蛋）→ 不配合任何人
-        // 3) 自己手牌 <= 4 張（還有機會自己贏）→ 不配合，先跑自己的牌
+        // ── AI 策略前置判斷 ───────────────────────────────────────────
+        // 安全區：手牌 < 8 張（8 張起輸分翻倍，就是「倒霉蛋」）
         const myCount = hand.length;
-        const otherCounts = [];
-        for (let i = 0; i < 4; i++) {
-            if (i === gameState.turn) continue;
-            otherCounts.push(gameState.players[i] ? gameState.players[i].length : 0);
-        }
-        const selfIsBiggest = otherCounts.length > 0 && myCount > Math.max.apply(null, otherCounts);
+        const iAmSafe = myCount > 0 && myCount < 8;
 
-        // 盟友必須「還剩 3 張」：剩 2 張的人只要再一輪就能走完，讓牌等於直接送他贏（就是之前 7 報單被放水的原因）
-        const allyIndices = [];
+        // 倒霉蛋：其他 >= 8 張的人，牌越多越是目標（最多鎖定 2 家）
+        const fatOthers = [];
         for (let i = 0; i < 4; i++) {
             if (i === gameState.turn) continue;
             const c = gameState.players[i] ? gameState.players[i].length : 0;
-            if (c === 3 && i !== pressureTarget) allyIndices.push(i);
+            if (c >= 8) fatOthers.push(i);
         }
-        // 只有「自己不是最大戶、自己手牌還 >=5 張（這局基本贏不了）、且盟友比我少」時才配合
-        const behindAlly = allyIndices.some(i => (gameState.players[i] ? gameState.players[i].length : 0) < myCount);
-        const allianceActive = allyIndices.length > 0 && !selfIsBiggest && myCount >= 5 && behindAlly;
+        fatOthers.sort((a, b) => (gameState.players[b].length - gameState.players[a].length));
+        const fatTargets = fatOthers.slice(0, 2);
+        const pressureTarget = fatTargets.length > 0 ? fatTargets[0] : -1;
+        const pressureCount = pressureTarget >= 0 ? gameState.players[pressureTarget].length : 0;
+        const pressureActive = pressureTarget !== -1;
+
+        // 盟友：只在自己已進入安全區（< 8 張）時才找盟友
+        //   1) 盟友也是安全區的人（3~7 張）
+        //   2) 盟友的牌不能比我多（誰牌少先讓誰跑；比我先進安全區的人才是盟友）
+        //   3) 剩 2 張以下不當盟友：再一輪就走完，讓牌等於直接把勝利送出去
+        const allyIndices = [];
+        if (iAmSafe) {
+            for (let i = 0; i < 4; i++) {
+                if (i === gameState.turn) continue;
+                const c = gameState.players[i] ? gameState.players[i].length : 0;
+                if (c >= 3 && c <= 7 && c <= myCount && i !== pressureTarget) allyIndices.push(i);
+            }
+        }
+        const allianceActive = iAmSafe && allyIndices.length > 0;
         const nextIdx = nextPlayerIndex(gameState.turn);
 
         // AI Brain Call
@@ -551,13 +550,14 @@ async function aiTurn() {
             playedCards: gameState.playedCards,
             playerLastActions: gameState.playerLastActions,
             playerNames: PLAYER_NAMES,
-            pressureTarget: pressureActive ? pressureTarget : -1,   // 倒霉蛋座位
-            pressureCount: pressureActive ? pressureCount : 0,      // 倒霉蛋剩幾張
-            pressureActive,
-            allyIndices: allianceActive ? allyIndices : [],         // 手牌剛好 3 張的盟友座位
+            pressureTarget,                    // 最肥的倒霉蛋座位（-1 = 沒有）
+            pressureCount,                     // 倒霉蛋剩幾張
+            pressureActive,                    // 有倒霉蛋 → 頂大壓制
+            fatTargets,                        // 最多鎖定 2 家倒霉蛋
+            iAmSafe,                           // 自己是否已在安全區（< 8 張）
+            allyIndices: allianceActive ? allyIndices : [],
             allianceActive,
-            nextIsAlly: allianceActive && allyIndices.includes(nextIdx), // 下家是盟友 → 送牌給他跑
-            selfIsBiggest
+            nextIsAlly: allianceActive && allyIndices.includes(nextIdx)
         };
 
         let play = null;
