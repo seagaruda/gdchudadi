@@ -64,6 +64,7 @@ function initGame() {
     gameState.gameLog = [];
     // 每局重新開始：清空本局分數（sessionScores 才是跨局累計）
     gameState.scores = [0, 0, 0, 0];
+    gameState.winnerIndex = -1;
 
     // Generate deck
     let deck = Array.from({ length: 52 }, (_, i) => i);
@@ -140,6 +141,7 @@ function largestSingle(playerIndex) {
 window.largestSingle = largestSingle;
 
 function playCards() {
+    if (gameState.gameEnded) return;   // 本局已結束，不能再出牌（否則會把已結算的牌局打亂）
     if (gameState.turn !== 0) return;
 
     const selected = Array.from(gameState.selectedCards);
@@ -181,6 +183,7 @@ function playCards() {
 window.playCards = playCards;
 
 function passTurn() {
+    if (gameState.gameEnded) return;   // 本局已結束，不能再過牌
     if (gameState.turn !== 0) return;
     if (gameState.lastPlayerIndex === -1 || gameState.lastPlayerIndex === 0) {
         showAlert(t('cannotPass'));
@@ -251,14 +254,30 @@ function finalizeRound(winnerIndex, winnerText) {
     for (let i = 0; i < 4; i++) window.sessionScores[i] += roundScores[i];
     window.sessionWins[winnerIndex] += 1;
     window.roundsPlayed += 1;
+    gameState.winnerIndex = winnerIndex;
     window.roundHistory.push(roundScores);
     window.roundDetails = window.roundDetails || [];
     window.roundDetails.push(gameState.roundDetail || null);
 
 
+    // 一致性自檢：贏家手牌必須為 0，且「四家手牌 + 已出的牌」必須剛好 52 張
+    const winnerHand = gameState.players[winnerIndex] ? gameState.players[winnerIndex].length : -1;
+    const totalCards = gameState.players.reduce((a, p) => a + p.length, 0) + gameState.playedCards.length;
+    if (winnerHand !== 0 || totalCards !== 52) {
+        console.warn('[round] 結算狀態異常', {
+            winnerIndex,
+            winnerHand,
+            hands: gameState.players.map(p => p.length),
+            played: gameState.playedCards.length,
+            totalCards
+        });
+    }
+
     renderAll();
     AudioPlayer.playWin();
     setTimeout(() => showScoreTable(winnerIndex, roundScores, winnerText), 350);
+    // 再補一次重繪，確保局末畫面（含手牌區）不會殘留上一幀的 DOM
+    setTimeout(renderAll, 600);
     scheduleAutoRestartIfAI();
 }
 window.finalizeRound = finalizeRound;

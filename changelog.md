@@ -2,6 +2,19 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Fixed（局末畫面可能出現「贏了但手裡還有牌」）
+- `playCards()` / `passTurn()` 增加 `if (gameState.gameEnded) return;`：本局已結算後，任何殘留操作（鍵盤 Enter/Space、程式呼叫）都不再改動牌局
+- 手牌點擊（`createHumanCardElement` 的 onclick）在 `gameEnded` 時直接忽略，避免選牌高亮殘留
+- 贏家文字改由 `gameState.winnerIndex`（`finalizeRound` 寫入、`initGame` 清為 -1）驅動，不再「掃手牌找不到 0 張就保留舊文字」→ 不會再出現畫面已回到牌桌、狀態卻還寫著「你贏了」
+- `finalizeRound()` 增加一致性自檢：贏家手牌不是 0、或「四家手牌 + 已出牌 ≠ 52」時 `console.warn('[round] 結算狀態異常', {...})`
+- 局末 600ms 後再補一次 `renderAll()`，覆蓋任何殘留 DOM
+
+### Verified
+- 造局：我剩 1 張、壓過上家 → 贏；`winnerIndex=0`、`players[0].length=0`、狀態「你 贏了！」、計分表彈出、四家分數 `[8,-3,-2,-3]` 合計 0
+- 局末再呼叫 `playCards()` / `passTurn()` / 點手牌 → 手牌、已出牌、局數、累計分**全部不變**；選牌被擋
+- `initGame()` → `winnerIndex=-1`、手牌 13 張、累計分保留
+
+
 ### Fixed（報單被放水）
 - 症狀：玩家只剩 7、10，先出 7 報單，三家電腦全部「沒人要」，玩家再出 10 直接贏
 - 原因：上一版「小戶聯盟」把**任何剩 ≤3 張的人**都算成盟友（**包含玩家**），玩家一領出，三家 AI 判定 `yield-to-ally` 直接 pass；而且只剩 1 張（已報單）的人也被算成盟友，等於把勝利送出去

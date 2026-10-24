@@ -300,6 +300,7 @@ function createHumanCardElement(cardId) {
         cardEl.classList.add('selected');
     }
     cardEl.onclick = () => {
+        if (gameState.gameEnded) return;   // 本局已結束：不能再選牌
         AudioPlayer.playCardSelect();
         if (gameState.selectedCards.has(cardId)) {
             gameState.selectedCards.delete(cardId);
@@ -485,13 +486,14 @@ function updateStatus() {
     }
 
     if (gameState.gameEnded) {
-        // Find winner if any
-        for (let i = 0; i < 4; i++) {
-            if (gameState.players[i].length === 0) {
-                statusMessage.textContent = t('winner', { name: PLAYER_NAMES[i] });
-                return;
+        // 贏家以 gameState.winnerIndex 為唯一來源，避免掃手牌掃不到時把舊文字留在畫面上
+        let idx = (typeof gameState.winnerIndex === 'number') ? gameState.winnerIndex : -1;
+        if (idx < 0) {
+            for (let i = 0; i < 4; i++) {
+                if (gameState.players[i] && gameState.players[i].length === 0) { idx = i; break; }
             }
         }
+        statusMessage.textContent = (idx >= 0 && PLAYER_NAMES[idx]) ? t('winner', { name: PLAYER_NAMES[idx] }) : '';
         return;
     }
 
