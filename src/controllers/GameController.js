@@ -251,6 +251,8 @@ function finalizeRound(winnerIndex, winnerText) {
     window.sessionWins[winnerIndex] += 1;
     window.roundsPlayed += 1;
     window.roundHistory.push(roundScores);
+    window.roundDetails = window.roundDetails || [];
+    window.roundDetails.push(gameState.roundDetail || null);
 
     renderAll();
     AudioPlayer.playWin();
@@ -302,6 +304,20 @@ function showScoreTable(winnerIndex, roundScores, winnerText) {
         const roundTd = document.createElement('td');
         roundTd.textContent = (roundScore > 0 ? '+' : '') + roundScore;
         roundTd.className = 'score-cell ' + (roundScore > 0 ? 'pos' : roundScore < 0 ? 'neg' : 'zero');
+
+        // 加倍說明（幾張 × 幾倍、黑桃2、赢家結尾2）
+        const det = (gameState.roundDetail && gameState.roundDetail.losers || []).find((d) => d.playerIndex === i);
+        const hint = document.createElement('div');
+        hint.className = 'score-detail';
+        if (det) {
+            const parts = [t('detailCards', { n: det.count, m: det.countMult })];
+            if (det.spadeTwo) parts.push(t('detailSpade2'));
+            if (det.winnerMult > 1) parts.push(t('detailWinner2'));
+            hint.textContent = parts.join(' · ');
+        } else if (i === winnerIndex) {
+            hint.textContent = t('detailSum');
+        }
+        if (hint.textContent) roundTd.appendChild(hint);
 
         const totalTd = document.createElement('td');
         totalTd.textContent = (totalScore > 0 ? '+' : '') + totalScore;
@@ -519,6 +535,7 @@ function calculateScores(winnerIndex) {
     }
 
     let totalGained = 0;
+    const detail = { winnerMult, losers: [] };
     for (let i = 0; i < 4; i++) {
         if (i === winnerIndex) continue;
 
@@ -541,8 +558,19 @@ function calculateScores(winnerIndex) {
         const finalLost = baseLost * winnerMult * loserMult;
         gameState.scores[i] -= finalLost;
         totalGained += finalLost;
+
+        // 記錄明細，讓計分表能顯示「幾張 × 幾倍」
+        detail.losers.push({
+            playerIndex: i,
+            count: baseLost,
+            countMult: baseLost === 13 ? 4 : baseLost >= 10 ? 3 : baseLost >= 8 ? 2 : 1,
+            spadeTwo: hasSpadeTwo,
+            winnerMult,
+            total: finalLost
+        });
     }
     gameState.scores[winnerIndex] += totalGained;
+    gameState.roundDetail = detail;
 }
 window.calculateScores = calculateScores;
 
