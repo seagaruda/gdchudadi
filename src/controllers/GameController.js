@@ -486,6 +486,16 @@ async function aiTurn() {
             if (gameState.players[i].length === 1) lastCardMode = true;
         }
 
+        // 抓倒霉蛋：找出「剩牌最多」的對手，剩 >= 8 張（輸分翻倍區）且比自己多 2 張以上才成立
+        let pressureTarget = -1;
+        let pressureCount = 0;
+        for (let i = 0; i < 4; i++) {
+            if (i === gameState.turn) continue;
+            const c = gameState.players[i] ? gameState.players[i].length : 0;
+            if (c > pressureCount) { pressureCount = c; pressureTarget = i; }
+        }
+        const pressureActive = pressureTarget !== -1 && pressureCount >= 8 && pressureCount >= hand.length + 2;
+
         // AI Brain Call
         const aiContext = {
             hand: hand,
@@ -497,7 +507,10 @@ async function aiTurn() {
             lastCardMode: lastCardMode,
             playedCards: gameState.playedCards,
             playerLastActions: gameState.playerLastActions,
-            playerNames: PLAYER_NAMES
+            playerNames: PLAYER_NAMES,
+            pressureTarget: pressureActive ? pressureTarget : -1,   // 倒霉蛋座位
+            pressureCount: pressureActive ? pressureCount : 0,      // 倒霉蛋剩幾張
+            pressureActive
         };
 
         let play = null;

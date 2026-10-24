@@ -41,11 +41,40 @@ class AICharacter {
                 if (pairs.length > 0) return pairs[0];
                 return [startCard];
             }
+            // 抓倒霉蛋：主動頂大，讓剩牌最多的那家接不上、繼續憋牌
+            if (context.pressureActive) {
+                return this.choosePressureLead(sorted, context);
+            }
             return await this.chooseLead(sorted, context);
         }
 
         // --- Handle Following (Beat previous hand) ---
         return await this.chooseFollow(sorted, context);
+    }
+
+    /**
+     * 抓倒霉蛋的「頂大」出牌：
+     *  - 有五張牌型先出最強的五張（對手很難接，尤其是憋著 8 張以上那家）
+     *  - 否則出最大對子
+     *  - 再不然出最大單張
+     * 目的：自己持續拿到牌權，倒霉蛋一張都出不了，結算時他剩越多、輸越多
+     */
+    choosePressureLead(sorted, context) {
+        const Logic = this.getLogic();
+        if (!sorted || sorted.length === 0) return null;
+
+        const fiveCardHands = Logic.findFiveCardHands(sorted);
+        if (fiveCardHands.length > 0) {
+            return fiveCardHands.reduce((best, h) => (Logic.compareHands(h, best) > 0 ? h : best), fiveCardHands[0]);
+        }
+
+        const pairs = Logic.findPairs(sorted);
+        if (pairs.length > 0) {
+            return pairs.reduce((best, p) => (Logic.compareHands(p, best) > 0 ? p : best), pairs[0]);
+        }
+
+        // 最大單張（sorted 由小到大，最後一張就是最大）
+        return [sorted[sorted.length - 1]];
     }
 
     /**
@@ -55,13 +84,16 @@ class AICharacter {
         const Logic = this.getLogic();
         const { lastPlay } = context;
         const targetLen = lastPlay.length;
+        // 抓倒霉蛋：如果他正拿著牌權（剛出完牌），一定要壓過去，讓他繼續憋
+        const huntingTarget = !!context.pressureActive &&
+            context.lastPlayerIndex === context.pressureTarget;
 
         if (targetLen === 1) {
             // Check if any opponent has only 1 card left (lastcard phase)
             const isLastCard = context.players && context.players.some((p, idx) => idx !== context.playerIndex && p && p.length === 1);
             
             // If it's not the lastcard phase and the played card has rank > 9 (King, Ace, 2), pass
-            if (!isLastCard && Logic.getRank(lastPlay[0]) > 9) {
+            if (!isLastCard && !huntingTarget && Logic.getRank(lastPlay[0]) > 9) {
                 return null;
             }
 
@@ -90,7 +122,7 @@ class AICharacter {
                 for (let c of candidates) {
                     if (Logic.compareCards(c, lastPlay[0]) > 0) {
                         // Big-card preservation: Don't waste Ace (11) or 2 (12) on cards 10 or below (<= 7)
-                        if (Logic.getRank(c) >= 11 && Logic.getRank(lastPlay[0]) <= 7) {
+                        if (!huntingTarget && Logic.getRank(c) >= 11 && Logic.getRank(lastPlay[0]) <= 7) {
                             return null;
                         }
                         return [c];
@@ -101,7 +133,7 @@ class AICharacter {
                 if (!isOpponentNearWin && candidates !== sorted) {
                     for (let c of sorted) {
                         if (Logic.compareCards(c, lastPlay[0]) > 0) {
-                            if (Logic.getRank(c) >= 11 && Logic.getRank(lastPlay[0]) <= 7) {
+                            if (!huntingTarget && Logic.getRank(c) >= 11 && Logic.getRank(lastPlay[0]) <= 7) {
                                 return null;
                             }
                             return [c];

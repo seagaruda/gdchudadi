@@ -2,6 +2,13 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Added（AI 抓倒霉蛋）
+- `aiTurn()` 每回合算出「倒霉蛋」：剩下牌最多的對手，且剩 **≥8 張**（輸分翻倍區）、並且比自己多 **≥2 張** 才成立 → `aiContext.pressureTarget / pressureCount / pressureActive`
+- `AICharacter.choosePressureLead()`：自由出牌時改為**頂大** —— 最強五張牌型 → 最大對子 → 最大單張，讓倒霉蛋接不上、繼續憋牌
+- `chooseFollow()`：若牌權正在倒霉蛋手上（`lastPlayerIndex === pressureTarget`），解除「大牌保留」（原本 rank≥11 遇到 ≤7 會 pass、或對方出 K/A/2 直接 pass），積極壓過去
+- 未觸發時行為完全不變；AI 自己就是最多牌那家時也不會進入此模式
+
+
 ### Fixed（頭像下方分數）
 - 原本四個座位下方顯示 `Score: 0`（讀 `gameState.scores`，這是**單局**分，每局開始歸零，所以幾乎永遠是 0）
 - 改為顯示**本次開 App 的累計總分**：`累計 +15` / `累計 -6`，正分綠色、負分紅色（`formatTotalScore()` 讀 `window.sessionScores`）
