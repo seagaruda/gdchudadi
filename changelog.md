@@ -2,6 +2,14 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Added（小戶聯盟：互相配合跑牌）
+- `aiTurn()` 額外算出盟友：其他剩 **≤3 張** 的小戶（不含倒霉蛋）→ `aiContext.allyIndices / allianceActive / nextIsAlly`
+- **送牌**：我領出且**下家是盟友**時，`chooseFeedLead()` 出一張「最小且不拆牌型」的單張，讓盟友接過去繼續跑（手牌 ≤2 張時不送，自己先跑）
+- **讓牌**：盟友拿著牌權在跑牌時，`chooseFollow()` 直接 pass，不壓自己人；唯一例外是**自己剩 ≤2 張且剛好能一把走完**（`canFinishNow()`）
+- 優先級：抓倒霉蛋頂大 > 送牌給盟友 > 平常策略；倒霉蛋（≥8 張）永遠不在盟友名單裡
+- 每個決策會寫 `window.__lastAIReason`（`pressure-lead` / `feed-ally-lead` / `yield-to-ally` / `finish-over-ally`），方便驗證
+
+
 ### Added（AI 抓倒霉蛋）
 - `aiTurn()` 每回合算出「倒霉蛋」：剩下牌最多的對手，且剩 **≥8 張**（輸分翻倍區）、並且比自己多 **≥2 張** 才成立 → `aiContext.pressureTarget / pressureCount / pressureActive`
 - `AICharacter.choosePressureLead()`：自由出牌時改為**頂大** —— 最強五張牌型 → 最大對子 → 最大單張，讓倒霉蛋接不上、繼續憋牌

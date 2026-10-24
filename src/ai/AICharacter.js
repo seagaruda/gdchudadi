@@ -43,7 +43,13 @@ class AICharacter {
             }
             // 抓倒霉蛋：主動頂大，讓剩牌最多的那家接不上、繼續憋牌
             if (context.pressureActive) {
+                window.__lastAIReason = 'pressure-lead';
                 return this.choosePressureLead(sorted, context);
+            }
+            // 配合小戶：下家是只剩 <=3 張的盟友 → 送一張小牌讓他接過去跑
+            if (context.allianceActive && context.nextIsAlly && sorted.length > 2) {
+                window.__lastAIReason = 'feed-ally-lead';
+                return this.chooseFeedLead(sorted, context);
             }
             return await this.chooseLead(sorted, context);
         }
@@ -78,6 +84,33 @@ class AICharacter {
     }
 
     /**
+     * 送牌給下家盟友：出一張最小、且不拆牌型結構的單張，讓他好接、接手後繼續跑牌
+     */
+    chooseFeedLead(sorted, context) {
+        const Logic = this.getLogic();
+        if (!sorted || sorted.length === 0) return null;
+
+        const pairs = Logic.findPairs(sorted).flat();
+        const fiveCardHands = Logic.findFiveCardHands(sorted).flat();
+        const loose = sorted.filter(c => !pairs.includes(c) && !fiveCardHands.includes(c));
+        if (loose.length > 0) return [loose[0]];
+        return [sorted[0]];   // 全是有結構的牌時，退而求其次出最小張
+    }
+
+    /**
+     * 這回合能不能把手上剩下的牌一次出完（用來判斷「要不要搶盟友的牌權」）
+     */
+    canFinishNow(sorted, lastPlay) {
+        const Logic = this.getLogic();
+        if (!sorted || sorted.length === 0) return true;
+        const info = Logic.getHandInfo(sorted);
+        if (!info) return false;
+        if (!lastPlay || lastPlay.length === 0) return true;
+        if (sorted.length !== lastPlay.length) return false;
+        return Logic.compareHands(sorted, lastPlay) > 0;
+    }
+
+    /**
      * Default following logic (can be overridden)
      */
     async chooseFollow(sorted, context) {
@@ -87,6 +120,21 @@ class AICharacter {
         // 抓倒霉蛋：如果他正拿著牌權（剛出完牌），一定要壓過去，讓他繼續憋
         const huntingTarget = !!context.pressureActive &&
             context.lastPlayerIndex === context.pressureTarget;
+
+        // 配合小戶：盟友拿著牌權在跑牌 → 讓他跑，不壓
+        const allyLeads = !!context.allianceActive &&
+            Array.isArray(context.allyIndices) &&
+            context.allyIndices.includes(context.lastPlayerIndex);
+
+        if (allyLeads && !huntingTarget) {
+            // 例外：自己也能一把走完（手牌 <= 2 張且剛好壓得住），才搶這個牌權
+            const finishNow = sorted.length <= 2 && this.canFinishNow(sorted, lastPlay);
+            if (!finishNow) {
+                window.__lastAIReason = 'yield-to-ally';
+                return null;
+            }
+            window.__lastAIReason = 'finish-over-ally';
+        }
 
         if (targetLen === 1) {
             // Check if any opponent has only 1 card left (lastcard phase)

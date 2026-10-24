@@ -496,6 +496,15 @@ async function aiTurn() {
         }
         const pressureActive = pressureTarget !== -1 && pressureCount >= 8 && pressureCount >= hand.length + 2;
 
+        // 聯盟：其他剩 <= 3 張的小戶（不含倒霉蛋）→ 互相配合跑牌，一起抓倒霉蛋
+        const allyIndices = [];
+        for (let i = 0; i < 4; i++) {
+            if (i === gameState.turn) continue;
+            const c = gameState.players[i] ? gameState.players[i].length : 0;
+            if (c > 0 && c <= 3 && i !== pressureTarget) allyIndices.push(i);
+        }
+        const nextIdx = nextPlayerIndex(gameState.turn);
+
         // AI Brain Call
         const aiContext = {
             hand: hand,
@@ -510,7 +519,10 @@ async function aiTurn() {
             playerNames: PLAYER_NAMES,
             pressureTarget: pressureActive ? pressureTarget : -1,   // 倒霉蛋座位
             pressureCount: pressureActive ? pressureCount : 0,      // 倒霉蛋剩幾張
-            pressureActive
+            pressureActive,
+            allyIndices,                                            // 手牌 <= 3 張的盟友座位
+            allianceActive: allyIndices.length > 0,
+            nextIsAlly: allyIndices.includes(nextIdx)               // 下家是盟友 → 可以送牌給他跑
         };
 
         let play = null;
