@@ -151,9 +151,14 @@ class SoundEngine {
         audio.play().catch(err => console.warn(`Hand name voice failed (${key}):`, err));
     }
 
-    // 右上角按鈕試聽報牌配音（示範「對二」）
+    // 右上角按鈕試聽報牌配音（示範「對二」）——不受靜音狀態影響，按下一定有聲音
     playDeclareSample() {
-        this.playHandName({ type: 'PAIR' }, [12]);
+        if (this.handVoice) {
+            try { this.handVoice.pause(); } catch (e) { /* ignore */ }
+        }
+        const audio = new Audio('src/assets/mp3/voice/pair_12.mp3');
+        this.handVoice = audio;
+        audio.play().catch(err => console.warn('Declare sample failed:', err));
     }
 }
 

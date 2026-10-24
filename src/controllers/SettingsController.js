@@ -355,11 +355,11 @@ window.updateMuteUI = updateMuteUI;
 
 if (muteToggle) {
     muteToggle.onclick = () => {
-        // 只有「報牌配音 開／關」兩態（背景音樂已移除）
+        // 只有「報牌配音 開／關」兩態（背景音樂已移除）；每次點擊都先試聽「對二」
         window.soundMode = (soundMode === 2) ? 0 : 2;
         AppStorage.setItem('soundMode', soundMode);
         updateMuteUI();
-        if (window.soundMode === 0) AudioPlayer.playDeclareSample();
+        AudioPlayer.playDeclareSample();
     };
     updateMuteUI();
 }
