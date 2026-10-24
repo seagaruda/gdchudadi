@@ -496,12 +496,14 @@ async function aiTurn() {
         }
         const pressureActive = pressureTarget !== -1 && pressureCount >= 8 && pressureCount >= hand.length + 2;
 
-        // 聯盟：其他剩 <= 3 張的小戶（不含倒霉蛋）→ 互相配合跑牌，一起抓倒霉蛋
+        // 聯盟：其他剩 2~3 張的小戶（不含倒霉蛋）→ 互相配合跑牌，一起抓倒霉蛋
+        // 注意：1) 人類(0 號位)不列入盟友，電腦不會讓玩家白贏
+        //       2) 只剩 1 張（已報單）的人不列入盟友，否則等於直接把勝利送出去
         const allyIndices = [];
-        for (let i = 0; i < 4; i++) {
+        for (let i = 1; i < 4; i++) {
             if (i === gameState.turn) continue;
             const c = gameState.players[i] ? gameState.players[i].length : 0;
-            if (c > 0 && c <= 3 && i !== pressureTarget) allyIndices.push(i);
+            if (c >= 2 && c <= 3 && i !== pressureTarget) allyIndices.push(i);
         }
         const nextIdx = nextPlayerIndex(gameState.turn);
 
