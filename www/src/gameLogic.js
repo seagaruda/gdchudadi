@@ -323,19 +323,6 @@ class BaseRules {
         const sortedHand = this.sortCards(hand);
         const startCard = this.getStartCard();
 
-        const isShouted = shouted && shouted[playerIndex];
-        const isLastHand = this.isLastHand(hand);
-        const shouldRestrictToFullHand = isShouted && isLastHand && hand.length > 1;
-
-        if (shouldRestrictToFullHand) {
-            if (isLead) {
-                moves.push({ cards: sortedHand, type: 'FINAL' });
-            } else if (this.compareHands(sortedHand, lastPlay) > 0) {
-                moves.push({ cards: sortedHand, type: 'FINAL' });
-            }
-            return moves;
-        }
-
         if (isLead) {
             const isFirstRound = lastPlayerIndex === -1 || lastPlayerIndex === undefined;
             const hasStartCard = hand.includes(startCard);
@@ -541,6 +528,25 @@ class MainlandRules extends HongKongRules {
         const suit = this.getSuit(cardId);
         const mainlandStrengths = [1, 0, 2, 3];
         return mainlandStrengths[suit];
+    }
+
+    /**
+     * 大陸順子：A 可接在 K 後面（10JQKA），也可作最小端（A2345）；
+     * 2 可作最小端（23456），但不入順子中間。比大小時取「該順實際最大的一張」：
+     * A2345 以 5、23456 以 6 為準（聯眾規則：A、2 作小牌處理）。
+     */
+    checkSpecialStraights(sorted, isStraight, isFlush, is23456, isA2345) {
+        const wrapStraight = (topRank) => {
+            const top = sorted.find(c => this.getRank(c) === topRank);
+            return {
+                type: isFlush ? 'STRAIGHT_FLUSH' : 'STRAIGHT',
+                value: top,
+                strength: isFlush ? 5 : 1
+            };
+        };
+        if (is23456) return wrapStraight(3);  // 6
+        if (isA2345) return wrapStraight(2);  // 5
+        return null;
     }
 }
 

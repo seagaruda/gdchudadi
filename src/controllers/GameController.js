@@ -23,8 +23,7 @@ window.gameState = {
     lastPlay: null,
     lastPlayerIndex: -1,
     selectedCards: new Set(),
-    shouted: [false, false, false, false],
-    canFinish: [true, true, true, true],
+    declared: [false, false, false, false], // 已「報單」公告（手牌剩 1 張）
     gameEnded: false,
     scores: [0, 0, 0, 0],
     playerLastActions: [null, null, null, null], // null, "PASS", or Array of cards
@@ -49,17 +48,13 @@ window.resetCycleState = resetCycleState;
 function initGame() {
     if (window.alertModal) window.alertModal.classList.add('hidden');
     gameState.gameEnded = false;
-    gameState.shouted = [false, false, false, false];
-    gameState.canFinish = [true, true, true, true];
+    gameState.declared = [false, false, false, false];
     gameState.selectedCards.clear();
     gameState.lastPlay = null;
     gameState.lastPlayerIndex = -1;
     gameState.playerLastActions = [null, null, null, null];
     gameState.playedCards = [];
     gameState.gameLog = [];
-
-    // Reset BGM to default
-    AudioPlayer.playBGM();
 
     // Generate deck
     let deck = Array.from({ length: 52 }, (_, i) => i);
@@ -101,10 +96,8 @@ function initGame() {
 
     gameState.lastPlay = null;
     gameState.selectedCards.clear();
-    gameState.shouted = [false, false, false, false];
-    gameState.canFinish = [true, true, true, true];
+    gameState.declared = [false, false, false, false];
     gameState.gameEnded = false;
-    if (window.btnShout) window.btnShout.classList.add('hidden');
 
     renderAll();
     updateStatus();
@@ -117,32 +110,31 @@ function initGame() {
 }
 window.initGame = initGame;
 
-function playCards(shoutArg = false) {
+// 出牌順序為逆時針 0 → 3 → 2 → 1，所以「下家」（接著出牌的人）是 (i + 3) % 4
+function nextPlayerIndex(playerIndex) {
+    return (playerIndex + 3) % 4;
+}
+window.nextPlayerIndex = nextPlayerIndex;
+
+// 報單頂大：下家只剩 1 張時，該家（上家）出單張必須先出自己最大的牌
+function mustTopSingle(playerIndex) {
+    const nextHand = gameState.players[nextPlayerIndex(playerIndex)];
+    return !!nextHand && nextHand.length === 1;
+}
+window.mustTopSingle = mustTopSingle;
+
+function largestSingle(playerIndex) {
+    const hand = gameState.players[playerIndex] || [];
+    if (hand.length === 0) return null;
+    return hand.reduce((best, c) => (GameLogic.compareCards(c, best) > 0 ? c : best), hand[0]);
+}
+window.largestSingle = largestSingle;
+
+function playCards() {
     if (gameState.turn !== 0) return;
 
     const selected = Array.from(gameState.selectedCards);
     if (selected.length === 0) return;
-
-    const isShouting = shoutArg === true;
-    const hand = gameState.players[0];
-
-    // No splitting rule
-    if (gameState.shouted[0] && !isShouting) {
-        if (selected.length !== hand.length) {
-            showAlert(t('mustPlayAll'));
-            return;
-        }
-    } else if (!gameState.canFinish[0] && selected.length === hand.length) {
-        showAlert(t('cannotFinish'));
-        return;
-    }
-
-    // Rule: If remaining cards = 1, must shout
-    const remainingCount = hand.length - selected.length;
-    if (remainingCount === 1 && !isShouting) {
-        showAlert(t('mustShoutLa'));
-        return;
-    }
 
     // Validate play
     const info = GameLogic.getHandInfo(selected);
@@ -151,12 +143,9 @@ function playCards(shoutArg = false) {
         return;
     }
 
-    // Must follow previous play type/count
+    // 大陸規則：只有張數相同的牌可以比大小
     if (gameState.lastPlay && gameState.lastPlayerIndex !== 0) {
-        const isSelectedBomb = info.type === 'FOUR_OF_A_KIND' || info.type === 'STRAIGHT_FLUSH';
-        const isLastPlaySingleOrPair = gameState.lastPlay.length === 1 || gameState.lastPlay.length === 2;
-
-        if (selected.length !== gameState.lastPlay.length && !(isSelectedBomb && isLastPlaySingleOrPair)) {
+        if (selected.length !== gameState.lastPlay.length) {
             showAlert(t('mustPlayCount', { count: gameState.lastPlay.length }));
             return;
         }
@@ -166,27 +155,18 @@ function playCards(shoutArg = false) {
         }
     }
 
-    // Special rule: first play must have starting card if it's the very first turn
-    const ruleMode = AppStorage.getItem('ruleMode') || 'mainland';
-    const startCard = ruleMode === 'taiwan' ? 0 : 13;
-    if (gameState.lastPlayerIndex === -1 && !selected.includes(startCard)) {
-        const msg = ruleMode === 'taiwan' ? t('mustInclude3C') : t('mustInclude3D');
-        showAlert(msg);
+    // 首輪必須帶方塊 3
+    if (gameState.lastPlayerIndex === -1 && !selected.includes(GameLogic.getStartCard())) {
+        showAlert(t('mustInclude3D'));
         return;
     }
 
-    // Check if remaining cards form a last hand
-    const remaining = hand.filter(c => !selected.includes(c));
-    const willBeLastHand = GameLogic.isLastHand(remaining);
-
-    if (willBeLastHand && !gameState.shouted[0]) {
-        // Penultimate play. If they didn't shout:
-        if (!isShouting) {
-            gameState.canFinish[0] = false;
-        }
+    // 報單頂大
+    if (selected.length === 1 && mustTopSingle(0) && selected[0] !== largestSingle(0)) {
+        showAlert(t('mustTopSingle'));
+        return;
     }
 
-    if (window.btnShout) window.btnShout.classList.add('hidden');
     executePlay(0, selected);
 }
 window.playCards = playCards;
@@ -225,14 +205,13 @@ function executePlay(playerIndex, cards) {
     gameState.playedCards.push(...cards);
     gameState.gameLog.push({ turn: gameState.gameLog.length, player: playerIndex, action: cards });
 
-    // Check for "La" (Shout) for all AI-controlled players
+    // 報單：任何一家手牌只剩 1 張時公告一次（公告後其上家出單張必須頂大）
     for (let i = 0; i < 4; i++) {
-        const char = window.AI ? window.AI.getCharacter(i) : null;
-        if (char && !gameState.shouted[i] && GameLogic.isLastHand(gameState.players[i])) {
-            gameState.shouted[i] = true;
-            gameState.canFinish[i] = true;
-            AudioPlayer.playLa(char.name);
-            triggerShoutEffect(i, "拉");
+        if (gameState.players[i].length === 1 && !gameState.declared[i]) {
+            gameState.declared[i] = true;
+            const char = window.AI ? window.AI.getCharacter(i) : null;
+            AudioPlayer.playDeclare(char ? char.name : 'you');
+            triggerShoutEffect(i, t('declareOneCard'));
         }
     }
 
@@ -312,8 +291,7 @@ async function aiTurn() {
             lastPlay: lastPlay,
             lastPlayerIndex: gameState.lastPlayerIndex,
             players: gameState.players,
-            shouted: gameState.shouted,
-            canFinish: gameState.canFinish,
+            mustTopSingle: mustTopSingle(gameState.turn),
             nearWin: nearWin,
             lastCardMode: lastCardMode,
             playedCards: gameState.playedCards,
@@ -328,20 +306,13 @@ async function aiTurn() {
             console.error("AI Error:", e);
         }
 
-        if (play) {
-            // Enforce canFinish constraint for AI
-            if (!gameState.shouted[gameState.turn] && !gameState.canFinish[gameState.turn]) {
-                if (play.length === hand.length) {
-                    // AI must split! Try smaller combinations
-                    if (play.length > 1) {
-                        play = [play[0]];
-                        // Verify if this single can beat lastPlay
-                        if (lastPlay && GameLogic.compareCards(play[0], lastPlay[0]) <= 0) {
-                            play = null; // AI can't split and beat lastPlay
-                        }
-                    } else {
-                        play = null; // Can't play last card
-                    }
+        if (play && play.length > 0) {
+            // 報單頂大：下家只剩 1 張時，AI 出單張只能出自己最大的牌，出不了就過
+            if (play.length === 1 && mustTopSingle(gameState.turn)) {
+                const maxCard = largestSingle(gameState.turn);
+                if (play[0] !== maxCard) {
+                    const canBeat = !lastPlay || GameLogic.compareCards(maxCard, lastPlay[0]) > 0;
+                    play = canBeat ? [maxCard] : null;
                 }
             }
         }
@@ -428,79 +399,3 @@ function handleDragonWin(playerIndex) {
 }
 window.handleDragonWin = handleDragonWin;
 
-function shoutLa() {
-    const selected = Array.from(gameState.selectedCards);
-    const hand = gameState.players[0];
-    const remaining = hand.filter(c => !selected.includes(c));
-
-    if (!GameLogic.isLastHand(remaining)) {
-        showAlert(t('shoutFailed'));
-        return;
-    }
-
-    // Validate play BEFORE setting shouted flag
-    const info = GameLogic.getHandInfo(selected);
-    if (!info) {
-        showAlert(t('invalidHand'));
-        return;
-    }
-
-    // Check if it beats last play
-    if (gameState.lastPlay && gameState.lastPlayerIndex !== 0) {
-        if (selected.length !== gameState.lastPlay.length) {
-            showAlert(t('mustPlayCount', { count: gameState.lastPlay.length }));
-            return;
-        }
-        if (GameLogic.compareHands(selected, gameState.lastPlay) <= 0) {
-            showAlert(t('mustBeHigher'));
-            return;
-        }
-    }
-
-    // If validation passes, set flags and play
-    gameState.shouted[0] = true;
-    gameState.canFinish[0] = true;
-
-    const char0 = window.AI ? window.AI.getCharacter(0) : null;
-    AudioPlayer.playLa(char0 ? char0.name : 'you');
-    triggerShoutEffect(0, "拉");
-
-    playCards(true);
-}
-window.shoutLa = shoutLa;
-
-function updateShoutButton() {
-    if (gameState.turn !== 0 || gameState.shouted[0]) {
-        if (window.btnShout) window.btnShout.classList.add('hidden');
-        return;
-    }
-
-    const selected = Array.from(gameState.selectedCards);
-    const hand = gameState.players[0];
-
-    if (selected.length === 0) {
-        if (window.btnShout) window.btnShout.classList.add('hidden');
-        return;
-    }
-
-    // Validate current selection first
-    if (!GameLogic.getHandInfo(selected)) {
-        if (window.btnShout) window.btnShout.classList.add('hidden');
-        return;
-    }
-
-    const remaining = hand.filter(c => !selected.includes(c));
-    const remainingCount = remaining.length;
-
-    updatePlayButtonVisibility();
-
-    const hasLead = (gameState.lastPlayerIndex === -1 || gameState.lastPlayerIndex === 0);
-    const canMove = hasLead || GameLogic.hasValidMoves(hand, gameState.lastPlay);
-
-    if (remainingCount > 0 && GameLogic.isLastHand(remaining) && canMove) {
-        if (window.btnShout) window.btnShout.classList.remove('hidden');
-    } else {
-        if (window.btnShout) window.btnShout.classList.add('hidden');
-    }
-}
-window.updateShoutButton = updateShoutButton;

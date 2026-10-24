@@ -15,56 +15,11 @@ const PERSONA_VOICE_MAP = {
 class SoundEngine {
     constructor() {
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        this.soundMode = 0; // 0: All, 1: SFX Only, 2: None
-        this.bgm = null;
+        this.soundMode = 0; // 0: 報牌配音開, 2: 全關（音樂已移除）
     }
 
     setSoundMode(mode) {
-        this.soundMode = parseInt(mode);
-        if (this.bgm) {
-            // BGM is only audible in Mode 0
-            this.bgm.muted = (this.soundMode !== 0);
-        }
-    }
-
-    playBGM(filename = 'Cards_On_The_Line') {
-        const newPath = `src/assets/mp3/${filename}.mp3`;
-        
-        if (this.bgm) {
-            // If already playing the same track, do nothing
-            if (this.bgm.src.includes(filename)) return;
-            this.bgm.pause();
-        }
-
-        this.bgm = new Audio(newPath);
-        this.bgm.loop = true;
-        this.bgm.volume = 0.4;
-        this.bgm.muted = (this.soundMode !== 0);
-
-        this.bgm.play().catch(err => {
-            console.log("BGM autoplay prevented or failed, waiting for interaction...");
-            const startBGM = () => {
-                if (this.bgm) {
-                    this.bgm.play().catch(e => console.log("BGM play failed:", e));
-                }
-                if (this.ctx && this.ctx.state === 'suspended') {
-                    this.ctx.resume().catch(e => console.warn("Failed to resume AudioContext:", e));
-                }
-                // Clean up all gesture unlock listeners
-                window.removeEventListener('click', startBGM);
-                window.removeEventListener('touchstart', startBGM);
-                window.removeEventListener('mousedown', startBGM);
-                window.removeEventListener('keydown', startBGM);
-            };
-            window.addEventListener('click', startBGM);
-            window.addEventListener('touchstart', startBGM);
-            window.addEventListener('mousedown', startBGM);
-            window.addEventListener('keydown', startBGM);
-        });
-    }
-
-    switchBGM(filename) {
-        this.playBGM(filename);
+        this.soundMode = parseInt(mode) === 2 ? 2 : 0;
     }
 
     playTone(freq, type, duration, volume = 0.1) {
@@ -126,42 +81,47 @@ class SoundEngine {
     }
 
     playWin() {
-        // Change BGM to Sovereign_Ascent when someone wins
-        this.switchBGM('Sovereign_Ascent');
-
         const notes = [523.25, 659.25, 783.99, 1046.50]; // C-E-G-C
         notes.forEach((freq, i) => {
             setTimeout(() => this.playTone(freq, 'sine', 0.4, 0.1), i * 150);
         });
     }
 
-    playLa(persona = 'you') {
+    /**
+     * 報牌配音：手牌只剩 1 張「報單」時播放該角色的語音。
+     * 音樂（BGM）已整個移除，這裡只保留配音與提示音效。
+     */
+    playDeclare(persona = 'you') {
         if (this.soundMode === 2) return;
 
-        // Change BGM to Iron_in_the_Gale when someone shouts La
-        this.switchBGM('Iron_in_the_Gale');
-
-        // Always play SFX (Tone)
+        // 提示音效
         this.playTone(600, 'sawtooth', 0.1, 0.15);
         setTimeout(() => this.playTone(400, 'sawtooth', 0.2, 0.1), 50);
-
-        // Play Voice only in Mode 0 (All)
-        if (this.soundMode !== 0) return;
         
         const personaKeyRaw = persona.toLowerCase().split(' ')[0];
         const personaKey = PERSONA_VOICE_MAP[personaKeyRaw] || personaKeyRaw;
 
-        const audioPath = `src/assets/mp3/la_${personaKey}.mp3`;
+        const audioPath = `src/assets/mp3/la_${personaKey}.mp3`;  // 報單語音沿用 la_ 系列
         
         const audio = new Audio(audioPath);
         audio.play().catch(err => {
-            console.warn(`Failed to play character-specific La (${audioPath}):`, err);
+            console.warn(`Failed to play declare voice (${audioPath}):`, err);
             const fallbackPath = `src/assets/mp3/la_default.mp3`;
             const fallbackAudio = new Audio(fallbackPath);
             fallbackAudio.play().catch(fallbackErr => {
-                console.warn(`Failed to play default La (${fallbackPath}):`, fallbackErr);
+                console.warn(`Failed to play default declare voice (${fallbackPath}):`, fallbackErr);
             });
         });
+    }
+
+    // 相容舊呼叫
+    playLa(persona = 'you') {
+        this.playDeclare(persona);
+    }
+
+    // 右上角按鈕試聽報牌配音
+    playDeclareSample() {
+        this.playDeclare('you');
     }
 }
 

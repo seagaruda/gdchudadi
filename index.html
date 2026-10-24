@@ -87,14 +87,6 @@
                 </div>
 
                 <div id="tab-rules" class="tab-content active">
-                    <div class="form-group rule-mode-selector-container" style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px; display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 12px;">
-                        <label for="game-rule-mode" data-i18n="ruleModeLabel" style="font-weight: 600; color: #e2e8f0; font-size: 13px; white-space: nowrap; margin-bottom: 0;">Game Rule Mode</label>
-                        <select id="game-rule-mode" style="width: auto; flex-grow: 1; max-width: 250px; background: #1e293b; color: #fff; border: 1px solid #475569; border-radius: 4px; padding: 6px; font-size: 13px;">
-                            <option value="mainland" data-i18n="ruleModeMainland">Mainland Chu Da Di</option>
-                            <option value="taiwan" data-i18n="ruleModeTaiwan">Taiwanese Rules</option>
-                            <option value="hongkong" data-i18n="ruleModeHongKong">Hong Kong Rules</option>
-                        </select>
-                    </div>
                     <div class="rules-sections">
                         <section>
                             <h3 data-i18n="handsTitle">Hands (牌型)</h3>
@@ -125,7 +117,6 @@
                     <div class="keyboard-sections">
                         <div class="legend-item"><span class="key">←</span><span class="key">→</span> <span data-i18n="legendCycle">Select</span></div>
                         <div class="legend-item"><span class="key">↑</span> <span data-i18n="legendPlay">Play / Shout LA!</span></div>
-                        <div class="legend-item"><span class="key enter-key"><svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="enter-svg"><path d="M12 2v6H2" /><path d="M5 5L2 8l3 3" /></svg></span> <span data-i18n="legendShoutLa">Play & Shout LA!</span></div>
                         <div class="legend-item"><span class="key">↓</span> <span data-i18n="legendClear">Clear Selection</span></div>
                         <div class="legend-item"><span class="key space-key"></span> <span data-i18n="legendPass">Pass Turn</span></div>
                         <div class="legend-item"><span class="key">↓</span><span class="key">↓</span><span class="key">↓</span> <span data-i18n="legendRestart">Restart Game (When Ended)</span></div>
@@ -200,7 +191,6 @@
             <div id="controls">
                 <button id="btn-play" class="premium-btn"><span class="kbd-hint">↑</span> <span data-i18n="play">Play</span></button>
                 <button id="btn-pass" class="premium-btn secondary"><span class="kbd-hint space-key small"></span> <span data-i18n="pass">Pass</span></button>
-                <button id="btn-shout" class="premium-btn highlight hidden"><span class="kbd-hint">↑</span> <span data-i18n="shout">Shout LA!</span></button>
                 <button id="btn-hand-layout" class="premium-btn ghost mini" title="切換手牌排列 / Switch hand layout">🃏 牌型</button>
             </div>
         </div>

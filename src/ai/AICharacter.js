@@ -163,21 +163,8 @@ Instruction: ${lastPlay && lastPlay.length > 0 ? 'You must beat the table play o
 
     async localDecide(context) {
         const Logic = this.getLogic();
-        const { hand, lastPlay, playerIndex, shouted } = context;
+        const { hand, lastPlay, playerIndex } = context;
         const sorted = Logic.sortCards(hand);
-
-        // --- SHOUT RESTRICTION ---
-        const isShouted = shouted && shouted[playerIndex];
-        const isLastHand = Logic.isLastHand(hand);
-        const shouldRestrictToFullHand = isShouted && isLastHand && hand.length > 1;
-
-        if (shouldRestrictToFullHand) {
-            const isLead = !lastPlay || lastPlay.length === 0;
-            if (isLead) return sorted;
-            if (Logic.compareHands(sorted, lastPlay) > 0) return sorted;
-            return null; // Must PASS
-        }
-        // -------------------------
 
         if (!lastPlay || lastPlay.length === 0) {
             const five = Logic.findFiveCardHands(sorted);

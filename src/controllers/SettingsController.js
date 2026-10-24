@@ -9,8 +9,8 @@ function t(key, params = {}) {
 window.t = t;
 
 function updateRulesDescription() {
-    const ruleMode = AppStorage.getItem('ruleMode') || 'mainland';
-    const suffix = ruleMode === 'taiwan' ? 'TW' : 'HK';
+    // 只有大陸鋤大地一種規則（HK 後綴即為大陸版文案）
+    const suffix = 'HK';
 
     const elements = {
         'rule-desc-suit': 'ruleSuit',
@@ -346,48 +346,24 @@ if (ipcRenderer) {
 function updateMuteUI() {
     if (!muteToggle) return;
 
-    let icon = '🔊';
-    let tooltip = t('soundModeAll');
-
-    if (soundMode === 1) {
-        icon = '🔉';
-        tooltip = t('soundModeSFX');
-    } else if (soundMode === 2) {
-        icon = '🔇';
-        tooltip = t('soundModeNone');
-    }
-
-    muteToggle.textContent = icon;
-    muteToggle.title = tooltip;
-    AudioPlayer.setSoundMode(soundMode);
+    const muted = (soundMode === 2);
+    muteToggle.textContent = muted ? '🔇' : '🔊';
+    muteToggle.title = muted ? t('declareVoiceOff') : t('declareVoiceOn');
+    AudioPlayer.setSoundMode(muted ? 2 : 0);
 }
 window.updateMuteUI = updateMuteUI;
 
 if (muteToggle) {
     muteToggle.onclick = () => {
-        window.soundMode = (soundMode + 1) % 3;
+        // 只有「報牌配音 開／關」兩態（背景音樂已移除）
+        window.soundMode = (soundMode === 2) ? 0 : 2;
         AppStorage.setItem('soundMode', soundMode);
         updateMuteUI();
+        if (window.soundMode === 0) AudioPlayer.playDeclareSample();
     };
     updateMuteUI();
-    AudioPlayer.playBGM();
 }
 
-const gameRuleModeInput = document.getElementById('game-rule-mode');
-if (gameRuleModeInput) {
-    const savedRuleMode = AppStorage.getItem('ruleMode') || 'mainland';
-    gameRuleModeInput.value = savedRuleMode;
-    gameRuleModeInput.onchange = () => {
-        const val = gameRuleModeInput.value;
-        AppStorage.setItem('ruleMode', val);
-        if (typeof updateRulesDescription === 'function') {
-            updateRulesDescription();
-        }
-        if (typeof renderAll === 'function') {
-            renderAll();
-        }
-    };
-}
 
 function setupAvatarClickListeners() {
     // 點頭像＝換一位對手角色（純本機規則 AI，沒有大模型設定）

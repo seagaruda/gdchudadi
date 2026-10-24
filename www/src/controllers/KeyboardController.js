@@ -37,7 +37,7 @@ window.addEventListener('keydown', (e) => {
         const lastPlay = (gameState.lastPlayerIndex === 0) ? null : gameState.lastPlay;
         
         // Generate all legal moves using GameLogic
-        const legalMoves = GameLogic.getLegalMoves(hand, lastPlay, gameState.lastPlayerIndex, 0, gameState.shouted);
+        const legalMoves = GameLogic.getLegalMoves(hand, lastPlay, gameState.lastPlayerIndex, 0);
 
         if (!legalMoves || legalMoves.length === 0) return;
 
@@ -53,7 +53,6 @@ window.addEventListener('keydown', (e) => {
         
         renderHumanHand();
         updatePlayButtonVisibility();
-        updateShoutButton();
     } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         const isHumanTurn = (gameState.turn === 0 && (!window.AI || !window.AI.getCharacter(0)));
@@ -61,15 +60,7 @@ window.addEventListener('keydown', (e) => {
         
         const selected = Array.from(gameState.selectedCards);
         if (selected.length > 0) {
-            const hand = gameState.players[0];
-            const remainingCount = hand.length - selected.length;
-
-            // If it's a shout situation, use shoutLa() logic
-            if (remainingCount === 1) {
-                shoutLa();
-            } else {
-                playCards();
-            }
+            playCards();
         }
     } else if (e.key === 'ArrowDown') {
         e.preventDefault();
@@ -78,16 +69,12 @@ window.addEventListener('keydown', (e) => {
             resetCycleState();
             renderHumanHand();
             updatePlayButtonVisibility();
-            updateShoutButton();
         }
     } else if (e.key === 'Enter') {
         e.preventDefault();
         const isHumanTurn = (gameState.turn === 0 && (!window.AI || !window.AI.getCharacter(0)));
         if (!isHumanTurn) return;
 
-        if (window.btnShout && !window.btnShout.classList.contains('hidden')) {
-            shoutLa();
-        }
     } else if (e.key === ' ' || e.key === 'Spacebar' || e.code === 'Space' || e.keyCode === 32) {
         e.preventDefault();
         const isHumanTurn = (gameState.turn === 0 && (!window.AI || !window.AI.getCharacter(0)));

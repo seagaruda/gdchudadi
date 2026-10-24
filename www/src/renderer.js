@@ -14,7 +14,6 @@ try {
 // Bind actions to DOM elements
 if (window.btnPlay) btnPlay.onclick = () => playCards();
 if (window.btnPass) btnPass.onclick = () => passTurn();
-if (window.btnShout) btnShout.onclick = () => shoutLa();
 
 if (window.btnNew) {
     btnNew.onclick = () => {

@@ -5,7 +5,6 @@ window.statusMessage = document.getElementById('status-message');
 window.btnPlay = document.getElementById('btn-play');
 window.btnPass = document.getElementById('btn-pass');
 window.btnNew = document.getElementById('btn-new');
-window.btnShout = document.getElementById('btn-shout');
 window.infoIcon = document.getElementById('info-icon');
 window.rulesModal = document.getElementById('rules-modal');
 window.alertModal = document.getElementById('alert-modal');
@@ -144,8 +143,8 @@ function updateDynamicAvatars() {
         if (gameState.turn === playerIndex) y += 0.15;
         
         const othersCloseToWin = gameState.players.some((p, idx) => idx !== playerIndex && p.length <= 2);
-        const othersShouted = gameState.shouted.some((s, idx) => idx !== playerIndex && s);
-        if (othersCloseToWin || othersShouted) {
+        const othersDeclared = gameState.declared.some((v, idx) => idx !== playerIndex && v);
+        if (othersCloseToWin || othersDeclared) {
             y += 0.5;
         }
         if (gameState.lastPlay && gameState.lastPlayerIndex !== playerIndex) {
@@ -311,7 +310,6 @@ function createHumanCardElement(cardId) {
             cardEl.classList.add('selected');
         }
         updatePlayButtonVisibility();
-        updateShoutButton();
     };
     return cardEl;
 }
@@ -385,7 +383,7 @@ function renderAIPlayers() {
 
         nameEl.textContent = PLAYER_NAMES[i];
 
-        if (gameState.shouted[i]) {
+        if (gameState.players[i] && gameState.players[i].length === 1) {
             nameEl.classList.add('shouted-name');
         } else {
             nameEl.classList.remove('shouted-name');
@@ -413,7 +411,7 @@ function renderAIPlayers() {
         if (humanNameEl) {
             humanNameEl.textContent = PLAYER_NAMES[0];
             humanScoreEl.textContent = `Score: ${gameState.scores[0]}`;
-            if (gameState.shouted[0]) {
+            if (gameState.players[0] && gameState.players[0].length === 1) {
                 humanNameEl.classList.add('shouted-name');
             } else {
                 humanNameEl.classList.remove('shouted-name');
@@ -492,13 +490,11 @@ function updateStatus() {
 
 function updatePlayButtonVisibility() {
     const hand = gameState.players[0];
-    const selected = Array.from(gameState.selectedCards);
-    const remainingCount = hand.length - selected.length;
+    const hasLead = (gameState.lastPlayerIndex === -1 || gameState.lastPlayerIndex === 0);
 
     if (gameState.gameEnded) {
         btnPlay.classList.add('hidden');
         btnPass.classList.add('hidden');
-        btnShout.classList.add('hidden');
         return;
     }
 
@@ -507,85 +503,17 @@ function updatePlayButtonVisibility() {
     if (!isHumanTurn) {
         btnPlay.classList.add('hidden');
         btnPass.classList.add('hidden');
-        btnShout.classList.add('hidden');
         return;
     }
 
-    // --- Button Visibility Logic ---
-    let canMove = true;
-    const hasLead = (gameState.lastPlayerIndex === -1 || gameState.lastPlayerIndex === 0);
+    const canMove = hasLead ? true : GameLogic.hasValidMoves(hand, gameState.lastPlay);
 
-    if (!hasLead) {
-        if (gameState.shouted[0]) {
-            // If shouted, must play ENTIRE hand.
-            const info = GameLogic.getHandInfo(hand);
-            if (info && hand.length === gameState.lastPlay.length && GameLogic.compareHands(hand, gameState.lastPlay) > 0) {
-                canMove = true;
-            } else {
-                canMove = false;
-            }
-        } else {
-            canMove = GameLogic.hasValidMoves(hand, gameState.lastPlay);
-        }
-    }
-
-
-    // Helper to check if current selection is valid and beats table
-    const isSelectionValid = () => {
-        if (selected.length === 0) return false;
-        const info = GameLogic.getHandInfo(selected);
-        if (!info) return false;
-        if (!hasLead && gameState.lastPlay) {
-            const isSelectedBomb = info.type === 'FOUR_OF_A_KIND' || info.type === 'STRAIGHT_FLUSH';
-            const isLastPlaySingleOrPair = gameState.lastPlay.length === 1 || gameState.lastPlay.length === 2;
-
-            if (selected.length !== gameState.lastPlay.length && !(isSelectedBomb && isLastPlaySingleOrPair)) {
-                return false;
-            }
-            if (GameLogic.compareHands(selected, gameState.lastPlay) <= 0) return false;
-        }
-        // First turn rule: Must include the starting card (Club 3 = 0 for Taiwan, Diamond 3 = 13 for HK)
-        const ruleMode = AppStorage.getItem('ruleMode') || 'mainland';
-        const startCard = ruleMode === 'taiwan' ? 0 : 13;
-        if (gameState.lastPlayerIndex === -1 && !selected.includes(startCard)) return false;
-        return true;
-    };
-
-    if (gameState.shouted[0]) {
-        // Case A: Already shouted "La" - Must play all cards
-        // Show Play as a hint if the player CAN win this round
-        if (hasLead || canMove) {
-            btnPlay.classList.remove('hidden');
-        } else {
-            btnPlay.classList.add('hidden');
-        }
-    } else {
-        // Case B: Not shouted yet
-        if (hasLead || canMove) {
-            // Rule: If selection leaves exactly 1 card, must use Shout button
-            const remaining = hand.filter(c => !selected.includes(c));
-            if (remaining.length === 1 && isSelectionValid()) {
-                btnPlay.classList.add('hidden');
-            } else {
-                btnPlay.classList.remove('hidden');
-            }
-        } else {
-            btnPlay.classList.add('hidden');
-        }
-
-    }
+    if (hasLead || canMove) btnPlay.classList.remove('hidden');
+    else btnPlay.classList.add('hidden');
 
     // Hide Pass if player has the lead (new round or start)
-    if (hasLead) {
-        btnPass.classList.add('hidden');
-    } else {
-        btnPass.classList.remove('hidden');
-    }
-
-    // Hide Shout button if no valid move (only if not lead)
-    if (!hasLead && !canMove) {
-        btnShout.classList.add('hidden');
-    }
+    if (hasLead) btnPass.classList.add('hidden');
+    else btnPass.classList.remove('hidden');
 }
 
 function createScoreElement(parent) {
