@@ -1247,18 +1247,6 @@ body {
     font-weight: 500;
 }
 
-/* License & Sponsor Tab Styling */
-.license-sponsor-section {
-    padding: 10px 0;
-}
-
-.license-text {
-    margin: 0;
-    font-size: 15px;
-    line-height: 1.8;
-    color: #cbd5e1;
-}
-
 .rules-link {
     color: #a855f7;
     text-decoration: none;
@@ -1315,12 +1303,7 @@ body {
     letter-spacing: -0.1px;
 }
 
-#rules-modal select,
-#rules-modal .rule-mode-selector-container label {
-    font-size: 12px !important;
-}
-
-/* 三個分頁標籤：字級收小 + 不換行（原本「版權與贊助」會被擠成兩行） */
+/* 分頁標籤：字級收小 + 不換行 */
 #rules-modal .modal-tabs { gap: 6px; }
 
 #rules-modal .tab-btn {

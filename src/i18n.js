@@ -237,6 +237,7 @@ const I18N = {
         roundNo: "第 {n} 局",
         statsTitle: "本次開 App 戰績",
         statsRoundsLine: "本次開 App 已玩 {n} 局",
+        statsRoundsLineOne: "本次開 App 已玩 1 局",
         thWins: "勝局",
         thTotalShort: "累計",
         thPlayer: "玩家",

@@ -1,6 +1,5 @@
 // DOM Elements definitions on window/global scope for shared access
 window.humanCardsContainer = document.getElementById('human-cards');
-window.lastPlayContainer = document.getElementById('last-play');
 window.statusMessage = document.getElementById('status-message');
 window.btnPlay = document.getElementById('btn-play');
 window.btnPass = document.getElementById('btn-pass');
@@ -539,7 +538,7 @@ function showPassIndicator(playerIndex) {
     triggerShoutEffect(playerIndex, t('passMsg'), false);
 }
 
-function triggerShoutEffect(playerIndex, message = "拉", shake = true) {
+function triggerShoutEffect(playerIndex, message = "報單", shake = true) {
     const container = document.getElementById('game-container');
     const playerEl = playerIndex === 0 ? document.getElementById('human-area') : document.getElementById(`player-${playerIndex + 1}`);
     if (!playerEl) return;
@@ -603,12 +602,15 @@ document.querySelectorAll('.close-btn').forEach(btn => {
 });
 
 window.onclick = (event) => {
-    const settingsModal = document.getElementById('ai-settings-modal');
-    if (event.target === rulesModal || event.target === alertModal || event.target === confirmModal || event.target === settingsModal) {
+    // 點遮罩關閉（計分表／戰績在 renderer.js 另有綁定）
+    const backdrops = [rulesModal, alertModal, confirmModal, document.getElementById('score-modal'), document.getElementById('stats-modal')];
+    if (backdrops.includes(event.target)) {
         rulesModal.classList.add('hidden');
         alertModal.classList.add('hidden');
         confirmModal.classList.add('hidden');
-        if (settingsModal) settingsModal.classList.add('hidden');
+        if (event.target !== rulesModal && event.target !== alertModal && event.target !== confirmModal) {
+            event.target.classList.add('hidden');
+        }
     }
 };
 

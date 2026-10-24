@@ -93,7 +93,9 @@ window.addEventListener('keydown', (e) => {
         if (window.rulesModal) window.rulesModal.classList.add('hidden');
         if (window.alertModal) window.alertModal.classList.add('hidden');
         if (window.confirmModal) window.confirmModal.classList.add('hidden');
-        const settingsModal = document.getElementById('ai-settings-modal');
-        if (settingsModal) settingsModal.classList.add('hidden');
+        ['score-modal', 'stats-modal'].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
     }
 });

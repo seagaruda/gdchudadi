@@ -232,29 +232,7 @@ function executePlay(playerIndex, cards) {
     if (gameState.players[playerIndex].length === 0) {
         gameState.gameEnded = true;
         calculateScores(playerIndex);
-
-        // 記錄本局分數並累加到本次開 App 的總分
-        const roundScores = gameState.scores.slice();
-        for (let i = 0; i < 4; i++) window.sessionScores[i] += roundScores[i];
-        window.sessionWins[playerIndex] += 1;
-        window.roundsPlayed += 1;
-
-        renderAll();
-        AudioPlayer.playWin();
-        setTimeout(() => showScoreTable(playerIndex, roundScores), 350);
-
-        // Auto-Restart logic if Slot 0 is AI-controlled
-        const p0Char = window.AI ? window.AI.getCharacter(0) : null;
-        if (p0Char) {
-            console.log("%c[System] AI in Slot 0 detected. Auto-restarting in 10s...", "color: #f39c12; font-weight: bold;");
-            setTimeout(() => {
-                if (gameState.gameEnded) {
-                    if (window.alertModal) window.alertModal.classList.add('hidden'); // Close winner alert
-                    if (window.scoreModalEl) window.scoreModalEl.classList.add('hidden');
-                    initGame();
-                }
-            }, 10000);
-        }
+        finalizeRound(playerIndex);
         return;
     }
 
@@ -263,10 +241,38 @@ function executePlay(playerIndex, cards) {
 window.executePlay = executePlay;
 
 /**
+ * 每局結束的統一結算：記錄本局分、累計分、勝局數，彈出計分表，必要時排自動重開。
+ * 一般贏局與一條龍都走這裡，避免只更新部分統計。
+ */
+function finalizeRound(winnerIndex, winnerText) {
+    const roundScores = gameState.scores.slice();
+    for (let i = 0; i < 4; i++) window.sessionScores[i] += roundScores[i];
+    window.sessionWins[winnerIndex] += 1;
+    window.roundsPlayed += 1;
+
+    renderAll();
+    AudioPlayer.playWin();
+    setTimeout(() => showScoreTable(winnerIndex, roundScores, winnerText), 350);
+    scheduleAutoRestartIfAI();
+}
+window.finalizeRound = finalizeRound;
+
+function scheduleAutoRestartIfAI() {
+    const p0Char = window.AI ? window.AI.getCharacter(0) : null;
+    if (!p0Char) return;   // 只有本機交 AI（自動對局／測試）才自動重開
+    setTimeout(() => {
+        if (!gameState.gameEnded) return;
+        if (window.alertModal) window.alertModal.classList.add('hidden');
+        if (window.scoreModalEl) window.scoreModalEl.classList.add('hidden');
+        initGame();
+    }, 10000);
+}
+
+/**
  * 每局結束的計分表：顯示每位玩家「本局」與「本次開 App 累計」分數。
  * 累計存在 window.sessionScores，只會在重新啟動 App（頁面重載）時歸零。
  */
-function showScoreTable(winnerIndex, roundScores) {
+function showScoreTable(winnerIndex, roundScores, winnerText) {
     const modal = window.scoreModalEl || document.getElementById('score-modal');
     const body = document.getElementById('score-table-body');
     if (!modal || !body) return;
@@ -276,7 +282,7 @@ function showScoreTable(winnerIndex, roundScores) {
     if (titleEl) titleEl.textContent = t('roundScoreTitle') + ' · ' + t('roundNo', { n: window.roundsPlayed });
 
     const winnerEl = document.getElementById('score-modal-winner');
-    if (winnerEl) winnerEl.textContent = t('winner', { name: PLAYER_NAMES[winnerIndex] });
+    if (winnerEl) winnerEl.textContent = winnerText || t('winner', { name: PLAYER_NAMES[winnerIndex] });
 
     body.innerHTML = '';
     for (let i = 0; i < 4; i++) {
@@ -498,21 +504,7 @@ function handleDragonWin(playerIndex) {
         totalGained += lost;
     }
     gameState.scores[playerIndex] += totalGained;
-    renderAll();
-    AudioPlayer.playWin();
-
-    setTimeout(() => showAlert(t('dragonWin', { name: PLAYER_NAMES[playerIndex] })), 100);
-
-    const p0Char = window.AI ? window.AI.getCharacter(0) : null;
-    if (p0Char) {
-        console.log("%c[System] AI in Slot 0 detected. Auto-restarting in 10s...", "color: #f39c12; font-weight: bold;");
-        setTimeout(() => {
-            if (gameState.gameEnded) {
-                if (window.alertModal) window.alertModal.classList.add('hidden'); // Close winner alert
-                initGame();
-            }
-        }, 10000);
-    }
+    finalizeRound(playerIndex, t('dragonWin', { name: PLAYER_NAMES[playerIndex] }));
 }
 window.handleDragonWin = handleDragonWin;
 

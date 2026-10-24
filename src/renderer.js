@@ -24,14 +24,7 @@ if (statsBtn) statsBtn.onclick = () => showSessionStats();
 const statsCloseBtn = document.getElementById('stats-close-btn');
 if (statsCloseBtn) statsCloseBtn.onclick = () => document.getElementById('stats-modal').classList.add('hidden');
 
-// 點彈窗外圍（遮罩）即關閉：計分表、戰績、說明
-['score-modal', 'stats-modal', 'rules-modal'].forEach((id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.addEventListener('click', (ev) => {
-        if (ev.target === el) el.classList.add('hidden');
-    });
-});
+// 遮罩點擊關閉統一在 GameView 的 window.onclick 處理（含計分表／戰績／說明）
 if (window.btnPass) btnPass.onclick = () => passTurn();
 
 if (window.btnNew) {

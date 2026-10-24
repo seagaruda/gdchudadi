@@ -2,6 +2,22 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Fixed（全代碼檢查）
+- **一條龍結算漏統計**：`handleDragonWin()` 直接改 `gameState.scores` 後只彈 `alert`，沒有累加 `sessionScores`／`sessionWins`／`roundsPlayed`，也沒有計分表 → 一條龍那局在戰績裡「消失」。改成一般贏局與一條龍都走新的 `finalizeRound(winnerIndex, winnerText)`。
+- 中文缺 `statsRoundsLineOne`（英文有、中文 fallback 到 key 名）→ 補上。
+- `triggerShoutEffect()` 預設台詞仍是「拉」→ 改「報單」。
+
+### Removed（死代碼）
+- `SettingsController`：`#license-sponsor-text-element`／`#rules-*-link`／`#license-store-status` 兩段已刪除元件的殘留邏輯（86 行）
+- `GameView`：`window.lastPlayContainer = getElementById('last-play')`（元素不存在且無人使用）、`ai-settings-modal` 引用
+- `styles.css`：`.license-sponsor-section`、`.license-text`、`#rules-modal .rule-mode-selector-container` 等死選擇器
+- `tests/repro_shout_bug.js`（喊拉功能的舊重現腳本）
+
+### Added（可重複執行）
+- `scripts/audit.js`（`npm run audit:code`）：JS 語法、`getElementById` 對 HTML id、i18n key 雙向齊全、語音檔齊全、舊功能殘留、`www` 與 `src` 同步，一次檢查
+- `tests/logic.test.js` 新增 5 個大陸規則回歸：A2345／23456 順子、純四張非法、四帶一合法、五張不能壓單張（共 22 個測試）
+
+
 ### Fixed（計分錯誤）
 - **`initGame()` 沒有清空 `gameState.scores`**：導致計分表的「本局」欄其實是跨局累加值，而 `sessionScores` 又把這個累加值再加一次 → 累計被重複計算、數字虛高（曾出現第 1 局就 +215 的情況）。現在每局開始歸零，四家「本局」相加必為 0，累計 = 各局本局之和。
 - **黑桃 2 加倍條件**：依大陸規則改為「手上剩 8 張或以上 **且** 含黑桃 2」才 ×2（原本 3 張帶黑桃 2 也會加倍）。

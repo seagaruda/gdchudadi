@@ -75,93 +75,7 @@ function updateLanguage() {
         }
     }
 
-    const licenseSponsorTextElement = document.getElementById('license-sponsor-text-element');
-    if (licenseSponsorTextElement) {
-        if (buildTarget === 'STORE') {
-            licenseSponsorTextElement.innerHTML = I18N[currentLang].rulesSourceStore || I18N['en'].rulesSourceStore;
-        } else {
-            licenseSponsorTextElement.innerHTML = I18N[currentLang].rulesSourceSponsor || I18N['en'].rulesSourceSponsor;
-        }
-        
-        const rulesGhLink = document.getElementById('rules-github-link');
-        const rulesSpLink = document.getElementById('rules-sponsor-link');
-        const rulesStoreLink = document.getElementById('rules-store-link');
-        const openLink = (url) => {
-            if (typeof SystemService !== 'undefined') {
-                SystemService.openExternal(url);
-            } else if (typeof require !== 'undefined' && ipcRenderer) {
-                try {
-                    const { shell } = require('electron');
-                    shell.openExternal(url);
-                } catch (e) {
-                    window.open(url, '_blank');
-                }
-            } else {
-                window.open(url, '_blank');
-            }
-        };
 
-        if (rulesGhLink) {
-            rulesGhLink.onclick = (e) => {
-                e.preventDefault();
-                openLink('https://github.com/mesmerli/taiwan-big-two-ai');
-            };
-        }
-        if (rulesSpLink) {
-            rulesSpLink.onclick = (e) => {
-                e.preventDefault();
-                openLink('https://ko-fi.com/mesmerli');
-            };
-        }
-        if (rulesStoreLink) {
-            rulesStoreLink.onclick = (e) => {
-                e.preventDefault();
-                openLink('https://apps.microsoft.com/detail/9PM1S8GKBLK9');
-            };
-        }
-    }
-
-    const licenseStoreStatus = document.getElementById('license-store-status');
-    if (licenseStoreStatus) {
-        if (buildTarget === 'STORE') {
-            const licenseStatus = typeof LicenseService !== 'undefined' ? LicenseService.getLicenseStatusSync() : (ipcRenderer ? ipcRenderer.sendSync('get-license-status-sync') : null);
-            if (!licenseStatus || !licenseStatus.isActive) {
-                licenseStoreStatus.textContent = t('storeCheckingLicense');
-                licenseStoreStatus.style.color = '#94a3b8';
-                licenseStoreStatus.style.cursor = 'default';
-                licenseStoreStatus.style.textDecoration = 'none';
-                licenseStoreStatus.title = '';
-            } else if (licenseStatus.isTrial) {
-                const daysLeft = licenseStatus.trialDaysRemaining !== undefined ? licenseStatus.trialDaysRemaining : (() => {
-                    const now = new Date();
-                    const expirationDate = new Date(licenseStatus.expirationDate);
-                    return Math.ceil((expirationDate - now) / (1000 * 60 * 60 * 24));
-                })();
-                licenseStoreStatus.textContent = t('trialDaysLeft', { days: daysLeft });
-                licenseStoreStatus.style.color = '#f39c12';
-                licenseStoreStatus.style.cursor = 'pointer';
-                licenseStoreStatus.style.textDecoration = 'underline';
-                licenseStoreStatus.title = t('trialClickToBuy');
-            } else {
-                licenseStoreStatus.textContent = t('storeFullVersion');
-                licenseStoreStatus.style.color = '#10b981';
-                licenseStoreStatus.style.cursor = 'default';
-                licenseStoreStatus.style.textDecoration = 'none';
-                licenseStoreStatus.title = '';
-            }
-        } else if (ipcRenderer) {
-            licenseStoreStatus.textContent = t('githubVersionWarning');
-            licenseStoreStatus.style.color = '#ef4444';
-            licenseStoreStatus.style.cursor = 'default';
-            licenseStoreStatus.style.textDecoration = 'none';
-            licenseStoreStatus.title = '';
-        } else {
-            licenseStoreStatus.textContent = '';
-            licenseStoreStatus.style.cursor = 'default';
-            licenseStoreStatus.style.textDecoration = 'none';
-            licenseStoreStatus.title = '';
-        }
-    }
 
     // Update Rules Footer (Version & Author)
     let pkg = window.AppVersionInfo || { version: "1.5.0", author: "mesmerli", buildVersion: "1.5.0.0" };
@@ -317,19 +231,6 @@ const openStore = () => {
 
 if (trialStatus) {
     trialStatus.addEventListener('click', openStore);
-}
-
-const licenseStoreStatus = document.getElementById('license-store-status');
-if (licenseStoreStatus) {
-    licenseStoreStatus.addEventListener('click', () => {
-        const buildTarget = typeof LicenseService !== 'undefined' ? LicenseService.getBuildTarget() : (ipcRenderer ? ipcRenderer.sendSync('get-build-target') : 'GITHUB');
-        if (buildTarget === 'STORE') {
-            const licenseStatus = typeof LicenseService !== 'undefined' ? LicenseService.getLicenseStatusSync() : (ipcRenderer ? ipcRenderer.sendSync('get-license-status-sync') : null);
-            if (licenseStatus && licenseStatus.isTrial) {
-                openStore();
-            }
-        }
-    });
 }
 
 if (ipcRenderer) {

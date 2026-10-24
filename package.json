@@ -1,6 +1,6 @@
 {
   "name": "taiwan-big-two-ai",
-  "version": "1.5.35",
+  "version": "1.5.36",
   "description": "Modern Big Two game with local rule-based AI (Android portrait branch)",
   "license": "AGPL-3.0-only",
   "main": "main.js",
@@ -14,6 +14,7 @@
     "package": "npm run increment-build && electron-packager . \"Guangdong Chu Da Di\" --platform=win32 --arch=x64 --out=dist --overwrite",
     "increment-build": "node scripts/increment-build.js",
     "test": "node tests/logic.test.js",
+    "audit:code": "node scripts/audit.js",
     "build-StoreBridge": "node-gyp clean configure build --directory=StoreBridge",
     "sync-www": "node scripts/sync-www.js",
     "android:sync": "npm run sync-www && npx cap sync android",
@@ -25,7 +26,7 @@
   },
   "build": {
     "appId": "mesmerli.TaiwanBig2AI",
-    "buildVersion": "1.5.35.0",
+    "buildVersion": "1.5.36.0",
     "buildNumber": "54",
     "productName": "Guangdong Chu Da Di",
     "directories": {

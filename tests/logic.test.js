@@ -180,6 +180,46 @@ runTest("HK Rules - hasValidMoves for triples", () => {
            assert(canMoveWorse === false, "Worse triple should NOT be a valid move");
 });
 
+// --- 大陸規則回歸測試（1.5.36 新增）---
+
+runTest("Mainland: A2345 是順子（A 作最小）", () => {
+    global.AppStorage.setItem('ruleMode', 'mainland');
+    // 梅花 3,4,5 + 梅花 A,2 → 同花順，value 應為 5（rank 2）
+    const info = GameLogic.getHandInfo([0, 1, 2, 11, 12]);
+    const ok = info && (info.type === 'STRAIGHT' || info.type === 'STRAIGHT_FLUSH') && info.value % 13 === 2;
+    global.AppStorage.setItem('ruleMode', 'taiwan');
+    return assert(ok, `A2345 判定為順子且以 5 計（實際 ${JSON.stringify(info)}）`);
+});
+
+runTest("Mainland: 23456 是順子（2 作最小端）", () => {
+    global.AppStorage.setItem('ruleMode', 'mainland');
+    const info = GameLogic.getHandInfo([0, 1, 2, 3, 12]);
+    const ok = info && (info.type === 'STRAIGHT' || info.type === 'STRAIGHT_FLUSH') && info.value % 13 === 3;
+    global.AppStorage.setItem('ruleMode', 'taiwan');
+    return assert(ok, `23456 判定為順子且以 6 計（實際 ${JSON.stringify(info)}）`);
+});
+
+runTest("Mainland: 純四張同點不是合法牌型", () => {
+    global.AppStorage.setItem('ruleMode', 'mainland');
+    const info = GameLogic.getHandInfo([0, 13, 26, 39]);
+    global.AppStorage.setItem('ruleMode', 'taiwan');
+    return assert(info === null, `四張同點應為 null（實際 ${JSON.stringify(info)}）`);
+});
+
+runTest("Mainland: 四帶一（5 張）合法", () => {
+    global.AppStorage.setItem('ruleMode', 'mainland');
+    const info = GameLogic.getHandInfo([0, 13, 26, 39, 1]);
+    global.AppStorage.setItem('ruleMode', 'taiwan');
+    return assert(info && info.type === 'FOUR_OF_A_KIND', `四帶一應為 FOUR_OF_A_KIND（實際 ${JSON.stringify(info)}）`);
+});
+
+runTest("Mainland: 五張牌型不能壓單張", () => {
+    global.AppStorage.setItem('ruleMode', 'mainland');
+    const cmp = GameLogic.compareHands([0, 13, 26, 39, 1], [51]);
+    global.AppStorage.setItem('ruleMode', 'taiwan');
+    return assert(cmp === 0, `四帶一 vs 單張 應為 0（實際 ${cmp}）`);
+});
+
 console.log(`\n${colors.cyan}Summary: ${passedCount}/${totalCount} tests passed.${colors.reset}`);
 
 if (passedCount < totalCount) {
