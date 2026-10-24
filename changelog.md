@@ -2,6 +2,21 @@
 
 ## [android-portrait] - 2026-10-23
 
+### Fixed（先出規則：第一局 ♦3 先出，第二局起由上局贏家先出）
+- 之前 `initGame()` **每一局**都重新找 ♦3 持有者先出，跟 Information 裡寫的規則說明（「之後每局由上一局贏家先出」）不一致。
+- 現在：
+  - 第一局（本次開 App 後的第一次發牌）＝ ♦3 持有者先出，`gameState.requireStartCard = true`，首手必須帶 ♦3；
+  - 第二局起 ＝ `window.lastRoundWinner` 先出，`requireStartCard = false`，不限制帶 ♦3；
+  - `finalizeRound()` 寫入 `window.lastRoundWinner`，`initGame()` 讀它決定先出者；
+  - 「新遊戲」按鈕重置 `lastRoundWinner / roundsPlayed / sessionScores / sessionWins / roundHistory / roundDetails`，回到「♦3 先出」。
+- 人類出牌驗證與 AI 首手規則都改看 `requireStartCard`，避免贏家先出時被卡「必須帶 ♦3」。
+
+### Verified
+- `probe35`：deal1 `turn=♦3持有者, requireStartCard=true`；deal2 `turn=上局贏家, requireStartCard=false`（AI 領出五張牌型且不含 ♦3）；deal3 同上局贏家；按「新遊戲」後 `requireStartCard=true` 且先出者回到 ♦3 持有者。
+- `probe22` 6 局實跑：每局四家手牌 + 已出牌 = 52、無重複、只有一家 0 張、無 JS 錯誤。
+- `probe17` 3 局：計分表與戰績表逐局一致、累計逐列相加相符。
+
+
 ### Changed（按論文《锄大地(广东规则)的不完全信息博弈建模与最优策略求解》重寫 AI 引擎）
 論文全文見 `Documents/chudadi_paper.md`。落地了其中可實作的 4 個部分：
 

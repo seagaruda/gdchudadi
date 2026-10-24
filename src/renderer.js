@@ -29,12 +29,20 @@ if (window.btnPass) btnPass.onclick = () => passTurn();
 
 if (window.btnNew) {
     btnNew.onclick = () => {
-        if (!gameState.gameEnded && gameState.players[0].length > 0) {
-            showConfirm(t('confirmNewGame'), () => {
-                initGame();
-            });
-        } else {
+        // 「新遊戲」＝重新開一輪會話：先出規則回到「♦3 先出」
+        const startFresh = () => {
+            window.lastRoundWinner = -1;
+            window.roundsPlayed = 0;
+            window.sessionScores = [0, 0, 0, 0];
+            window.sessionWins = [0, 0, 0, 0];
+            window.roundHistory = [];
+            window.roundDetails = [];
             initGame();
+        };
+        if (!gameState.gameEnded && gameState.players[0].length > 0) {
+            showConfirm(t('confirmNewGame'), startFresh);
+        } else {
+            startFresh();
         }
     };
 }

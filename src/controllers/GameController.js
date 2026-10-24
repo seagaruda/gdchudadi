@@ -38,6 +38,8 @@ window.aiProcessing = false;
 window.sessionScores = [0, 0, 0, 0];
 window.sessionWins = [0, 0, 0, 0];
 window.roundsPlayed = 0;
+// 上一局贏家（-1 = 還沒有）；第二局起由他先出
+window.lastRoundWinner = -1;
 window.roundHistory = [];   // 每局四家分數，戰績表用（第 1 局、第 2 局…）
 
 // Keyboard interaction cycle index
@@ -85,13 +87,24 @@ function initGame() {
     // Sort human hand
     gameState.players[0] = GameLogic.sortCards(gameState.players[0]);
 
-    // Find who has the starting card (Club 3 = 0 for Taiwan, Diamond 3 = 13 for HK)
+    // 先出者：第一局由持有 ♦3（規則模式 taiwan 則為 ♣3）的人先出，且首手必須帶該張；
+    // 第二局起由上局贏家先出，不再要求帶 ♦3（論文 §2.1 寫法）
     const ruleMode = AppStorage.getItem('ruleMode') || 'mainland';
     const startCard = ruleMode === 'taiwan' ? 0 : 13;
-    for (let i = 0; i < 4; i++) {
-        if (gameState.players[i].includes(startCard)) {
-            gameState.turn = i;
-            break;
+    const prevWinner = (typeof window.lastRoundWinner === 'number') ? window.lastRoundWinner : -1;
+    const winnerLeads = (window.roundsPlayed || 0) > 0 && prevWinner >= 0 && prevWinner < 4;
+
+    if (winnerLeads) {
+        gameState.turn = prevWinner;
+        gameState.requireStartCard = false;
+    } else {
+        gameState.requireStartCard = true;
+        gameState.turn = 0;
+        for (let i = 0; i < 4; i++) {
+            if (gameState.players[i].includes(startCard)) {
+                gameState.turn = i;
+                break;
+            }
         }
     }
 
@@ -166,8 +179,8 @@ function playCards() {
         }
     }
 
-    // 首輪必須帶方塊 3
-    if (gameState.lastPlayerIndex === -1 && !selected.includes(GameLogic.getStartCard())) {
+    // 首輪必須帶方塊 3（僅第一局；第二局起由贏家先出，不限制）
+    if (gameState.requireStartCard !== false && gameState.lastPlayerIndex === -1 && !selected.includes(GameLogic.getStartCard())) {
         showAlert(t('mustInclude3D'));
         return;
     }
@@ -255,6 +268,7 @@ function finalizeRound(winnerIndex, winnerText) {
     window.sessionWins[winnerIndex] += 1;
     window.roundsPlayed += 1;
     gameState.winnerIndex = winnerIndex;
+    window.lastRoundWinner = winnerIndex;   // 下一局由他先出
     window.roundHistory.push(roundScores);
     window.roundDetails = window.roundDetails || [];
     window.roundDetails.push(gameState.roundDetail || null);
@@ -550,6 +564,7 @@ async function aiTurn() {
         // AI Brain Call
         const aiContext = {
             playerIndex: gameState.turn,
+            requireStartCard: gameState.requireStartCard !== false,
             hand: hand,
             lastPlay: lastPlay,
             lastPlayerIndex: gameState.lastPlayerIndex,

@@ -237,8 +237,8 @@ class AICharacter {
         const sorted = Logic.sortCards(hand);
         const isLead = !lastPlay || lastPlay.length === 0;
 
-        // 規則（非策略）：首輪必須帶 ♦3 / ♣3
-        if (isLead) {
+        // 規則（非策略）：只有第一局的首手必須帶 ♦3 / ♣3；第二局起贏家先出，不受此限
+        if (isLead && context.requireStartCard !== false) {
             const ruleMode = typeof AppStorage !== 'undefined' ? (AppStorage.getItem('ruleMode') || 'mainland') : 'taiwan';
             const startCard = ruleMode === 'taiwan' ? 0 : 13;
             if (hand.includes(startCard) && (lastPlayerIndex === -1 || lastPlayerIndex === undefined)) {
