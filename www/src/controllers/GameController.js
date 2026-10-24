@@ -524,15 +524,15 @@ async function aiTurn() {
         const pressureActive = pressureTarget !== -1;
 
         // 盟友：只在自己已進入安全區（< 8 張）時才找盟友
-        //   1) 盟友也是安全區的人（3~7 張）
+        //   1) 盟友也是安全區的人（2~7 張）
         //   2) 盟友的牌不能比我多（誰牌少先讓誰跑；比我先進安全區的人才是盟友）
-        //   3) 剩 2 張以下不當盟友：再一輪就走完，讓牌等於直接把勝利送出去
+        //   3) 剩 2 張也算盟友（送張小單張助他先跑，一起抓倒霉蛋）；只剩 1 張（已報單）不當盟友
         const allyIndices = [];
         if (iAmSafe) {
             for (let i = 0; i < 4; i++) {
                 if (i === gameState.turn) continue;
                 const c = gameState.players[i] ? gameState.players[i].length : 0;
-                if (c >= 3 && c <= 7 && c <= myCount && i !== pressureTarget) allyIndices.push(i);
+                if (c >= 2 && c <= 7 && c <= myCount && i !== pressureTarget) allyIndices.push(i);
             }
         }
         const allianceActive = iAmSafe && allyIndices.length > 0;
