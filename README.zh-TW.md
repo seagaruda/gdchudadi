@@ -24,7 +24,7 @@
 |---|---|---|
 | 遊戲名稱 | 台灣大老二 AI | **廣東鋤大地** |
 | 螢幕方向 | 桌面／橫屏 | **鎖定豎屏** |
-| 規則 | 台灣 + 香港 | **預設大陸鋤大地** |
+| 規則 | 台灣 + 香港 | **只有大陸鋤大地**（台/港規則已於 v1.5.60 移除） |
 | 對手 | 規則 AI + 大模型（WebGPU／相容 OpenAI 的 API） | **只有本機規則 AI** |
 | 大模型功能 | AI 設定、模型快取、賽後復盤 | **全部移除**（不連網、不需 API Key） |
 | 計分 | 鐵支／同花順額外翻倍 | **取消額外翻倍**，改按剩餘張數 |
@@ -182,7 +182,7 @@ npm test                  # node tests/logic.test.js —— 規則引擎 17 項
 index.html                 # 遊戲主畫面（單頁）
 src/
 ├── renderer.js            # 啟動：綁定控制器與視圖
-├── gameLogic.js           # 規則：BaseRules / TaiwanRules / HongKongRules / MainlandRules
+├── gameLogic.js           # 規則：BaseRules / HongKongRules / MainlandRules（只有大陸模式）
 ├── ai/
 │   ├── AICharacter.js     # 角色基底（名稱、頭像、決策接口）
 │   ├── HeuristicAI.js     # 本機規則 AI（Alex/Bella/Chris + 動物角色）

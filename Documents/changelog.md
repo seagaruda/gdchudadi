@@ -1,5 +1,20 @@
 # Changelog
 
+## [android-portrait] - 2026-10-25 (v1.5.60 精簡)
+
+### Removed
+- **死文件**：`src/ai/ISMC.js`（220 行）——舊版確定化採樣引擎，早已被 `ChudadiEngine` 取代且不在 `index.html` 的載入清單裡。
+- **死 CSS 38 條 / 294 行**：LLM 設定彈窗（`.settings-*`、`.form-group`、`.learnings-*`）、鍵盤圖例（`#keyboard-legend`、`.legend-item`、`.enter-svg`）、`.pass-indicator`、`#alert-ok`、`.slider` 等，selector 在 HTML/JS 裡已完全不存在。
+- **死 i18n key 101 ×2 語言 / 249 行**：LLM/WebGPU/評審/設定彈窗只剩的 key，以及 `ruleMode*`；同時刪掉 `rule-*` 文案的 HK/TW 後綴機制（`ruleWinner2HK` → `ruleWinner2`，12 條）。
+- **台/港規則**：`TaiwanRules` 類（51 行）、`getRuleMode()` 與 `getStrategy()` 的三路分支、`AppStorage('ruleMode')` 的 5 處讀取與一次性遷移；`MainlandRules.getSuitStrength()` 與父類完全相同的覆寫。
+
+### Changed
+- **去重**：`GameController` 兩處重複的「該不該讓 AI 動」判斷抽成 `aiTurnDelay()`；移除 `getLegalMoves()` 從未使用的 `shouted` 參數。
+- **測試**：`tests/logic.test.js` 去掉 `ruleMode` 切換樣板，四則台規期望值改為大陸口徑（花色 ♣>♦、同花合法、23456 以 6 計）。
+
+### 淨結果
+`git diff --stat`：**13 個檔案 +86 / −914 行（淨 −828）**；`npm test` 25/25、`npm run audit:code` 無問題，393×852 幾何/樣式量測 34 項前後 **0 差異**。
+
 ## [android-portrait] - 2026-10-25
 
 ### Changed

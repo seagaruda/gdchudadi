@@ -94,6 +94,7 @@ const leftovers = [
   ['playBGM', 'switchBGM'], ['audioSrc_la', 'la_cat'], ['tab-keyboard', 'tab-license'],
   ['game-rule-mode', 'license-sponsor-text-element'],
   ['ai-level-normal', 'aiLevel'],   // v1.5.59 取消「對手強度」分頁，改為固定困難
+  ['ruleMode', 'ruleModeMigratedMainland'],   // v1.5.60 只剩大陸規則，移除台/港規則切換
 ];
 for (const [a, b] of leftovers) {
   for (const f of ['index.html', ...jsFiles.filter((x) => x.endsWith('.js'))]) {
@@ -114,14 +115,6 @@ for (const [f, src] of jsText) {
 }
 for (const [name, files] of decls) {
   if (files.length > 1) notes.push(`重複宣告（跨檔）: ${name} -> ${files.join(', ')}`);
-}
-
-// 7.5) 刻意保留的舊識別字（規則模式強制大陸、shouted 參數未用）
-for (const f of ['index.html', ...jsFiles.filter((x) => x.endsWith('.js'))]) {
-  const src = f === 'index.html' ? html : load(f);
-  for (const needle of ['ruleMode', 'shouted']) {
-    if (src.includes(needle)) notes.push(`保留 "${needle}"（${f}）：規則模式強制 mainland／未使用的舊參數`);
-  }
 }
 
 // 8) www 與 src 是否同步

@@ -87,10 +87,9 @@ function initGame() {
     // Sort human hand
     gameState.players[0] = GameLogic.sortCards(gameState.players[0]);
 
-    // 先出者：第一局由持有 ♦3（規則模式 taiwan 則為 ♣3）的人先出，且首手必須帶該張；
+    // 先出者：第一局由持有 ♦3（cardId 13）的人先出，且首手必須帶該張；
     // 第二局起由上局贏家先出，不再要求帶 ♦3（論文 §2.1 寫法）
-    const ruleMode = AppStorage.getItem('ruleMode') || 'mainland';
-    const startCard = ruleMode === 'taiwan' ? 0 : 13;
+    const startCard = 13;   // ♦3
     const prevWinner = (typeof window.lastRoundWinner === 'number') ? window.lastRoundWinner : -1;
     const winnerLeads = (window.roundsPlayed || 0) > 0 && prevWinner >= 0 && prevWinner < 4;
 
@@ -125,11 +124,8 @@ function initGame() {
     renderAll();
     updateStatus();
 
-    const isHumanTurn = (gameState.turn === 0 && (!window.AI || !window.AI.getCharacter(0)));
-    if (!isHumanTurn) {
-        const delay = (window.AI && window.AI.getCharacter(0)) ? 100 : 1000;
-        setTimeout(aiTurn, delay);
-    }
+    const delay = aiTurnDelay();
+    if (delay !== null) setTimeout(aiTurn, delay);
 }
 window.initGame = initGame;
 
@@ -475,6 +471,17 @@ function showSessionStats() {
 }
 window.showSessionStats = showSessionStats;
 
+/**
+ * 現在該不該讓 AI 動作？人類（0 號位沒掛 AI 角色）→ null，
+ * 否則回傳延遲毫秒（有 AI 角色 100ms，純人類代打 1000ms）。
+ */
+function aiTurnDelay() {
+    const aiChar = window.AI ? window.AI.getCharacter(0) : null;
+    if (gameState.turn === 0 && !aiChar) return null;
+    return aiChar ? 100 : 1000;
+}
+window.aiTurnDelay = aiTurnDelay;
+
 function nextTurn() {
     if (gameState.gameEnded) return;
 
@@ -491,9 +498,8 @@ function nextTurn() {
     renderAll();
     updateStatus();
 
-    const isHumanTurn = (gameState.turn === 0 && (!window.AI || !window.AI.getCharacter(0)));
-    if (!isHumanTurn) {
-        const delay = (window.AI && window.AI.getCharacter(0)) ? 100 : 1000;
+    const delay = aiTurnDelay();
+    if (delay !== null) {
         window.aiTurnTimeout = setTimeout(async () => {
             await aiTurn();
         }, delay);

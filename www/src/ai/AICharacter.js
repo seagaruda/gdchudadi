@@ -274,10 +274,9 @@ class AICharacter {
         const sorted = Logic.sortCards(hand);
         const isLead = !lastPlay || lastPlay.length === 0;
 
-        // 規則（非策略）：只有第一局的首手必須帶 ♦3 / ♣3；第二局起贏家先出，不受此限
+        // 規則（非策略）：只有第一局的首手必須帶 ♦3；第二局起贏家先出，不受此限
         if (isLead && context.requireStartCard !== false) {
-            const ruleMode = typeof AppStorage !== 'undefined' ? (AppStorage.getItem('ruleMode') || 'mainland') : 'taiwan';
-            const startCard = ruleMode === 'taiwan' ? 0 : 13;
+            const startCard = 13;   // ♦3
             if (hand.includes(startCard) && (lastPlayerIndex === -1 || lastPlayerIndex === undefined)) {
                 const five = Logic.findFiveCardHands(hand).filter(h => h.includes(startCard));
                 if (five.length > 0) return five[0];
@@ -385,11 +384,7 @@ class AICharacter {
      * 把 App 的 context 轉成引擎的 Observation（只用自己手牌 + 公開資訊，不偷看對手）
      */
     _buildObservation(ENGINE, context, isLead) {
-        // 引擎只實作「大陸鋤大地」規則（同張數才可壓、三條可單出、含 5 張同花）；
-        // 台/港規則有炸彈可以壓單張對子、順子窗口也不同，這裡直接不搜尋。
-        const mode = (typeof AppStorage !== 'undefined' && typeof AppStorage.getItem === 'function')
-            ? (AppStorage.getItem('ruleMode') || 'mainland') : 'mainland';
-        if (mode !== 'mainland') return null;
+        // 引擎只實作「大陸鋤大地」規則（同張數才可壓、三條可單出、含 5 張同花），與 App 一致。
         const obs = ENGINE.observationFromContext(context, {
             firstPlay: isLead && context.requireStartCard !== false,
             passes: 0

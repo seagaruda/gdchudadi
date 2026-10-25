@@ -1,5 +1,5 @@
 global.AppStorage = {
-    _data: { ruleMode: 'taiwan' },
+    _data: {},
     getItem(key) { return this._data[key] || null; },
     setItem(key, val) { this._data[key] = val; }
 };
@@ -54,8 +54,9 @@ runTest("Card Comparison (Spade beats Club)", () => {
 runTest("Hand Identification (Pairs)", () => {
     const pairOf3s = [0, 13]; // Club 3, Diamond 3
     const info = GameLogic.getHandInfo(pairOf3s);
+    // 大陸花色：♠ > ♥ > ♣ > ♦，所以這對 3 取梅花 3（cardId 0）
     return assert(info && info.type === 'PAIR', "Should detect PAIR") &&
-           assert(info.value === 13, "Value should be determined by Diamond (higher suit)");
+           assert(info.value === 0, "Value should be determined by Club (higher suit than Diamond in Mainland)");
 });
 
 runTest("Hand Identification (Straight)", () => {
@@ -65,11 +66,11 @@ runTest("Hand Identification (Straight)", () => {
     return assert(info && info.type === 'STRAIGHT', "Should detect STRAIGHT");
 });
 
-runTest("Hand Identification (Flush - SHOULD BE INVALID)", () => {
+runTest("Hand Identification (Flush - legal in Mainland)", () => {
     // 3C, 4C, 5C, 6C, 8C (Flush, not a straight)
-    const flush = [0, 1, 2, 3, 5]; 
+    const flush = [0, 1, 2, 3, 5];
     const info = GameLogic.getHandInfo(flush);
-    return assert(info === null, "Flush should be INVALID in Taiwan Big2");
+    return assert(info && info.type === 'FLUSH', "Flush should be legal (Mainland rules)");
 });
 
 runTest("Hand Comparison (Full House vs Straight)", () => {
@@ -107,12 +108,12 @@ runTest("Hand Identification (Dragon)", () => {
     return assert(info && info.type === 'DRAGON', "Should detect DRAGON");
 });
 
-runTest("Special Straight Comparison (2-3-4-5-6 is largest)", () => {
-    // 2-3-4-5-6
-    const s23456 = [12, 13, 27, 41, 3]; 
-    // 3-4-5-6-7
-    const normalS = [0, 14, 28, 42, 4]; 
-    return assert(GameLogic.compareHands(s23456, normalS) > 0, "2-3-4-5-6 should beat normal Straight");
+runTest("Special Straight Comparison (2-3-4-5-6 counts as 6, loses to 3-4-5-6-7)", () => {
+    // 2-3-4-5-6 → 大陸規則以 6 計
+    const s23456 = [12, 13, 27, 41, 3];
+    // 3-4-5-6-7 → 以 7 計
+    const normalS = [0, 14, 28, 42, 4];
+    return assert(GameLogic.compareHands(s23456, normalS) < 0, "2-3-4-5-6 (top 6) should lose to 3-4-5-6-7 (top 7)");
 });
 
 runTest("Special Straight Comparison (A-2-3-4-5 is smallest)", () => {
@@ -129,53 +130,44 @@ runTest("Multiple Pairs Generation (Three Js should yield three pairs)", () => {
     const hand = [8, 21, 47, 0];
     const pairs = GameLogic.findPairs(hand);
     
-    // We expect 3 pairs: [8, 21], [8, 47], [21, 47]
-    const p1 = pairs.some(p => p[0] === 8 && p[1] === 21);
-    const p2 = pairs.some(p => p[0] === 8 && p[1] === 47);
-    const p3 = pairs.some(p => p[0] === 21 && p[1] === 47);
-    
+    // 3 對：{8,21} {8,47} {21,47}（順序不固定，按排序後的 key 比對）
+    const keys = pairs.map(p => p.slice().sort((a, b) => a - b).join(','));
+    const want = ['21,8', '47,8', '47,21'].map(k => k.split(',').map(Number).sort((a, b) => a - b).join(','));
+    const ok = want.every(w => keys.includes(w));
+
     return assert(pairs.length === 3, "Should return exactly 3 pairs") &&
-           assert(p1 && p2 && p3, "Should contain all combinations: [Club J, Diamond J], [Club J, Spade J], [Diamond J, Spade J]");
+           assert(ok, "Should contain all combinations: [Club J, Diamond J], [Club J, Spade J], [Diamond J, Spade J]");
 });
 
 
-runTest("HK Rules - Triple Hand Identification", () => {
-    global.AppStorage.setItem('ruleMode', 'hongkong');
+runTest("Mainland - Triple Hand Identification", () => {
     const triple = [0, 13, 26]; // 3C, 3D, 3H
     const info = GameLogic.getHandInfo(triple);
-    global.AppStorage.setItem('ruleMode', 'taiwan'); // reset
-    return assert(info && info.type === 'TRIPLE', "Should detect TRIPLE in HK rules");
+    return assert(info && info.type === 'TRIPLE', "Should detect TRIPLE");
 });
 
-runTest("HK Rules - Flush Hand Identification", () => {
-    global.AppStorage.setItem('ruleMode', 'hongkong');
+runTest("Mainland - Flush Hand Identification", () => {
     const flush = [0, 1, 2, 3, 5]; // Clubs: 3, 4, 5, 6, 8
     const info = GameLogic.getHandInfo(flush);
-    global.AppStorage.setItem('ruleMode', 'taiwan'); // reset
-    return assert(info && info.type === 'FLUSH', "Should detect FLUSH in HK rules");
+    return assert(info && info.type === 'FLUSH', "Should detect FLUSH");
 });
 
-runTest("HK Rules - Bombs cannot beat singles/pairs", () => {
-    global.AppStorage.setItem('ruleMode', 'hongkong');
+runTest("Mainland - Bombs cannot beat singles/pairs", () => {
     const single = [12]; // 2 of Clubs (Rank 12)
     const quad = [0, 13, 26, 39, 1]; // 3-of-a-kind + kicker
     const compareResult = GameLogic.compareHands(quad, single);
-    global.AppStorage.setItem('ruleMode', 'taiwan'); // reset
-    return assert(compareResult === 0, "Bomb should NOT be able to beat single under HK rules");
+    return assert(compareResult === 0, "5 張牌型不能壓單張（大陸規則）");
 });
 
-runTest("HK Rules - hasValidMoves for triples", () => {
-    global.AppStorage.setItem('ruleMode', 'hongkong');
+runTest("Mainland - hasValidMoves for triples", () => {
     const handWithBetterTriple = [12, 25, 38]; // 2C, 2D, 2H (Triple 2s)
     const handWithWorseTriple = [0, 13, 26]; // 3C, 3D, 3H (Triple 3s)
     const lastPlayTriple = [1, 14, 27]; // 4C, 4D, 4H (Triple 4s)
     
-    // Triple 2s beats Triple 4s (under HK rules 2 is rank 12, higher than 4 which is rank 1)
+    // 三條 2 壓三條 4（2 為 rank 12）
     const canMoveBetter = GameLogic.hasValidMoves(handWithBetterTriple, lastPlayTriple);
     // Triple 3s cannot beat Triple 4s
     const canMoveWorse = GameLogic.hasValidMoves(handWithWorseTriple, lastPlayTriple);
-    
-    global.AppStorage.setItem('ruleMode', 'taiwan'); // reset
     return assert(canMoveBetter === true, "Better triple should be a valid move") &&
            assert(canMoveWorse === false, "Worse triple should NOT be a valid move");
 });
@@ -183,61 +175,46 @@ runTest("HK Rules - hasValidMoves for triples", () => {
 // --- 大陸規則回歸測試（1.5.36 新增）---
 
 runTest("Mainland: A2345 是順子（A 作最小）", () => {
-    global.AppStorage.setItem('ruleMode', 'mainland');
     // 梅花 3,4,5 + 梅花 A,2 → 同花順，value 應為 5（rank 2）
     const info = GameLogic.getHandInfo([0, 1, 2, 11, 12]);
     const ok = info && (info.type === 'STRAIGHT' || info.type === 'STRAIGHT_FLUSH') && info.value % 13 === 2;
-    global.AppStorage.setItem('ruleMode', 'taiwan');
     return assert(ok, `A2345 判定為順子且以 5 計（實際 ${JSON.stringify(info)}）`);
 });
 
 runTest("Mainland: 23456 是順子（2 作最小端）", () => {
-    global.AppStorage.setItem('ruleMode', 'mainland');
     const info = GameLogic.getHandInfo([0, 1, 2, 3, 12]);
     const ok = info && (info.type === 'STRAIGHT' || info.type === 'STRAIGHT_FLUSH') && info.value % 13 === 3;
-    global.AppStorage.setItem('ruleMode', 'taiwan');
     return assert(ok, `23456 判定為順子且以 6 計（實際 ${JSON.stringify(info)}）`);
 });
 
 runTest("Mainland: 純四張同點不是合法牌型", () => {
-    global.AppStorage.setItem('ruleMode', 'mainland');
     const info = GameLogic.getHandInfo([0, 13, 26, 39]);
-    global.AppStorage.setItem('ruleMode', 'taiwan');
     return assert(info === null, `四張同點應為 null（實際 ${JSON.stringify(info)}）`);
 });
 
 runTest("Mainland: 四帶一（5 張）合法", () => {
-    global.AppStorage.setItem('ruleMode', 'mainland');
     const info = GameLogic.getHandInfo([0, 13, 26, 39, 1]);
-    global.AppStorage.setItem('ruleMode', 'taiwan');
     return assert(info && info.type === 'FOUR_OF_A_KIND', `四帶一應為 FOUR_OF_A_KIND（實際 ${JSON.stringify(info)}）`);
 });
 
 runTest("Mainland: 五張牌型不能壓單張", () => {
-    global.AppStorage.setItem('ruleMode', 'mainland');
     const cmp = GameLogic.compareHands([0, 13, 26, 39, 1], [51]);
-    global.AppStorage.setItem('ruleMode', 'taiwan');
     return assert(cmp === 0, `四帶一 vs 單張 應為 0（實際 ${cmp}）`);
 });
 
 runTest("Mainland: J-Q-K-A-2 不是順子（2 不得在順子中段或最高位）", () => {
-    global.AppStorage.setItem('ruleMode', 'mainland');
     const info = GameLogic.getHandInfo([8, 22, 36, 50, 12]);   // J♣ Q♦ K♥ A♠ 2♣
-    global.AppStorage.setItem('ruleMode', 'taiwan');
     return assert(info === null, `J-Q-K-A-2 應為 null（實際 ${JSON.stringify(info)}）`);
 });
 
 runTest("Mainland: A-2-3-4-5 與 2-3-4-5-6 仍是合法順子", () => {
-    global.AppStorage.setItem('ruleMode', 'mainland');
     const a2345 = GameLogic.getHandInfo([11, 12, 0, 14, 28]);
     const s23456 = GameLogic.getHandInfo([12, 0, 14, 28, 3]);
-    global.AppStorage.setItem('ruleMode', 'taiwan');
     return assert(a2345 && a2345.type === 'STRAIGHT' && s23456 && s23456.type === 'STRAIGHT',
         `A2345=${JSON.stringify(a2345)} 23456=${JSON.stringify(s23456)}`);
 });
 
 runTest("Mainland: 出牌實例總數 = 19,898（論文 §2.2）", () => {
-    global.AppStorage.setItem('ruleMode', 'mainland');
     const counts = { SINGLE: 0, PAIR: 0, TRIPLE: 0, STRAIGHT: 0, FLUSH: 0, FULL_HOUSE: 0, FOUR: 0, STRAIGHT_FLUSH: 0 };
     const bump = (info) => {
         if (!info) return;
@@ -262,7 +239,6 @@ runTest("Mainland: 出牌實例總數 = 19,898（論文 §2.2）", () => {
             }
         }
     }
-    global.AppStorage.setItem('ruleMode', 'taiwan');
     const total = counts.SINGLE + counts.PAIR + counts.TRIPLE + counts.STRAIGHT + counts.FLUSH + counts.FULL_HOUSE + counts.FOUR + counts.STRAIGHT_FLUSH;
     const detail = `單${counts.SINGLE} 對${counts.PAIR} 三${counts.TRIPLE} 順${counts.STRAIGHT} 花${counts.FLUSH} 葫${counts.FULL_HOUSE} 四帶一${counts.FOUR} 同花順${counts.STRAIGHT_FLUSH}`;
     return assert(total === 19898, `總數應為 19898（實際 ${total}：${detail}）`);

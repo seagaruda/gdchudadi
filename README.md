@@ -24,7 +24,7 @@ Based on the open-source project **Taiwan Big2 AI** by [mesmerli](https://github
 |---|---|---|
 | Name | 台灣大老二 AI | **廣東鋤大地** |
 | Orientation | desktop / landscape | **portrait-locked Android** |
-| Rules | Taiwanese + Hong Kong | **Mainland (大陆锄大地) by default** |
+| Rules | Taiwanese + Hong Kong | **Mainland (大陆锄大地) only** — the Taiwan/HK rule sets were removed in v1.5.60 |
 | Opponents | heuristic + LLM (WebGPU / OpenAI-compatible) | **heuristic AI only** |
 | LLM features | AI settings, model cache, post-game review | **all removed** (no network, no API key) |
 | Scoring | bombs multiply | **bombs no longer multiply**; card-count ladder |
@@ -97,7 +97,7 @@ The base score of every legal move comes from the hand-splitting DP `f(H)` + han
 | paired A/B, 160 games | **+2.16 pts/deal** (se 0.98), better 13 / worse 9 / tie 138 |
 | always on | **no in-game switch** — v1.5.59 removed the *Opponent AI* tab; the AI always runs the "thinks ahead" setting (200 iters, ~39 ms, triggers on 8 % of decisions) |
 
-Determinization only sees the AI's own hand + public info (played cards, per-seat card counts, table) — it cannot peek. Rollouts use the heuristic policy with ε = 0.08 and the real pairwise settlement for the `max^n` backup. Two safety rails: the search is skipped for the Taiwan / Hong Kong rule sets (bombs + different straight windows) and it never overrides a clear heuristic winner.
+Determinization only sees the AI's own hand + public info (played cards, per-seat card counts, table) — it cannot peek. Rollouts use the heuristic policy with ε = 0.08 and the real pairwise settlement for the `max^n` backup. One safety rail: the search never overrides a clear heuristic winner.
 
 Verify it yourself:
 
@@ -184,7 +184,7 @@ Tests cover card comparison, hand types, first-play ♦3 enforcement, bomb legal
 index.html                 # game view (single page)
 src/
 ├── renderer.js            # bootstrap: controllers + views wiring
-├── gameLogic.js           # rules: BaseRules / TaiwanRules / HongKongRules / MainlandRules
+├── gameLogic.js           # rules: BaseRules / HongKongRules / MainlandRules (mainland is the only mode)
 ├── ai/
 │   ├── AICharacter.js     # persona base (name, avatar, decision hook)
 │   ├── HeuristicAI.js     # local rule-based brains (Alex/Bella/Chris + animal seats)

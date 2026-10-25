@@ -9,9 +9,7 @@ function t(key, params = {}) {
 window.t = t;
 
 function updateRulesDescription() {
-    // 只有大陸鋤大地一種規則（HK 後綴即為大陸版文案）
-    const suffix = 'HK';
-
+    // 只有大陸鋤大地一種規則，說明文案直接對應 i18n key（不再用 HK/TW 後綴切換）
     const elements = {
         'rule-desc-suit': 'ruleSuit',
         'rule-desc-start': 'ruleStart',
@@ -27,12 +25,9 @@ function updateRulesDescription() {
         'rule-desc-loserSpecial': 'ruleLoserSpecial'
     };
 
-    for (const [id, keyPrefix] of Object.entries(elements)) {
+    for (const [id, key] of Object.entries(elements)) {
         const el = document.getElementById(id);
-        if (el) {
-            const key = keyPrefix + suffix;
-            el.innerHTML = t(key);
-        }
+        if (el) el.innerHTML = t(key);
     }
 }
 window.updateRulesDescription = updateRulesDescription;

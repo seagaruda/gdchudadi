@@ -200,8 +200,7 @@ let fiveCardComboCache = new Map();
 
 function findFiveCardCombos(cards) {
     if (!cards || cards.length < 5) return [];
-    const ruleMode = (typeof AppStorage !== 'undefined' && AppStorage.getItem('ruleMode')) || 'mainland';
-    const cacheKey = `${ruleMode}|${GameLogic.sortCards(cards).join(',')}`;
+    const cacheKey = GameLogic.sortCards(cards).join(',');
     if (fiveCardComboCache.has(cacheKey)) return fiveCardComboCache.get(cacheKey);
 
     const pool = [...cards];

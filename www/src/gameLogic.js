@@ -339,7 +339,7 @@ class BaseRules {
         return info !== null;
     }
 
-    getLegalMoves(hand, lastPlay, lastPlayerIndex, playerIndex, shouted) {
+    getLegalMoves(hand, lastPlay, lastPlayerIndex, playerIndex) {
         const moves = [];
         const isLead = !lastPlay || lastPlay.length === 0;
         const sortedHand = this.sortCards(hand);
@@ -460,57 +460,6 @@ class BaseRules {
     }
 }
 
-class TaiwanRules extends BaseRules {
-    getStartCard() {
-        return 0; // Club 3
-    }
-
-    getSuitStrength(cardId) {
-        return this.getSuit(cardId);
-    }
-
-    checkBombBeating(info1, info2, len1, len2) {
-        const isBomb1 = info1.type === 'FOUR_OF_A_KIND' || info1.type === 'STRAIGHT_FLUSH';
-        const isBomb2 = info2.type === 'FOUR_OF_A_KIND' || info2.type === 'STRAIGHT_FLUSH';
-
-        if (len1 === 5 && (len2 === 1 || len2 === 2)) {
-            return isBomb1 ? 1 : 0;
-        }
-        if (len2 === 5 && (len1 === 1 || len1 === 2)) {
-            return isBomb2 ? -1 : 0;
-        }
-        return null;
-    }
-
-    compareSpecialStraights(info1, info2) {
-        if (info1.special === '23456' && info2.special !== '23456') return 1;
-        if (info1.special !== '23456' && info2.special === '23456') return -1;
-        if (info1.special === 'A2345' && info2.special !== 'A2345') return -1;
-        if (info1.special !== 'A2345' && info2.special === 'A2345') return 1;
-        return null;
-    }
-
-    checkSpecialStraights(sorted, isStraight, isFlush, is23456, isA2345) {
-        if (is23456) {
-            const card2 = sorted.find(c => this.getRank(c) === 12);
-            return { type: isFlush ? 'STRAIGHT_FLUSH' : 'STRAIGHT', value: card2, strength: isFlush ? 5 : 1, special: '23456' };
-        }
-        if (isA2345) {
-            return { type: isFlush ? 'STRAIGHT_FLUSH' : 'STRAIGHT', value: sorted[2], strength: isFlush ? 5 : 1, special: 'A2345' };
-        }
-        return null;
-    }
-
-    addMonsterMovesForSingleOrPair(moves, sortedHand) {
-        this.findFourOfAKinds(sortedHand).forEach(fk => {
-            moves.push({ cards: fk, type: 'FOUR_OF_A_KIND' });
-        });
-        this.findStraightFlushes(sortedHand).forEach(sf => {
-            moves.push({ cards: sf, type: 'STRAIGHT_FLUSH' });
-        });
-    }
-}
-
 class HongKongRules extends BaseRules {
     getStartCard() {
         return 13; // Diamond 3
@@ -545,13 +494,6 @@ class HongKongRules extends BaseRules {
  * 因此直接沿用 HongKongRules 的花色/牌型判定。
  */
 class MainlandRules extends HongKongRules {
-    // 花色強度 [梅花, 方塊, 紅桃, 黑桃] → 方塊最小、梅花次之
-    getSuitStrength(cardId) {
-        const suit = this.getSuit(cardId);
-        const mainlandStrengths = [1, 0, 2, 3];
-        return mainlandStrengths[suit];
-    }
-
     /**
      * 大陸順子：A 可接在 K 後面（10JQKA），也可作最小端（A2345）；
      * 2 可作最小端（23456），但不入順子中間。比大小時取「該順實際最大的一張」：
@@ -573,22 +515,11 @@ class MainlandRules extends HongKongRules {
 }
 
 class GameLogic {
-    static taiwanStrategy = new TaiwanRules();
-    static hkStrategy = new HongKongRules();
-    static mainlandStrategy = new MainlandRules();
-
-    static getRuleMode() {
-        if (typeof AppStorage !== 'undefined' && typeof AppStorage.getItem === 'function') {
-            return AppStorage.getItem('ruleMode') || 'mainland';
-        }
-        return 'mainland';
-    }
+    // 只有大陸鋤大地一種規則（v1.5.60 移除台/港規則與規則模式設定）
+    static strategy = new MainlandRules();
 
     static getStrategy() {
-        const mode = this.getRuleMode();
-        if (mode === 'taiwan') return this.taiwanStrategy;
-        if (mode === 'hongkong') return this.hkStrategy;
-        return this.mainlandStrategy;
+        return this.strategy;
     }
 
     static getRank(cardId) {
@@ -659,8 +590,8 @@ class GameLogic {
         return this.getStrategy().isLastHand(cards);
     }
 
-    static getLegalMoves(hand, lastPlay, lastPlayerIndex, playerIndex, shouted) {
-        return this.getStrategy().getLegalMoves(hand, lastPlay, lastPlayerIndex, playerIndex, shouted);
+    static getLegalMoves(hand, lastPlay, lastPlayerIndex, playerIndex) {
+        return this.getStrategy().getLegalMoves(hand, lastPlay, lastPlayerIndex, playerIndex);
     }
 
     static countFourOfAKinds(cards) {
