@@ -14,7 +14,11 @@ if (scoreNextBtn) scoreNextBtn.onclick = () => initGame();
 const tableCenterEl = document.getElementById('table-center');
 if (tableCenterEl) {
     tableCenterEl.onclick = () => {
-        if (!window.gameState || !window.gameState.gameEnded) return;
+        const g = window.gameState;
+        if (!g) return;
+        // 首次開啟：點桌面正中開始第一局
+        if (g.pendingStart) { initGame(); return; }
+        if (!g.gameEnded) return;
         const modal = window.scoreModalEl || document.getElementById('score-modal');
         if (modal && !modal.classList.contains('hidden')) return;   // 框還開著就讓框自己處理
         initGame();
@@ -68,4 +72,5 @@ if (window.infoIcon) {
 // Initial orchestration run
 setupAvatarClickListeners();
 updateLanguage();
-initGame();
+// 首次開啟不自動發牌：畫面中間提示「點擊桌面中間開始第一局」，點桌面正中才 initGame()
+updateStatus();

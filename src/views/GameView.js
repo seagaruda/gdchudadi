@@ -479,17 +479,19 @@ function renderPlayerActions() {
 
 function updateStatus() {
     if (!statusMessage) return;
+
+    // 首次開啟（還沒發牌）／計分框被點掉 → 提示「點桌面中間開始」
+    if (gameState.pendingStart) {
+        statusMessage.textContent = t(gameState.pendingStart === 'first' ? 'tapCenterStart' : 'tapCenterNext');
+        return;
+    }
+
     if (gameState.players[0].length === 0 && !gameState.gameEnded) {
         statusMessage.textContent = t('waiting');
         return;
     }
 
     if (gameState.gameEnded) {
-        // 計分框已被點掉 → 提示「點桌面中間開下一局」
-        if (gameState.waitingNextRound) {
-            statusMessage.textContent = t('tapCenterNext');
-            return;
-        }
         // 贏家以 gameState.winnerIndex 為唯一來源，避免掃手牌掃不到時把舊文字留在畫面上
         let idx = (typeof gameState.winnerIndex === 'number') ? gameState.winnerIndex : -1;
         if (idx < 0) {

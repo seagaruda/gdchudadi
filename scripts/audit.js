@@ -94,6 +94,7 @@ const leftovers = [
   ['playBGM', 'switchBGM'], ['audioSrc_la', 'la_cat'], ['tab-keyboard', 'tab-license'],
   ['game-rule-mode', 'license-sponsor-text-element'],
   ['ai-level-normal', 'aiLevel'],   // v1.5.59 取消「對手強度」分頁，改為固定困難
+  ['AiLevel', 'applyAiLevelUI'],    // 同上的駝峰變體（audit 是大小寫敏感的，兩種都要列）
   ['ruleMode', 'ruleModeMigratedMainland'],   // v1.5.60 只剩大陸規則，移除台/港規則切換
 ];
 for (const [a, b] of leftovers) {

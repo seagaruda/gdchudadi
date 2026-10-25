@@ -28,7 +28,8 @@ window.gameState = {
     scores: [0, 0, 0, 0],
     playerLastActions: [null, null, null, null], // null, "PASS", or Array of cards
     playedCards: [], // Persistent tracking of all cards played this game
-    gameLog: [] // Chronological log of all actions for reflection
+    gameLog: [], // Chronological log of all actions for reflection
+    pendingStart: 'first'   // null | 'first' | 'next'：等玩家點牌桌正中才發牌
 };
 
 window.aiTurnTimeout = null;
@@ -56,7 +57,7 @@ window.resetCycleState = resetCycleState;
 function initGame() {
     if (window.alertModal) window.alertModal.classList.add('hidden');
     if (window.scoreModalEl) window.scoreModalEl.classList.add('hidden');
-    gameState.waitingNextRound = false;
+    gameState.pendingStart = null;
     gameState.gameEnded = false;
     gameState.declared = [false, false, false, false];
     gameState.selectedCards.clear();
@@ -301,7 +302,7 @@ function hideScoreTable(showHint) {
     const modal = window.scoreModalEl || document.getElementById('score-modal');
     if (modal) modal.classList.add('hidden');
     if (!showHint || !gameState.gameEnded) return;
-    gameState.waitingNextRound = true;
+    gameState.pendingStart = 'next';
     const el = document.getElementById('status-message');
     if (el) el.textContent = t('tapCenterNext');
 }
@@ -327,7 +328,7 @@ function showScoreTable(winnerIndex, roundScores, winnerText) {
     const body = document.getElementById('score-table-body');
     if (!modal || !body) return;
     window.scoreModalEl = modal;
-    gameState.waitingNextRound = false;
+    gameState.pendingStart = null;
 
     const titleEl = modal.querySelector('h2');
     if (titleEl) titleEl.textContent = t('roundScoreTitle') + ' · ' + t('roundNo', { n: window.roundsPlayed });

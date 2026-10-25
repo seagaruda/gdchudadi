@@ -202,7 +202,6 @@ function updateLanguage() {
 
     updateMuteUI();
     updateTrialStatusUI();
-    applyAiLevelUI();
     renderAll();
     
 }

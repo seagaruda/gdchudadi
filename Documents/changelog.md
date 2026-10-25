@@ -1,5 +1,17 @@
 # Changelog
 
+## [android-portrait] - 2026-10-25 (v1.5.62)
+
+### Added
+- **首次開啟不自動發牌**：畫面中央提示「點擊桌面中間開始第一局」，點牌桌正中才發牌並由 ♦3 持有者先出。
+  與局末的「點桌面中間開下一局」共用一個狀態 `gameState.pendingStart`（`null` / `'first'` / `'next'`），
+  `updateStatus()` 依它顯示對應提示；鍵盤快捷鍵在等待開始期間不處理。
+
+### Fixed
+- **切換語言會拋錯（v1.5.59 遺留）**：`updateLanguage()` 仍在呼叫已刪除的 `applyAiLevelUI()`，
+  導致每次切語言都 `ReferenceError`，其後的 `renderAll()` 被跳過（首屏提示也因此停在靜態英文）。
+  已移除該呼叫；`scripts/audit.js` 的 leftovers 增加駝峰變體 `AiLevel`／`applyAiLevelUI`（原本只查小寫 `aiLevel`，漏掉了它）。
+
 ## [android-portrait] - 2026-10-25 (v1.5.61)
 
 ### Added
