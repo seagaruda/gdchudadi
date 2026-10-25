@@ -100,6 +100,10 @@ class BaseRules {
         const is23456 = [0, 1, 2, 3, 12].every(r => rankSet.has(r));
         const isA2345 = [0, 1, 2, 11, 12].every(r => rankSet.has(r));
 
+        // 2（rank 12）不能當順子的中段或最高位：只允許 23456 與 A2345 兩個特例。
+        // 否則 J-Q-K-A-2（rank 8,9,10,11,12）會被誤判成順子（論文 §2.2 的 10 種順子不含它）。
+        if (isStraight && rankSet.has(12) && !is23456 && !isA2345) isStraight = false;
+
         const specInfo = this.checkSpecialStraights(sorted, isStraight, isFlush, is23456, isA2345);
         if (specInfo) return specInfo;
 

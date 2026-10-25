@@ -220,6 +220,54 @@ runTest("Mainland: 五張牌型不能壓單張", () => {
     return assert(cmp === 0, `四帶一 vs 單張 應為 0（實際 ${cmp}）`);
 });
 
+runTest("Mainland: J-Q-K-A-2 不是順子（2 不得在順子中段或最高位）", () => {
+    global.AppStorage.setItem('ruleMode', 'mainland');
+    const info = GameLogic.getHandInfo([8, 22, 36, 50, 12]);   // J♣ Q♦ K♥ A♠ 2♣
+    global.AppStorage.setItem('ruleMode', 'taiwan');
+    return assert(info === null, `J-Q-K-A-2 應為 null（實際 ${JSON.stringify(info)}）`);
+});
+
+runTest("Mainland: A-2-3-4-5 與 2-3-4-5-6 仍是合法順子", () => {
+    global.AppStorage.setItem('ruleMode', 'mainland');
+    const a2345 = GameLogic.getHandInfo([11, 12, 0, 14, 28]);
+    const s23456 = GameLogic.getHandInfo([12, 0, 14, 28, 3]);
+    global.AppStorage.setItem('ruleMode', 'taiwan');
+    return assert(a2345 && a2345.type === 'STRAIGHT' && s23456 && s23456.type === 'STRAIGHT',
+        `A2345=${JSON.stringify(a2345)} 23456=${JSON.stringify(s23456)}`);
+});
+
+runTest("Mainland: 出牌實例總數 = 19,898（論文 §2.2）", () => {
+    global.AppStorage.setItem('ruleMode', 'mainland');
+    const counts = { SINGLE: 0, PAIR: 0, TRIPLE: 0, STRAIGHT: 0, FLUSH: 0, FULL_HOUSE: 0, FOUR: 0, STRAIGHT_FLUSH: 0 };
+    const bump = (info) => {
+        if (!info) return;
+        if (info.type === 'FOUR_OF_A_KIND') counts.FOUR++;
+        else counts[info.type] = (counts[info.type] || 0) + 1;
+    };
+    for (let c = 0; c < 52; c++) bump(GameLogic.getHandInfo([c]));
+    const byRank = [];
+    for (let r = 0; r < 13; r++) byRank.push([r, 13 + r, 26 + r, 39 + r]);
+    for (const cs of byRank) {
+        for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) bump(GameLogic.getHandInfo([cs[i], cs[j]]));
+        for (let i = 0; i < 4; i++) for (let j = i + 1; j < 4; j++) for (let k = j + 1; k < 4; k++) {
+            bump(GameLogic.getHandInfo([cs[i], cs[j], cs[k]]));
+        }
+    }
+    for (let a = 0; a < 48; a++) {
+        for (let b = a + 1; b < 49; b++) {
+            for (let c = b + 1; c < 50; c++) {
+                for (let d = c + 1; d < 51; d++) {
+                    for (let e = d + 1; e < 52; e++) bump(GameLogic.getHandInfo([a, b, c, d, e]));
+                }
+            }
+        }
+    }
+    global.AppStorage.setItem('ruleMode', 'taiwan');
+    const total = counts.SINGLE + counts.PAIR + counts.TRIPLE + counts.STRAIGHT + counts.FLUSH + counts.FULL_HOUSE + counts.FOUR + counts.STRAIGHT_FLUSH;
+    const detail = `單${counts.SINGLE} 對${counts.PAIR} 三${counts.TRIPLE} 順${counts.STRAIGHT} 花${counts.FLUSH} 葫${counts.FULL_HOUSE} 四帶一${counts.FOUR} 同花順${counts.STRAIGHT_FLUSH}`;
+    return assert(total === 19898, `總數應為 19898（實際 ${total}：${detail}）`);
+});
+
 console.log(`\n${colors.cyan}Summary: ${passedCount}/${totalCount} tests passed.${colors.reset}`);
 
 if (passedCount < totalCount) {

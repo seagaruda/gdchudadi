@@ -8,6 +8,7 @@ class AICharacter {
         this.type = "NPC";
         // 性格只調整「攻擊性」權重，不改變策略本體（策略本體是期望得分最大化）
         const STYLE = { Alex: 0.78, Bella: 0.3, Chris: 0.55, "橘貓": 0.62, "柴犬": 0.5, "河狸": 0.44 };
+        this.searchIters = 0;   // >0 時開啟 §6 的蒙特卡洛再排序
         this.traits = { aggr: STYLE[name] !== undefined ? STYLE[name] : 0.5 };
     }
 
@@ -285,30 +286,103 @@ class AICharacter {
         // 其餘：博弈 —— 每個合法選擇都算期望得分
         const table = this._buildShedTable(sorted);
         const candidates = this.buildCandidates(sorted, isLead ? null : lastPlay);
-        let bestCards = null;
-        let bestScore = -Infinity;
-        for (const cs of candidates) {
-            const score = this._evaluate(cs, context, table);
-            if (score > bestScore + 1e-9) { bestScore = score; bestCards = cs; }
-        }
 
-        if (!isLead) {
-            const passScore = this._evaluate(null, context, table);
-            if (passScore > bestScore + 1e-9) {
-                window.__lastAIReason = 'utility-pass';
-                return null;
+        const scored = candidates.map(cs => ({ cards: cs, score: this._evaluate(cs, context, table) }));
+        if (!isLead) scored.push({ cards: null, score: this._evaluate(null, context, table) });
+
+        let pick = scored.reduce((a, b) => (b.score > a.score ? b : a), scored[0]);
+
+        // 論文 §6 / §9.1：資訊集蒙特卡洛樹搜索（SO-ISMCTS）對前幾個候選做再排序。
+        // 引擎實作見 src/ai/ChudadiEngine.js（移植自論文配套的 Java 版，含 19898 種牌型枚舉自檢）。
+        // 只在「前幾名差距不大」時才可能翻盤；差距大就沿用啟發式，避免粗糙滾動策略帶偏。
+        const SEARCH = (typeof context.searchIters === 'number') ? context.searchIters
+            : (this.searchIters || 0);
+        const ENGINE = (typeof ChudadiEngine !== 'undefined') ? ChudadiEngine
+            : (typeof window !== 'undefined' ? window.ChudadiEngine : null);
+        if (SEARCH > 0 && ENGINE && scored.length > 1) {
+            const top = scored.slice().sort((a, b) => b.score - a.score).slice(0, 4);
+            const gap = top[0].score - top[top.length - 1].score;
+            if (window.__searchDebug) window.__searchDebug.push({ gap: +gap.toFixed(2), n: top.length, scores: top.map(t => +t.score.toFixed(2)) });
+            if (gap <= 6) {
+                let res = null;
+                try {
+                    const obs = this._buildObservation(ENGINE, context, isLead);
+                    if (window.__searchDebug) window.__searchDebug[window.__searchDebug.length - 1].obs = !!obs;
+                    if (obs) {
+                        const rootKeys = top.map(t => t.cards
+                            ? t.cards.map(c => ENGINE.encode(c)).sort((a, b) => a - b).join(',')
+                            : 'p');
+                        const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+                        const s = ENGINE.search(obs, {
+                            iters: SEARCH,
+                            timeMs: (context.searchTimeMs || this.searchTimeMs || 400),
+                            rootMoves: rootKeys,
+                            seed: (sorted.length * 7919 + (context.playerIndex || 0) * 131 + (sorted[0] | 0)) | 0
+                        });
+                        if (s && s.stats && s.stats.some(x => x.visits > 0)) {
+                            const used = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now()) - t0;
+                            window.__searchInfo = { iters: s.iterations, ms: Math.round(used) };
+                            const byKey = {};
+                            for (const st of s.stats) byKey[ENGINE.moveKey(st.move)] = st;
+                            res = top.map(t => {
+                                const k = t.cards ? t.cards.map(c => ENGINE.encode(c)).sort((a, b) => a - b).join(',') : 'p';
+                                const st = byKey[k];
+                                return { cand: t, avg: st && st.visits ? st.avgU : 0, visits: st ? st.visits : 0 };
+                            });
+                        }
+                    }
+                } catch (e) { res = null; }
+                if (res) {
+                    // 混合：啟發式與搜索各半（搜索分數先除以 10 對齊量級）
+                    for (const r of res) {
+                        r.blend = r.cand.score * 0.5 + (r.avg / 10) * 0.5;
+                    }
+                    res.sort((a, b) => b.blend - a.blend);
+                    const winner = res[0];
+                    const orig = top[0];
+                    if (winner.cand.cards !== orig.cards) {
+                        window.__searchFlip = { from: orig.score, to: winner.blend, avg: +winner.avg.toFixed(1) };
+                    }
+                    pick = { cards: winner.cand.cards, score: winner.blend };
+                }
             }
         }
 
-        if (!bestCards) {
-            window.__lastAIReason = 'utility-nomove';
-            return isLead ? [sorted[0]] : null;
-        }
+        if (pick.cards === null) { window.__lastAIReason = 'utility-pass'; return null; }
+        if (!pick.cards) { window.__lastAIReason = 'utility-nomove'; return isLead ? [sorted[0]] : null; }
         window.__lastAIReason = isLead ? 'utility-lead' : 'utility-beat';
-        return bestCards;
+        return pick.cards;
     }
 
 
+
+    /**
+     * 把 App 的 context 轉成引擎的 Observation（只用自己手牌 + 公開資訊，不偷看對手）
+     */
+    _buildObservation(ENGINE, context, isLead) {
+        // 引擎只實作「大陸鋤大地」規則（同張數才可壓、三條可單出、含 5 張同花）；
+        // 台/港規則有炸彈可以壓單張對子、順子窗口也不同，這裡直接不搜尋。
+        const mode = (typeof AppStorage !== 'undefined' && typeof AppStorage.getItem === 'function')
+            ? (AppStorage.getItem('ruleMode') || 'mainland') : 'mainland';
+        if (mode !== 'mainland') return null;
+        const obs = ENGINE.observationFromContext(context, {
+            firstPlay: isLead && context.requireStartCard !== false,
+            passes: 0
+        });
+        if (!obs) return null;
+        // 桌面上有牌但引擎認不出牌型 → 不搜尋（避免用錯規則）
+        if (context.lastPlay && context.lastPlay.length && !obs.lastMove) return null;
+        // 規則對齊 App：下家報單時出單張必須頂大（GameController 已強制）；
+        // 但 App 沒有「能壓過就不准過牌」這條，所以搜尋裡也不要假設。
+        obs.rules = {
+            allowTriple: true,
+            firstLeadMustContainD3: !!(isLead && context.requireStartCard !== false),
+            nextOneMustPlayMaxSingle: true,
+            noPassIfCanBeatSingle: false
+        };
+        obs.current = obs.seat;
+        return obs;
+    }
 
     /**
      * 這回合能不能把手上剩下的牌一次出完（用來判斷「要不要搶盟友的牌權」）
