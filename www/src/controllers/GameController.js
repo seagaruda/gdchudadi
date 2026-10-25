@@ -56,6 +56,7 @@ window.resetCycleState = resetCycleState;
 function initGame() {
     if (window.alertModal) window.alertModal.classList.add('hidden');
     if (window.scoreModalEl) window.scoreModalEl.classList.add('hidden');
+    gameState.waitingNextRound = false;
     gameState.gameEnded = false;
     gameState.declared = [false, false, false, false];
     gameState.selectedCards.clear();
@@ -292,6 +293,20 @@ function finalizeRound(winnerIndex, winnerText) {
 }
 window.finalizeRound = finalizeRound;
 
+/**
+ * 收起本局計分表。showHint=true 時在桌面中央提示「點一下開始下一局」——
+ * 玩家把計分框點掉之後，桌面正中就是下一局的入口（綁定在 renderer.js 的 #table-center）。
+ */
+function hideScoreTable(showHint) {
+    const modal = window.scoreModalEl || document.getElementById('score-modal');
+    if (modal) modal.classList.add('hidden');
+    if (!showHint || !gameState.gameEnded) return;
+    gameState.waitingNextRound = true;
+    const el = document.getElementById('status-message');
+    if (el) el.textContent = t('tapCenterNext');
+}
+window.hideScoreTable = hideScoreTable;
+
 function scheduleAutoRestartIfAI() {
     const p0Char = window.AI ? window.AI.getCharacter(0) : null;
     if (!p0Char) return;   // 只有本機交 AI（自動對局／測試）才自動重開
@@ -312,6 +327,7 @@ function showScoreTable(winnerIndex, roundScores, winnerText) {
     const body = document.getElementById('score-table-body');
     if (!modal || !body) return;
     window.scoreModalEl = modal;
+    gameState.waitingNextRound = false;
 
     const titleEl = modal.querySelector('h2');
     if (titleEl) titleEl.textContent = t('roundScoreTitle') + ' · ' + t('roundNo', { n: window.roundsPlayed });

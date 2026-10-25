@@ -10,6 +10,17 @@ if (window.btnPlay) btnPlay.onclick = () => playCards();
 const scoreNextBtn = document.getElementById('score-next-btn');
 if (scoreNextBtn) scoreNextBtn.onclick = () => initGame();
 
+// 局末：計分框被點掉後，點牌桌正中也能開下一局
+const tableCenterEl = document.getElementById('table-center');
+if (tableCenterEl) {
+    tableCenterEl.onclick = () => {
+        if (!window.gameState || !window.gameState.gameEnded) return;
+        const modal = window.scoreModalEl || document.getElementById('score-modal');
+        if (modal && !modal.classList.contains('hidden')) return;   // 框還開著就讓框自己處理
+        initGame();
+    };
+}
+
 // 戰績按鈕（Information 左側）
 const statsBtn = document.getElementById('stats-btn');
 if (statsBtn) statsBtn.onclick = () => showSessionStats();

@@ -1,5 +1,14 @@
 # Changelog
 
+## [android-portrait] - 2026-10-25 (v1.5.61)
+
+### Added
+- **局末點桌面正中開下一局**：本局計分框被點外收起（或按 Esc）後，牌桌正中會提示「點擊桌面中間開始下一局」，
+  點一下就開新一局。綁定在 `renderer.js` 的 `#table-center`，守衛條件：`gameState.gameEnded && 計分框已隱藏`，
+  對局進行中點桌面、或計分框還開著時點桌面都不會有反應。
+- 新 i18n key `tapCenterNext`（en/zh），`hideScoreTable(showHint)` 統一收起計分框並處理提示，
+  `updateStatus()` 在 `waitingNextRound` 時優先顯示提示，避免被贏家文案蓋掉。
+
 ## [android-portrait] - 2026-10-25 (v1.5.60 精簡)
 
 ### Removed

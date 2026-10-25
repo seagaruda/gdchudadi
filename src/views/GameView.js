@@ -485,6 +485,11 @@ function updateStatus() {
     }
 
     if (gameState.gameEnded) {
+        // 計分框已被點掉 → 提示「點桌面中間開下一局」
+        if (gameState.waitingNextRound) {
+            statusMessage.textContent = t('tapCenterNext');
+            return;
+        }
         // 贏家以 gameState.winnerIndex 為唯一來源，避免掃手牌掃不到時把舊文字留在畫面上
         let idx = (typeof gameState.winnerIndex === 'number') ? gameState.winnerIndex : -1;
         if (idx < 0) {
@@ -619,15 +624,17 @@ document.querySelectorAll('.close-btn').forEach(btn => {
 });
 
 window.onclick = (event) => {
-    // 點遮罩關閉（計分表／戰績在 renderer.js 另有綁定）
+    // 點遮罩關閉
     const backdrops = [rulesModal, alertModal, confirmModal, document.getElementById('score-modal'), document.getElementById('stats-modal')];
-    if (backdrops.includes(event.target)) {
-        rulesModal.classList.add('hidden');
-        alertModal.classList.add('hidden');
-        confirmModal.classList.add('hidden');
-        if (event.target !== rulesModal && event.target !== alertModal && event.target !== confirmModal) {
-            event.target.classList.add('hidden');
-        }
+    if (!backdrops.includes(event.target)) return;
+    rulesModal.classList.add('hidden');
+    alertModal.classList.add('hidden');
+    confirmModal.classList.add('hidden');
+    if (event.target.id === 'score-modal' && typeof window.hideScoreTable === 'function') {
+        // 計分框被點掉 → 桌面中央改為「點一下開下一局」的入口
+        window.hideScoreTable(true);
+    } else if (event.target !== rulesModal && event.target !== alertModal && event.target !== confirmModal) {
+        event.target.classList.add('hidden');
     }
 };
 
