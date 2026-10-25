@@ -1,6 +1,6 @@
 {
   "name": "taiwan-big-two-ai",
-  "version": "1.5.57",
+  "version": "1.5.58",
   "description": "Modern Big Two game with local rule-based AI (Android portrait branch)",
   "license": "AGPL-3.0-only",
   "main": "main.js",
@@ -26,7 +26,7 @@
   },
   "build": {
     "appId": "mesmerli.TaiwanBig2AI",
-    "buildVersion": "1.5.57.0",
+    "buildVersion": "1.5.58.0",
     "buildNumber": "54",
     "productName": "Guangdong Chu Da Di",
     "directories": {

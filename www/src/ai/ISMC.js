@@ -166,7 +166,8 @@
         }
         if (winner < 0) return 0;   // 沒打完（理論上不會）
 
-        const winnerMult = (finalPlay && finalPlay.some(c => rank(c) === 12)) ? 2 : 1;
+        // 贏家加倍只認黑桃 2（花色強度 3 = ♠），其他花色的 2 不加倍
+        const winnerMult = (finalPlay && finalPlay.some(c => rank(c) === 12 && suit(c) === 3)) ? 2 : 1;
         const pen = [0, 0, 0, 0];
         for (let s = 0; s < 4; s++) {
             if (s === winner) continue;

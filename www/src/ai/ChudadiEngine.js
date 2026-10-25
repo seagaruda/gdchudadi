@@ -6,7 +6,7 @@
  *   1) 真的建「資訊集樹」（UCB 選擇 + max^n 回傳），不是每個候選各自跑一堆獨立 playout；
  *   2) 確定化(determinization)嚴格排除「已出的牌」，舊版 pool 會把打過的牌重新發給對手；
  *   3) 滾動策略用 HeuristicPolicy（論文 §6.2 的 rollout），帶 ε 噪聲；
- *   4) 計分沿用本 App 的聯眾兩兩比較結算（含「贏家最後一手含 2 → 三家 ×2」）；
+ *   4) 計分沿用本 App 的聯眾兩兩比較結算（含「贏家最後一手含黑桃 2 → 三家 ×2」）；
  *   5) 報單推斷：下家剩 1 張時，上家若過牌單張 ⇒ 他沒有更大的單張（寫進 forbidden）。
  *
  * 牌編碼：內部用 value = rank * 4 + 花色強度（0..51），與本 App 的 cardId 互轉見 encode/decode。
@@ -371,7 +371,8 @@
         this.firstPlay = false;
         if (hand.length === 0) {
             this.winner = me;
-            this.winnerHadTwo = m.c.some(v => rankOf(v) === 12);
+            // 只認黑桃 2：value & 3 === 3 即 ♠
+            this.winnerHadTwo = m.c.some(v => rankOf(v) === 12 && (v & 3) === 3);
             return;
         }
         this.current = (me + 1) & 3;

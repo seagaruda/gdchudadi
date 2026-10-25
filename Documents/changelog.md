@@ -1,5 +1,11 @@
 # Changelog
 
+## [android-portrait] - 2026-10-25
+
+### Changed
+- **說明頁分頁**：「對手強度」從規則頁的一欄拆出，成為與「遊戲規則」並排的第二個分頁（`#tab-ai`），en/zh 文案同步。
+- **贏家加倍只認黑桃 2**：結尾牌組含 **♠2** 才把三家輸分 ×2；♥2／♦2／♣2 不再加倍。結算 `calculateScores()`、AI 的確定化估計（`ISMC.js`）、論文引擎 `ChudadiEngine` 的 `winnerHadTwo` 與計分表明細 chip（`結尾♠2 ×2`）全部對齊，規則文案與 README 同步。
+
 ## [android-portrait] - 2026-10-22
 
 ### Changed

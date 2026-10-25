@@ -31,6 +31,25 @@ console.log('== 2) 聯眾結算算例：剩 5、8、0、12 張 → 37、-7、57�
     if (u.join(',') !== want) ok = false;
 }
 
+console.log('== 2b) 贏家加倍只認「黑桃 2」：♠2 結尾 ×2、♥2 結尾 ×1');
+{
+    const run = (spade) => {
+        const two = spade ? 51 : 50;                 // ♠2 = 51、♥2 = 50（value 編碼）
+        const hands = [[two], [0,1,2,3,4,5,6,7], [8,9,10,11,12], [13,14,15,16,17,18,19]];
+        const g = new E.Game(hands.map(h => h.slice()), 0, null, -1, 0, false, {}, { allowTriple: true });
+        const single = g.legalMoves().find(m => m.t === 1 && m.c.length === 1 && m.c[0] === two);
+        g.apply(single);
+        return { winner: g.winner, flag: g.winnerHadTwo, scores: g.scoresNow() };
+    };
+    const sp = run(true), ht = run(false);
+    const sumOk = sp.scores.reduce((a,b) => a+b, 0) === 0 && ht.scores.reduce((a,b) => a+b, 0) === 0;
+    const pass = sp.winner === 0 && sp.flag === true && ht.winner === 0 && ht.flag === false &&
+        sumOk && sp.scores[0] === 2 * ht.scores[0];
+    console.log(`  ♠2 結尾 ${sp.scores.join(',')}｜♥2 結尾 ${ht.scores.join(',')}`);
+    console.log('  ' + (pass ? 'OK' : 'FAIL') + ' (expect ♠2 分數 = 2 × ♥2 分數，四家合計 0)');
+    if (!pass) ok = false;
+}
+
 console.log('== 3) 隨機對局（牌守恒 / 不卡死）');
 {
     const rng = E.makeRng(12345);

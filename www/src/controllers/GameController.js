@@ -628,12 +628,12 @@ function calculateScores(winnerIndex) {
     const info = GameLogic.getHandInfo(winnerHand);
     let winnerMult = 1;
 
-    // 贏家最後一手含 2（點數 2 = rank 12）→ 三家牌分再 ×2
-    if (info && winnerHand.some(c => GameLogic.getRank(c) === 12)) {
+    // 贏家最後一手含「黑桃 2」→ 三家牌分再 ×2（只認黑桃 2，梅／方／紅心的 2 不算）
+    if (info && winnerHand.some(c => GameLogic.getRank(c) === 12 && GameLogic.getSuit(c) === 3)) {
         winnerMult = 2;
     }
 
-    // ① 先算每家的「牌分」p（聯衆：剩幾張 × 張數倍率，8 張以上含黑桃2 再 ×2，贏家結尾2 再 ×2；贏家 0 分）
+    // ① 先算每家的「牌分」p（聯衆：剩幾張 × 張數倍率，8 張以上含黑桃2 再 ×2，贏家結尾含黑桃2 再 ×2；贏家 0 分）
     const pen = [0, 0, 0, 0];
     const detail = { winnerMult, players: [] };
     for (let i = 0; i < 4; i++) {

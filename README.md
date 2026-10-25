@@ -52,7 +52,7 @@ Based on the open-source project **Taiwan Big2 AI** by [mesmerli](https://github
 | Loser left with 10–12 cards | ×3 |
 | Loser left with 13 cards (played nothing) | ×4 |
 | Loser holds the **2 of Spades (黑桃 2)** | ×2 (only that card — ♣2/♦2/♥2 do not count) |
-| Winner's final play contains a **2** | ×2 |
+| Winner's final play contains the **2 of Spades (黑桃 2)** | ×2 (only that card — ♣2/♦2/♥2 do not count) |
 | Four-of-a-Kind / Straight Flush | **no extra multiplier** (removed in this branch) |
 
 The winner collects the sum of all three losers' losses.
