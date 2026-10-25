@@ -8,7 +8,15 @@ class AICharacter {
         this.type = "NPC";
         // 性格只調整「攻擊性」權重，不改變策略本體（策略本體是期望得分最大化）
         const STYLE = { Alex: 0.78, Bella: 0.3, Chris: 0.55, "橘貓": 0.62, "柴犬": 0.5, "河狸": 0.44 };
-        this.searchIters = 0;   // >0 時開啟 §6 的蒙特卡洛再排序
+        // 論文 §6 的 ISMCTS 再排序 —— **預設關閉**（依使用者要求，先觀察啟發式版本）。
+        // 要開啟：把 searchIters 設成 200（或 context.searchIters）。
+        // 實測（scripts/app-ai-game-test.js，40 副 × 4 座位 = 160 局配對）：
+        //   +2.16 分／副（se 0.98），更好 13 局 / 更差 9 局 / 持平 138；
+        //   搜索只在 8% 的手觸發，每次約 39ms。
+        this.searchIters = 0;
+        this.searchTimeMs = 400;   // 真機保險：迭代數與時間先到者為準
+        this.searchClose = 4;      // 只搜「啟發式分數在最佳值 4 分內」的候選
+        this.searchMargin = 5;     // 搜索要領先 5 分以上才翻盤
         this.traits = { aggr: STYLE[name] !== undefined ? STYLE[name] : 0.5 };
     }
 
@@ -292,26 +300,38 @@ class AICharacter {
 
         let pick = scored.reduce((a, b) => (b.score > a.score ? b : a), scored[0]);
 
-        // 論文 §6 / §9.1：資訊集蒙特卡洛樹搜索（SO-ISMCTS）對前幾個候選做再排序。
-        // 引擎實作見 src/ai/ChudadiEngine.js（移植自論文配套的 Java 版，含 19898 種牌型枚舉自檢）。
-        // 只在「前幾名差距不大」時才可能翻盤；差距大就沿用啟發式，避免粗糙滾動策略帶偏。
+        // 論文 §6 / §9.1：資訊集蒙特卡洛樹搜索（SO-ISMCTS）對「接近的候選」做再排序。
+        // 引擎實作見 src/ai/ChudadiEngine.js（移植自論文配套 Java 版，含 19898 種牌型枚舉自檢）。
+        // 判決規則（可量化、可回滾）：
+        //   1) 只取啟發式分數在最佳值 CLOSE 分以內的候選（最多 4 個）；
+        //   2) 搜索給出每個候選的「期望得分」平均 u（聯眾兩兩計分，單位＝分）；
+        //   3) 只有當搜索認為某候選比啟發式首選高出 SWITCH_MARGIN 分以上，才翻盤。
         const SEARCH = (typeof context.searchIters === 'number') ? context.searchIters
             : (this.searchIters || 0);
         const ENGINE = (typeof ChudadiEngine !== 'undefined') ? ChudadiEngine
             : (typeof window !== 'undefined' ? window.ChudadiEngine : null);
+        const CLOSE = (this.searchClose == null ? 4 : this.searchClose);
+        const MARGIN = (this.searchMargin == null ? 5 : this.searchMargin);
         if (SEARCH > 0 && ENGINE && scored.length > 1) {
-            const top = scored.slice().sort((a, b) => b.score - a.score).slice(0, 4);
-            const gap = top[0].score - top[top.length - 1].score;
-            if (window.__searchDebug) window.__searchDebug.push({ gap: +gap.toFixed(2), n: top.length, scores: top.map(t => +t.score.toFixed(2)) });
-            if (gap <= 6) {
+            const sortedByScore = scored.slice().sort((a, b) => b.score - a.score);
+            const top = sortedByScore.filter(t => t.score >= sortedByScore[0].score - CLOSE).slice(0, 4);
+            if (window.__searchDebug) {
+                window.__searchDebug.push({
+                    gap: +(sortedByScore[0].score - sortedByScore[1].score).toFixed(2),
+                    n: top.length,
+                    scores: top.map(t => +t.score.toFixed(2))
+                });
+            }
+            if (top.length > 1) {
                 let res = null;
                 try {
                     const obs = this._buildObservation(ENGINE, context, isLead);
                     if (window.__searchDebug) window.__searchDebug[window.__searchDebug.length - 1].obs = !!obs;
                     if (obs) {
-                        const rootKeys = top.map(t => t.cards
+                        const keyOf = (t) => t.cards
                             ? t.cards.map(c => ENGINE.encode(c)).sort((a, b) => a - b).join(',')
-                            : 'p');
+                            : 'p';
+                        const rootKeys = top.map(keyOf);
                         const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
                         const s = ENGINE.search(obs, {
                             iters: SEARCH,
@@ -325,25 +345,21 @@ class AICharacter {
                             const byKey = {};
                             for (const st of s.stats) byKey[ENGINE.moveKey(st.move)] = st;
                             res = top.map(t => {
-                                const k = t.cards ? t.cards.map(c => ENGINE.encode(c)).sort((a, b) => a - b).join(',') : 'p';
-                                const st = byKey[k];
-                                return { cand: t, avg: st && st.visits ? st.avgU : 0, visits: st ? st.visits : 0 };
+                                const st = byKey[keyOf(t)];
+                                return { cand: t, avg: st && st.visits ? st.avgU : -1e9, visits: st ? st.visits : 0 };
                             });
                         }
                     }
-                } catch (e) { res = null; }
+                } catch (e) { res = null; if (window.__searchDebug) window.__searchDebug[window.__searchDebug.length - 1].err = String(e && e.message || e); }
                 if (res) {
-                    // 混合：啟發式與搜索各半（搜索分數先除以 10 對齊量級）
-                    for (const r of res) {
-                        r.blend = r.cand.score * 0.5 + (r.avg / 10) * 0.5;
-                    }
-                    res.sort((a, b) => b.blend - a.blend);
-                    const winner = res[0];
+                    const bestS = res.reduce((a, b) => (b.avg > a.avg ? b : a), res[0]);
                     const orig = top[0];
-                    if (winner.cand.cards !== orig.cards) {
-                        window.__searchFlip = { from: orig.score, to: winner.blend, avg: +winner.avg.toFixed(1) };
+                    const gain = bestS.avg - (res.find(r => r.cand === orig) || { avg: -1e9 }).avg;
+                    window.__searchGain = { gain: +gain.toFixed(1), best: +bestS.avg.toFixed(1), visits: bestS.visits };
+                    if (bestS.cand !== orig && gain >= MARGIN) {
+                        window.__searchFlip = { from: orig.score, to: +bestS.avg.toFixed(1), gain: +gain.toFixed(1) };
+                        pick = { cards: bestS.cand.cards, score: bestS.cand.score + gain };
                     }
-                    pick = { cards: winner.cand.cards, score: winner.blend };
                 }
             }
         }

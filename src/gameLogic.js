@@ -260,7 +260,8 @@ class BaseRules {
         if (sorted.length < 5) return [];
 
         for (let i = 0; i <= sorted.length - 5; i++) {
-            if (sorted[i + 4] - sorted[i] === 4) {
+            // 頂端是 2（索引 12）但不是 23456 的窗口 → JQKA2 之類，不是順子
+            if (sorted[i + 4] - sorted[i] === 4 && !(sorted[i + 4] === 12 && sorted[i] !== 0)) {
                 const combination = [];
                 for (let j = 0; j < 5; j++) {
                     const rank = sorted[i + j];
@@ -271,7 +272,24 @@ class BaseRules {
                 straights.push(combination);
             }
         }
-        return straights;
+
+        // 補上「A/2 當小牌」的兩個窗口：A2345、23456（大陸規則合法，港/台規則不合法，
+        // 由下面的 getHandInfo 過濾兜底）。原本漏了這兩種，AI 一輩子不會出 A2345。
+        const rankSet = new Set(cards.map(c => this.getRank(c)));
+        for (const w of [[11, 12, 0, 1, 2], [12, 0, 1, 2, 3]]) {
+            if (!w.every(r => rankSet.has(r))) continue;
+            const combination = w.map(r => {
+                const rc = cards.filter(c => this.getRank(c) === r).sort((a, b) => this.compareCards(a, b));
+                return rc[rc.length - 1];
+            });
+            straights.push(combination);
+        }
+
+        // 只保留「本規則真的認可」的順子
+        return straights.filter(comb => {
+            const info = this.getHandInfo(comb);
+            return info && (info.type === 'STRAIGHT' || info.type === 'STRAIGHT_FLUSH');
+        });
     }
 
     findFullHouses(cards) {

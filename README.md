@@ -84,6 +84,29 @@ All three opponents (柴犬 / 河狸 / 橘貓, plus Alex / Bella / Chris) run on
 
 There is **no HTTP request, no API key, no model download, no telemetry**. `window.AISummary`, WebLLM and the LM Studio bridge are gone from this branch.
 
+### On top of the heuristic: ISMCTS re-ranking (`src/ai/ChudadiEngine.js`)
+
+The base score of every legal move comes from the hand-splitting DP `f(H)` + hand value `V(H)` + exact zero-sum utility (paper §7, §2.3). For the handful of moves that are *within 4 points* of the best one, a lightweight Information-Set MCTS (paper §6, ported from the paper's reference Java implementation) re-ranks them:
+
+| item | value |
+|---|---|
+| combos enumerated (self-test) | **19,898** — single 52 / pair 78 / triple 52 / straight 10,200 / flush 5,108 / full house 3,744 / four+one 624 / straight flush 40 |
+| settlement self-test | 5/8/0/12 cards left → **37 / −7 / 57 / −87** |
+| search trigger rate | **8 %** of decisions (only close calls) |
+| cost per search | **~39 ms**, 200 iterations (time-capped at 400 ms on device) |
+| paired A/B, 160 games | **+2.16 pts/deal** (se 0.98), better 13 / worse 9 / tie 138 |
+| shipped default | **off** — set `this.searchIters = 200` in `AICharacter` to enable |
+
+Determinization only sees the AI's own hand + public info (played cards, per-seat card counts, table) — it cannot peek. Rollouts use the heuristic policy with ε = 0.08 and the real pairwise settlement for the `max^n` backup. Two safety rails: the search is skipped for the Taiwan / Hong Kong rule sets (bombs + different straight windows) and it never overrides a clear heuristic winner.
+
+Verify it yourself:
+
+```bash
+node scripts/engine-test.js        # rules: 19,898 combos, settlement, 500 random games, Θ5
+node scripts/ai-search-test.js     # integration: legality + latency per decision
+node scripts/app-ai-game-test.js 40 200   # paired strength A/B (40 deals × 4 seats)
+```
+
 Tap any avatar to swap that seat's personality — the whole roster is local.
 
 ---

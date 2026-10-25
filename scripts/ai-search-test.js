@@ -76,6 +76,7 @@ function legalCheck(ctx, move) {
     const ai = new AICharacter(GameLogic, 'Chris');
     let n = 0, illegalOff = 0, illegalOn = 0, differ = 0;
     let msOff = 0, msOn = 0, iters = 0, flips = 0, timeouts = 0;
+    const gaps = []; let obsNull = 0, searched = 0; const samples = [];
 
     for (let d = 0; d < 60; d++) {
         const steps = 4 + ((rng() * 24) | 0);
@@ -91,10 +92,13 @@ function legalCheck(ctx, move) {
 
         ai.searchIters = 200;
         ai.searchTimeMs = 400;
+        global.__searchDebug = [];
         t0 = Date.now();
         const on = await ai.decide(JSON.parse(JSON.stringify(ctx)));
         msOn += Date.now() - t0;
         if (!legalCheck(ctx, on)) illegalOn++;
+        const dbg = (global.__searchDebug || []).slice(-1)[0];
+        if (dbg) { gaps.push(dbg.gap); if (dbg.obs === false) obsNull++; if (dbg.obs === true) searched++; if (samples.length < 8) samples.push(dbg.scores); }
         if (window.__searchInfo) { iters += window.__searchInfo.iters; if (window.__searchInfo.ms > 450) timeouts++; }
         if (window.__searchFlip) flips++;
         window.__searchFlip = null; window.__searchInfo = null;
@@ -107,5 +111,11 @@ function legalCheck(ctx, move) {
     console.log(`  關閉搜索：不合法 ${illegalOff}，平均 ${(msOff / n).toFixed(1)}ms`);
     console.log(`  開啟搜索：不合法 ${illegalOn}，平均 ${(msOn / n).toFixed(1)}ms，平均迭代 ${(iters / n).toFixed(0)}，翻盤 ${flips}，超時 ${timeouts}`);
     console.log(`  兩種設定選出不同動作的比例 ${(differ / n * 100).toFixed(0)}%`);
+    console.log('  前 4 名分數樣本：');
+    for (const s of samples) console.log('   ', JSON.stringify(s));
+    if (gaps.length) {
+        gaps.sort((a, b) => a - b);
+        console.log(`  啟發式前 4 名分差：中位數 ${gaps[(gaps.length / 2) | 0]}，<=6 的比例 ${(gaps.filter(g => g <= 6).length / gaps.length * 100).toFixed(0)}%，進入搜索 ${searched}，obs 為 null ${obsNull}`);
+    }
     console.log(illegalOff === 0 && illegalOn === 0 ? 'ALL OK' : 'FAILED');
 })();
