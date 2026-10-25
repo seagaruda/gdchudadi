@@ -175,7 +175,7 @@ class AICharacter {
         return out.filter(cs => cs.length === lastPlay.length && Logic.compareHands(cs, lastPlay) > 0);
     }
 
-    /** 期望收益：Σ_{j≠i}(1−p_j)·p_j牌分 − 3·(1−p_i)·p_i牌分 + 拆牌進度 + 命題2 修正 */
+    /** 期望收益：Σ_{j≠i}(1−p_j)·p_j牌分 − 3·(1−p_i)·p_i牌分 + 拆牌進度 + 命題2 修正 + 動態盟友/打擊 */
     _evaluate(cards, context, table) {
         const me = (typeof context.playerIndex === 'number') ? context.playerIndex : 0;
         const counts = [0, 1, 2, 3].map(i => (context.players[i] ? context.players[i].length : 0));
@@ -210,6 +210,34 @@ class AICharacter {
 
         // 有人剩 1 張還拿牌權：直接過牌等於送他贏
         if (context.lastPlayerIndex >= 0 && after[context.lastPlayerIndex] === 1 && k === 0) u -= 1.5;
+
+        // ── 動態盟友／動態打擊對象 ──────────────────────────────
+        // 兩兩互比計分下：若 j 贏，我的分數 = Σ_{k≠i,j} p_k − 3·p_i（j 的牌分歸零不算）。
+        // 所以「誰贏對我最有利」是隨牌局變化的：
+        //   · 牌少的贏 → 他只是把一個很小的 p 抹掉，肥的兩家全都留著計入我的分 → 對我最有利
+        //   · 肥的贏 → 他那筆大 p 被抹掉 → 對我最不利
+        // 於是「幫小弟先跑、死掐肥仔」不是我寫死的規則，而是這個公式的直接推論。
+        const winValueOf = (j) => {
+            let v = -3 * pen[me];
+            for (let q = 0; q < 4; q++) {
+                if (q === me || q === j) continue;
+                v += pen[q];
+            }
+            return v;
+        };
+        const otherSeats = [0, 1, 2, 3].filter(x => x !== me);
+        const meanWinValue = otherSeats.reduce((a, j) => a + winValueOf(j), 0) / otherSeats.length;
+        const leaderSeat = (typeof context.lastPlayerIndex === 'number') ? context.lastPlayerIndex : -1;
+        if (leaderSeat >= 0 && leaderSeat !== me) {
+            const swing = winValueOf(leaderSeat) - meanWinValue;   // >0：讓他繼續掌權比平均好
+            // 只有自己「幾乎沒戲」（勝率 < 20%）時才靠這條動態選邊；
+            // 而且影響力上限 ±1.2 分 —— 它只能改變「幾乎同分」的選擇，
+            // 不可能蓋掉「甩牌跨加倍坎」「壓住快贏的人」這種明確賺分的打法。
+            const allyW = 0.55 * Math.max(0, 0.20 - probs[me]) / 0.20;
+            const st = k > 0 ? this._playStrength(cards) : 1;
+            const raw = k === 0 ? allyW * swing : -allyW * swing * st;
+            u += Math.max(-1.2, Math.min(1.2, raw));
+        }
 
         // 保留控制力：手上還很多牌時，丟大牌要付出一點代價（κ 已經在 V 裡，這裡再加一點）
         if (k > 0 && feat.count >= 4) {
