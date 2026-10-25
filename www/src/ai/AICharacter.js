@@ -302,10 +302,12 @@ class AICharacter {
         if (SEARCH > 0 && ENGINE && scored.length > 1) {
             const top = scored.slice().sort((a, b) => b.score - a.score).slice(0, 4);
             const gap = top[0].score - top[top.length - 1].score;
+            if (window.__searchDebug) window.__searchDebug.push({ gap: +gap.toFixed(2), n: top.length, scores: top.map(t => +t.score.toFixed(2)) });
             if (gap <= 6) {
                 let res = null;
                 try {
                     const obs = this._buildObservation(ENGINE, context, isLead);
+                    if (window.__searchDebug) window.__searchDebug[window.__searchDebug.length - 1].obs = !!obs;
                     if (obs) {
                         const rootKeys = top.map(t => t.cards
                             ? t.cards.map(c => ENGINE.encode(c)).sort((a, b) => a - b).join(',')
