@@ -8,47 +8,6 @@ function t(key, params = {}) {
 }
 window.t = t;
 
-// ── 對手強度（普通 / 困難）─────────────────────────────────────────────
-// 存在 AppStorage('aiLevel')；AICharacter 每次決策時讀它，所以切換立即生效。
-function getAiLevel() {
-    try {
-        return (typeof AppStorage !== 'undefined' && AppStorage.getItem('aiLevel') === 'hard') ? 'hard' : 'normal';
-    } catch (e) { return 'normal'; }
-}
-window.getAiLevel = getAiLevel;
-
-function applyAiLevelUI() {
-    const lv = getAiLevel();
-    const normalBtn = document.getElementById('ai-level-normal');
-    const hardBtn = document.getElementById('ai-level-hard');
-    const desc = document.getElementById('ai-level-desc');
-    if (normalBtn) normalBtn.classList.toggle('active', lv !== 'hard');
-    if (hardBtn) hardBtn.classList.toggle('active', lv === 'hard');
-    if (desc) desc.textContent = t(lv === 'hard' ? 'aiLevelHardDesc' : 'aiLevelNormalDesc');
-    window.AI_LEVEL = lv;
-}
-window.applyAiLevelUI = applyAiLevelUI;
-
-function setupAiLevel() {
-    const normalBtn = document.getElementById('ai-level-normal');
-    const hardBtn = document.getElementById('ai-level-hard');
-    if (!normalBtn || !hardBtn) return;
-    const pick = (lv) => {
-        try { AppStorage.setItem('aiLevel', lv); } catch (e) { }
-        applyAiLevelUI();
-        if (typeof AudioPlayer !== 'undefined' && AudioPlayer.playToggleBeep) AudioPlayer.playToggleBeep();
-    };
-    normalBtn.onclick = () => pick('normal');
-    hardBtn.onclick = () => pick('hard');
-    applyAiLevelUI();
-}
-window.setupAiLevel = setupAiLevel;
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupAiLevel);
-} else {
-    setTimeout(setupAiLevel, 0);
-}
-
 function updateRulesDescription() {
     // 只有大陸鋤大地一種規則（HK 後綴即為大陸版文案）
     const suffix = 'HK';

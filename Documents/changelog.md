@@ -3,7 +3,7 @@
 ## [android-portrait] - 2026-10-25
 
 ### Changed
-- **說明頁分頁**：「對手強度」從規則頁的一欄拆出，成為與「遊戲規則」並排的第二個分頁（`#tab-ai`），en/zh 文案同步。
+- **取消「對手強度」分頁**：說明頁只剩「遊戲規則」一頁；AI 固定使用原本的「困難 · 會算」檔位（`AICharacter.searchIters = 200`，約 8% 決策觸發 ISMCTS，每次約 39ms），不再讀 `AppStorage('aiLevel')`。相關分頁 DOM、CSS、i18n key、`scripts/ai-level-test.js` 一併刪除，審計腳本把它列入「已刪功能殘留」清單。
 - **贏家加倍只認黑桃 2**：結尾牌組含 **♠2** 才把三家輸分 ×2；♥2／♦2／♣2 不再加倍。結算 `calculateScores()`、AI 的確定化估計（`ISMC.js`）、論文引擎 `ChudadiEngine` 的 `winnerHadTwo` 與計分表明細 chip（`結尾♠2 ×2`）全部對齊，規則文案與 README 同步。
 
 ## [android-portrait] - 2026-10-22

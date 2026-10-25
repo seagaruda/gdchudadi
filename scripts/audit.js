@@ -93,6 +93,7 @@ const leftovers = [
   ['btn-shout', 'btnShout'], ['shoutLa', 'updateShoutButton'], ['playDeclareSample', 'playDeclareSample'],
   ['playBGM', 'switchBGM'], ['audioSrc_la', 'la_cat'], ['tab-keyboard', 'tab-license'],
   ['game-rule-mode', 'license-sponsor-text-element'],
+  ['ai-level-normal', 'aiLevel'],   // v1.5.59 取消「對手強度」分頁，改為固定困難
 ];
 for (const [a, b] of leftovers) {
   for (const f of ['index.html', ...jsFiles.filter((x) => x.endsWith('.js'))]) {

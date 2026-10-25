@@ -8,12 +8,12 @@ class AICharacter {
         this.type = "NPC";
         // 性格只調整「攻擊性」權重，不改變策略本體（策略本體是期望得分最大化）
         const STYLE = { Alex: 0.78, Bella: 0.3, Chris: 0.55, "橘貓": 0.62, "柴犬": 0.5, "河狸": 0.44 };
-        // 論文 §6 的 ISMCTS 再排序 —— **預設關閉**（依使用者要求，先觀察啟發式版本）。
-        // 要開啟：把 searchIters 設成 200（或 context.searchIters）。
+        // 論文 §6 的 ISMCTS 再排序 —— v1.5.59 起**固定開啟（= 舊「困難 · 會算」檔位）**。
+        // 使用者要求取消「對手強度」分頁，一律用會算的 AI；要回退成純啟發式就把 searchIters 設 0。
         // 實測（scripts/app-ai-game-test.js，40 副 × 4 座位 = 160 局配對）：
         //   +2.16 分／副（se 0.98），更好 13 局 / 更差 9 局 / 持平 138；
         //   搜索只在 8% 的手觸發，每次約 39ms。
-        this.searchIters = 0;
+        this.searchIters = 200;
         this.searchTimeMs = 400;   // 真機保險：迭代數與時間先到者為準
         this.searchClose = 4;      // 只搜「啟發式分數在最佳值 4 分內」的候選
         this.searchMargin = 5;     // 搜索要領先 5 分以上才翻盤
@@ -373,19 +373,11 @@ class AICharacter {
 
     /**
      * 這次決策要不要搜索、搜多少次。
-     * 優先序：context.searchIters > 設定項 AppStorage('aiLevel') > this.searchIters
-     *   aiLevel = 'hard'   → 200 次迭代（困難）
-     *   aiLevel = 'normal' → 0（普通，完全不搜索）
+     * v1.5.59 起沒有「對手強度」設定，一律走會算的檔位（this.searchIters 預設 200）。
+     * 優先序：context.searchIters（測試/工具注入）> this.searchIters
      */
     _effectiveSearchIters(context) {
         if (context && typeof context.searchIters === 'number') return context.searchIters;
-        try {
-            if (typeof AppStorage !== 'undefined' && typeof AppStorage.getItem === 'function') {
-                const lv = AppStorage.getItem('aiLevel');
-                if (lv === 'hard') return this.searchHardIters || 200;
-                if (lv === 'normal') return 0;
-            }
-        } catch (e) { /* 讀不到設定就退回預設 */ }
         return this.searchIters || 0;
     }
 
