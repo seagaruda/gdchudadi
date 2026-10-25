@@ -306,8 +306,7 @@ class AICharacter {
         //   1) 只取啟發式分數在最佳值 CLOSE 分以內的候選（最多 4 個）；
         //   2) 搜索給出每個候選的「期望得分」平均 u（聯眾兩兩計分，單位＝分）；
         //   3) 只有當搜索認為某候選比啟發式首選高出 SWITCH_MARGIN 分以上，才翻盤。
-        const SEARCH = (typeof context.searchIters === 'number') ? context.searchIters
-            : (this.searchIters || 0);
+        const SEARCH = this._effectiveSearchIters(context);
         const ENGINE = (typeof ChudadiEngine !== 'undefined') ? ChudadiEngine
             : (typeof window !== 'undefined' ? window.ChudadiEngine : null);
         const CLOSE = (this.searchClose == null ? 4 : this.searchClose);
@@ -371,6 +370,24 @@ class AICharacter {
     }
 
 
+
+    /**
+     * 這次決策要不要搜索、搜多少次。
+     * 優先序：context.searchIters > 設定項 AppStorage('aiLevel') > this.searchIters
+     *   aiLevel = 'hard'   → 200 次迭代（困難）
+     *   aiLevel = 'normal' → 0（普通，完全不搜索）
+     */
+    _effectiveSearchIters(context) {
+        if (context && typeof context.searchIters === 'number') return context.searchIters;
+        try {
+            if (typeof AppStorage !== 'undefined' && typeof AppStorage.getItem === 'function') {
+                const lv = AppStorage.getItem('aiLevel');
+                if (lv === 'hard') return this.searchHardIters || 200;
+                if (lv === 'normal') return 0;
+            }
+        } catch (e) { /* 讀不到設定就退回預設 */ }
+        return this.searchIters || 0;
+    }
 
     /**
      * 把 App 的 context 轉成引擎的 Observation（只用自己手牌 + 公開資訊，不偷看對手）

@@ -2570,3 +2570,14 @@ input:checked + .slider:before {
 /* 頭像下方的累計分數 */
 .score.pos { color: #4ade80; }
 .score.neg { color: #f87171; }
+
+/* 對手強度切換（規則頁底部） */
+.ai-levels { display: flex; gap: 8px; margin: 6px 0 4px; }
+.ai-level-btn {
+    flex: 1 1 0; padding: 8px 6px; border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06);
+    color: inherit; font-size: 13px; cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s;
+}
+.ai-level-btn.active { border-color: #f5c451; background: rgba(245,196,81,.16); color: #f5c451; font-weight: 600; }
+.ai-level-desc { font-size: 12px; opacity: .72; line-height: 1.5; margin: 2px 0 0; }
