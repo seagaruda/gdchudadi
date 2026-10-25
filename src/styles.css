@@ -2572,6 +2572,7 @@ input:checked + .slider:before {
 .score.neg { color: #f87171; }
 
 /* 對手強度切換（規則頁底部） */
+.ai-tab-sections { flex-direction: column; }
 .ai-levels { display: flex; gap: 8px; margin: 6px 0 4px; }
 .ai-level-btn {
     flex: 1 1 0; padding: 8px 6px; border-radius: 10px;

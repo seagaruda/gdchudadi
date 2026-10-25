@@ -95,7 +95,7 @@ The base score of every legal move comes from the hand-splitting DP `f(H)` + han
 | search trigger rate | **8 %** of decisions (only close calls) |
 | cost per search | **~39 ms**, 200 iterations (time-capped at 400 ms on device) |
 | paired A/B, 160 games | **+2.16 pts/deal** (se 0.98), better 13 / worse 9 / tie 138 |
-| in-game switch | **i → 規則 → 對手強度**: *Normal · fast* (default, no search) / *Hard · thinks ahead* (200 iters) |
+| in-game switch | **i → 對手強度 tab** (next to the 規則 tab): *Normal · fast* (default, no search) / *Hard · thinks ahead* (200 iters) |
 | stored as | `AppStorage('aiLevel')` = `normal` / `hard` — read on every decision, so the switch applies instantly |
 
 Determinization only sees the AI's own hand + public info (played cards, per-seat card counts, table) — it cannot peek. Rollouts use the heuristic policy with ε = 0.08 and the real pairwise settlement for the `max^n` backup. Two safety rails: the search is skipped for the Taiwan / Hong Kong rule sets (bombs + different straight windows) and it never overrides a clear heuristic winner.
