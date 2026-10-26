@@ -1,20 +1,11 @@
 // Global Game States
-window.ipcRenderer = null;
-if (typeof require !== 'undefined') {
-    try {
-        const electron = require('electron');
-        window.ipcRenderer = electron.ipcRenderer;
-    } catch (e) {
-        console.warn('[Renderer] Running in non-Electron environment. ipcRenderer disabled.');
-    }
-}
 
 window.soundMode = parseInt(AppStorage.getItem('soundMode')) || 0; // 0: All, 1: SFX Only, 2: None
 window.trialDaysRemaining = null;
 window.currentLang = 'zh';
 
 window.PLAYER_NAMES_EN = ["You", "Alex (NPC)", "Bella (NPC)", "Chris (NPC)"];
-window.PLAYER_NAMES_ZH = ["你", "艾力克斯 (NPC)", "貝拉 (NPC)", "克里斯 (NPC)"];
+window.PLAYER_NAMES_ZH = ["你", "艾力克斯 (NPC)", "贝拉 (NPC)", "克里斯 (NPC)"];
 window.PLAYER_NAMES = window.PLAYER_NAMES_ZH;
 
 window.gameState = {
@@ -23,25 +14,25 @@ window.gameState = {
     lastPlay: null,
     lastPlayerIndex: -1,
     selectedCards: new Set(),
-    declared: [false, false, false, false], // 已「報單」公告（手牌剩 1 張）
+    declared: [false, false, false, false], // 已「报单」公告（手牌剩 1 张）
     gameEnded: false,
     scores: [0, 0, 0, 0],
     playerLastActions: [null, null, null, null], // null, "PASS", or Array of cards
     playedCards: [], // Persistent tracking of all cards played this game
     gameLog: [], // Chronological log of all actions for reflection
-    pendingStart: 'first'   // null | 'first' | 'next'：等玩家點牌桌正中才發牌
+    pendingStart: 'first'   // null | 'first' | 'next'：等玩家点牌桌正中才发牌
 };
 
 window.aiTurnTimeout = null;
 window.aiProcessing = false;
 
-// 本次開啟 App 的累計分（每局結束累加，「開 App」才會歸零）
+// 本次开启 App 的累计分（每局结束累加，「开 App」才会归零）
 window.sessionScores = [0, 0, 0, 0];
 window.sessionWins = [0, 0, 0, 0];
 window.roundsPlayed = 0;
-// 上一局贏家（-1 = 還沒有）；第二局起由他先出
+// 上一局赢家（-1 = 还没有）；第二局起由他先出
 window.lastRoundWinner = -1;
-window.roundHistory = [];   // 每局四家分數，戰績表用（第 1 局、第 2 局…）
+window.roundHistory = [];   // 每局四家分数，战绩表用（第 1 局、第 2 局…）
 
 // Keyboard interaction cycle index
 window.cycleIndex = -1;
@@ -66,7 +57,7 @@ function initGame() {
     gameState.playerLastActions = [null, null, null, null];
     gameState.playedCards = [];
     gameState.gameLog = [];
-    // 每局重新開始：清空本局分數（sessionScores 才是跨局累計）
+    // 每局重新开始：清空本局分数（sessionScores 才是跨局累计）
     gameState.scores = [0, 0, 0, 0];
     gameState.winnerIndex = -1;
 
@@ -89,8 +80,8 @@ function initGame() {
     // Sort human hand
     gameState.players[0] = GameLogic.sortCards(gameState.players[0]);
 
-    // 先出者：第一局由持有 ♦3（cardId 13）的人先出，且首手必須帶該張；
-    // 第二局起由上局贏家先出，不再要求帶 ♦3（論文 §2.1 寫法）
+    // 先出者：第一局由持有 ♦3（cardId 13）的人先出，且首手必须带该张；
+    // 第二局起由上局赢家先出，不再要求带 ♦3（论文 §2.1 写法）
     const startCard = 13;   // ♦3
     const prevWinner = (typeof window.lastRoundWinner === 'number') ? window.lastRoundWinner : -1;
     const winnerLeads = (window.roundsPlayed || 0) > 0 && prevWinner >= 0 && prevWinner < 4;
@@ -131,13 +122,13 @@ function initGame() {
 }
 window.initGame = initGame;
 
-// 出牌順序為逆時針 0 → 3 → 2 → 1，所以「下家」（接著出牌的人）是 (i + 3) % 4
+// 出牌顺序为逆时针 0 → 3 → 2 → 1，所以「下家」（接着出牌的人）是 (i + 3) % 4
 function nextPlayerIndex(playerIndex) {
     return (playerIndex + 3) % 4;
 }
 window.nextPlayerIndex = nextPlayerIndex;
 
-// 報單頂大：下家只剩 1 張時，該家（上家）出單張必須先出自己最大的牌
+// 报单顶大：下家只剩 1 张时，该家（上家）出单张必须先出自己最大的牌
 function mustTopSingle(playerIndex) {
     const nextHand = gameState.players[nextPlayerIndex(playerIndex)];
     return !!nextHand && nextHand.length === 1;
@@ -152,7 +143,7 @@ function largestSingle(playerIndex) {
 window.largestSingle = largestSingle;
 
 function playCards() {
-    if (gameState.gameEnded) return;   // 本局已結束，不能再出牌（否則會把已結算的牌局打亂）
+    if (gameState.gameEnded) return;   // 本局已结束，不能再出牌（否则会把已结算的牌局打乱）
     if (gameState.turn !== 0) return;
 
     const selected = Array.from(gameState.selectedCards);
@@ -165,7 +156,7 @@ function playCards() {
         return;
     }
 
-    // 大陸規則：只有張數相同的牌可以比大小
+    // 大陆规则：只有张数相同的牌可以比大小
     if (gameState.lastPlay && gameState.lastPlayerIndex !== 0) {
         if (selected.length !== gameState.lastPlay.length) {
             showAlert(t('mustPlayCount', { count: gameState.lastPlay.length }));
@@ -177,13 +168,13 @@ function playCards() {
         }
     }
 
-    // 首輪必須帶方塊 3（僅第一局；第二局起由贏家先出，不限制）
+    // 首轮必须带方块 3（仅第一局；第二局起由赢家先出，不限制）
     if (gameState.requireStartCard !== false && gameState.lastPlayerIndex === -1 && !selected.includes(GameLogic.getStartCard())) {
         showAlert(t('mustInclude3D'));
         return;
     }
 
-    // 報單頂大
+    // 报单顶大
     if (selected.length === 1 && mustTopSingle(0) && selected[0] !== largestSingle(0)) {
         showAlert(t('mustTopSingle'));
         return;
@@ -194,7 +185,7 @@ function playCards() {
 window.playCards = playCards;
 
 function passTurn() {
-    if (gameState.gameEnded) return;   // 本局已結束，不能再過牌
+    if (gameState.gameEnded) return;   // 本局已结束，不能再过牌
     if (gameState.turn !== 0) return;
     if (gameState.lastPlayerIndex === -1 || gameState.lastPlayerIndex === 0) {
         showAlert(t('cannotPass'));
@@ -228,13 +219,13 @@ function executePlay(playerIndex, cards) {
     gameState.playedCards.push(...cards);
     gameState.gameLog.push({ turn: gameState.gameLog.length, player: playerIndex, action: cards });
 
-    // 報牌名：不分玩家，任何人出牌都念出牌型（單張/對子/三條帶點數，五張牌型念類型）
+    // 报牌名：不分玩家，任何人出牌都念出牌型（单张/对子/三条带点数，五张牌型念类型）
     {
         const playedInfo = GameLogic.getHandInfo(cards);
         if (playedInfo) AudioPlayer.playHandName(playedInfo, cards);
     }
 
-    // 報單：任何一家手牌只剩 1 張時公告一次（公告後其上家出單張必須頂大）
+    // 报单：任何一家手牌只剩 1 张时公告一次（公告后其上家出单张必须顶大）
     for (let i = 0; i < 4; i++) {
         if (gameState.players[i].length === 1 && !gameState.declared[i]) {
             gameState.declared[i] = true;
@@ -256,11 +247,11 @@ function executePlay(playerIndex, cards) {
 window.executePlay = executePlay;
 
 /**
- * 每局結束的統一結算：記錄本局分、累計分、勝局數，彈出計分表，必要時排自動重開。
- * 一般贏局與一條龍都走這裡，避免只更新部分統計。
+ * 每局结束的统一结算：记录本局分、累计分、胜局数，弹出计分表，必要时排自动重开。
+ * 一般赢局与一条龙都走这里，避免只更新部分统计。
  */
 function finalizeRound(winnerIndex, winnerText) {
-    // 本局分數只取這一次快照，計分表與戰績表都從這裡來，保證兩邊一致
+    // 本局分数只取这一次快照，计分表与战绩表都从这里来，保证两边一致
     const roundScores = gameState.scores.slice();
     for (let i = 0; i < 4; i++) window.sessionScores[i] += roundScores[i];
     window.sessionWins[winnerIndex] += 1;
@@ -272,11 +263,11 @@ function finalizeRound(winnerIndex, winnerText) {
     window.roundDetails.push(gameState.roundDetail || null);
 
 
-    // 一致性自檢：贏家手牌必須為 0，且「四家手牌 + 已出的牌」必須剛好 52 張
+    // 一致性自检：赢家手牌必须为 0，且「四家手牌 + 已出的牌」必须刚好 52 张
     const winnerHand = gameState.players[winnerIndex] ? gameState.players[winnerIndex].length : -1;
     const totalCards = gameState.players.reduce((a, p) => a + p.length, 0) + gameState.playedCards.length;
     if (winnerHand !== 0 || totalCards !== 52) {
-        console.warn('[round] 結算狀態異常', {
+        console.warn('[round] 结算状态异常', {
             winnerIndex,
             winnerHand,
             hands: gameState.players.map(p => p.length),
@@ -288,15 +279,15 @@ function finalizeRound(winnerIndex, winnerText) {
     renderAll();
     AudioPlayer.playWin();
     setTimeout(() => showScoreTable(winnerIndex, roundScores, winnerText), 350);
-    // 再補一次重繪，確保局末畫面（含手牌區）不會殘留上一幀的 DOM
+    // 再补一次重绘，确保局末画面（含手牌区）不会残留上一帧的 DOM
     setTimeout(renderAll, 600);
     scheduleAutoRestartIfAI();
 }
 window.finalizeRound = finalizeRound;
 
 /**
- * 收起本局計分表。showHint=true 時在桌面中央提示「點一下開始下一局」——
- * 玩家把計分框點掉之後，桌面正中就是下一局的入口（綁定在 renderer.js 的 #table-center）。
+ * 收起本局计分表。showHint=true 时在桌面中央提示「点一下开始下一局」——
+ * 玩家把计分框点掉之后，桌面正中就是下一局的入口（绑定在 renderer.js 的 #table-center）。
  */
 function hideScoreTable(showHint) {
     const modal = window.scoreModalEl || document.getElementById('score-modal');
@@ -310,7 +301,7 @@ window.hideScoreTable = hideScoreTable;
 
 function scheduleAutoRestartIfAI() {
     const p0Char = window.AI ? window.AI.getCharacter(0) : null;
-    if (!p0Char) return;   // 只有本機交 AI（自動對局／測試）才自動重開
+    if (!p0Char) return;   // 只有本机交 AI（自动对局／测试）才自动重开
     setTimeout(() => {
         if (!gameState.gameEnded) return;
         if (window.alertModal) window.alertModal.classList.add('hidden');
@@ -320,8 +311,8 @@ function scheduleAutoRestartIfAI() {
 }
 
 /**
- * 每局結束的計分表：顯示每位玩家「本局」與「本次開 App 累計」分數。
- * 累計存在 window.sessionScores，只會在重新啟動 App（頁面重載）時歸零。
+ * 每局结束的计分表：显示每位玩家「本局」与「本次开 App 累计」分数。
+ * 累计存在 window.sessionScores，只会在重新启动 App（页面重载）时归零。
  */
 function showScoreTable(winnerIndex, roundScores, winnerText) {
     const modal = window.scoreModalEl || document.getElementById('score-modal');
@@ -353,12 +344,12 @@ function showScoreTable(winnerIndex, roundScores, winnerText) {
         roundTd.textContent = (roundScore > 0 ? '+' : '') + roundScore;
         roundTd.className = 'score-cell ' + (roundScore > 0 ? 'pos' : roundScore < 0 ? 'neg' : 'zero');
 
-        // 加倍說明（幾張 × 幾倍、黑桃2、赢家結尾2）
+        // 加倍说明（几张 × 几倍、黑桃2、赢家结尾2）
         const det = (gameState.roundDetail && gameState.roundDetail.players || []).find((d) => d.playerIndex === i);
         const hint = document.createElement('div');
         hint.className = 'score-detail';
         if (i === winnerIndex) {
-            hint.textContent = t('detailSum');     // 贏家：三家牌分總和
+            hint.textContent = t('detailSum');     // 赢家：三家牌分总和
         } else if (det) {
             const parts = [t('detailCards', { n: det.count, m: det.countMult })];
             if (det.spadeTwo) parts.push(t('detailSpade2'));
@@ -383,7 +374,7 @@ function showScoreTable(winnerIndex, roundScores, winnerText) {
 window.showScoreTable = showScoreTable;
 
 /**
- * 本次開啟 App 的戰績：局數、每人的勝局數與累計分。
+ * 本次开启 App 的战绩：局数、每人的胜局数与累计分。
  */
 function showSessionStats() {
     const modal = document.getElementById('stats-modal');
@@ -401,10 +392,10 @@ function showSessionStats() {
         roundsEl.textContent = oneLine || t('statsRoundsLine', { n });
     }
 
-    // 姓名來源與計分表相同（PLAYER_NAMES，即當前座位角色），兩邊永遠同一組名字
+    // 姓名来源与计分表相同（PLAYER_NAMES，即当前座位角色），两边永远同一组名字
     const shortName = (i) => (PLAYER_NAMES[i] || ('P' + (i + 1))).replace(/\s*[\(（].*?[\)）]\s*$/, '');
 
-    // 表頭：局 / 四位玩家（各帶勝局數）
+    // 表头：局 / 四位玩家（各带胜局数）
     if (head) {
         head.innerHTML = '';
         const tr = document.createElement('tr');
@@ -428,7 +419,7 @@ function showSessionStats() {
         head.appendChild(tr);
     }
 
-    // 內容：每一局一行，最後一列為累計
+    // 内容：每一局一行，最后一列为累计
     body.innerHTML = '';
     const history = window.roundHistory || [];
     if (!history.length) {
@@ -457,14 +448,14 @@ function showSessionStats() {
         });
     }
 
-    // 最後一列：累計總分 = 上面每一列相加（與 sessionScores 對帳，若有落差以列為準並記錄）
+    // 最后一列：累计总分 = 上面每一列相加（与 sessionScores 对帐，若有落差以列为准并记录）
     const columnSums = (history.length ? history : []).reduce(
         (acc, row) => acc.map((v, i) => v + (row[i] || 0)),
         [0, 0, 0, 0]
     );
     const drift = columnSums.map((v, i) => v - (window.sessionScores[i] || 0));
     if (drift.some((d) => d !== 0) && typeof console !== 'undefined') {
-        console.warn('[stats] 累計與本局紀錄不一致', { columnSums, sessionScores: window.sessionScores.slice(), drift });
+        console.warn('[stats] 累计与本局纪录不一致', { columnSums, sessionScores: window.sessionScores.slice(), drift });
     }
 
     const totalTr = document.createElement('tr');
@@ -489,8 +480,8 @@ function showSessionStats() {
 window.showSessionStats = showSessionStats;
 
 /**
- * 現在該不該讓 AI 動作？人類（0 號位沒掛 AI 角色）→ null，
- * 否則回傳延遲毫秒（有 AI 角色 100ms，純人類代打 1000ms）。
+ * 现在该不该让 AI 动作？人类（0 号位没挂 AI 角色）→ null，
+ * 否则回传延迟毫秒（有 AI 角色 100ms，纯人类代打 1000ms）。
  */
 function aiTurnDelay() {
     const aiChar = window.AI ? window.AI.getCharacter(0) : null;
@@ -508,8 +499,8 @@ function nextTurn() {
         aiTurnTimeout = null;
     }
 
-    // 出牌順序：逆時針。座位索引 0=你(下) 1=河狸(左) 2=柴犬(上) 3=橘貓(右)，
-    // 順時針是 0→1→2→3，逆時針就是索引 -1，即 你→橘貓→柴犬→河狸→你。
+    // 出牌顺序：逆时针。座位索引 0=你(下) 1=河狸(左) 2=柴犬(上) 3=橘猫(右)，
+    // 顺时针是 0→1→2→3，逆时针就是索引 -1，即 你→橘猫→柴犬→河狸→你。
     gameState.turn = (gameState.turn + 3) % 4;
     resetCycleState();
     renderAll();
@@ -543,12 +534,12 @@ async function aiTurn() {
             if (gameState.players[i].length === 1) lastCardMode = true;
         }
 
-        // ── AI 策略前置判斷 ───────────────────────────────────────────
-        // 安全區：手牌 < 8 張（8 張起輸分翻倍，就是「倒霉蛋」）
+        // ── AI 策略前置判断 ───────────────────────────────────────────
+        // 安全区：手牌 < 8 张（8 张起输分翻倍，就是「倒霉蛋」）
         const myCount = hand.length;
         const iAmSafe = myCount > 0 && myCount < 8;
 
-        // 倒霉蛋：其他 >= 8 張的人，牌越多越是目標（最多鎖定 2 家）
+        // 倒霉蛋：其他 >= 8 张的人，牌越多越是目标（最多锁定 2 家）
         const fatOthers = [];
         for (let i = 0; i < 4; i++) {
             if (i === gameState.turn) continue;
@@ -561,13 +552,13 @@ async function aiTurn() {
         const pressureCount = pressureTarget >= 0 ? gameState.players[pressureTarget].length : 0;
         const pressureActive = pressureTarget !== -1;
 
-        // 盟友：只在自己已進入安全區（< 8 張）時才找盟友
-        //   1) 盟友也是安全區的人（2~7 張）
-        //   2) 盟友的牌不能比我多（誰牌少先讓誰跑；比我先進安全區的人才是盟友）
-        //   3) 剩 2 張也算盟友（送張小單張助他先跑，一起抓倒霉蛋）；只剩 1 張（已報單）不當盟友
+        // 盟友：只在自己已进入安全区（< 8 张）时才找盟友
+        //   1) 盟友也是安全区的人（2~7 张）
+        //   2) 盟友的牌不能比我多（谁牌少先让谁跑；比我先进安全区的人才是盟友）
+        //   3) 剩 2 张也算盟友（送张小单张助他先跑，一起抓倒霉蛋）；只剩 1 张（已报单）不当盟友
         const nextIdx = nextPlayerIndex(gameState.turn);
         const allyIndices = [];
-        let oneCardAlly = -1;       // 只剩 1 張的盟友（他不是我的下家時才幫）
+        let oneCardAlly = -1;       // 只剩 1 张的盟友（他不是我的下家时才帮）
         if (iAmSafe) {
             for (let i = 0; i < 4; i++) {
                 if (i === gameState.turn) continue;
@@ -576,8 +567,8 @@ async function aiTurn() {
                 if (c >= 2 && c <= 7 && c <= myCount) {
                     allyIndices.push(i);
                 } else if (c === 1 && i !== nextIdx) {
-                    // 剩 1 張也能當盟友：出單張讓他接過去直接走完
-                    // 但如果他是我的下家（我就是他的上家），規則要求我頂大，不能放水
+                    // 剩 1 张也能当盟友：出单张让他接过去直接走完
+                    // 但如果他是我的下家（我就是他的上家），规则要求我顶大，不能放水
                     allyIndices.push(i);
                     oneCardAlly = i;
                 }
@@ -599,15 +590,15 @@ async function aiTurn() {
             playedCards: gameState.playedCards,
             playerLastActions: gameState.playerLastActions,
             playerNames: PLAYER_NAMES,
-            pressureTarget,                    // 最肥的倒霉蛋座位（-1 = 沒有）
-            pressureCount,                     // 倒霉蛋剩幾張
-            pressureActive,                    // 有倒霉蛋 → 頂大壓制
-            fatTargets,                        // 最多鎖定 2 家倒霉蛋
-            iAmSafe,                           // 自己是否已在安全區（< 8 張）
+            pressureTarget,                    // 最肥的倒霉蛋座位（-1 = 没有）
+            pressureCount,                     // 倒霉蛋剩几张
+            pressureActive,                    // 有倒霉蛋 → 顶大压制
+            fatTargets,                        // 最多锁定 2 家倒霉蛋
+            iAmSafe,                           // 自己是否已在安全区（< 8 张）
             allyIndices: allianceActive ? allyIndices : [],
             allianceActive,
             nextIsAlly: allianceActive && allyIndices.includes(nextIdx),
-            oneCardAlly                        // >= 0 → 有盟友只剩 1 張，出小單張助他跑
+            oneCardAlly                        // >= 0 → 有盟友只剩 1 张，出小单张助他跑
         };
 
         let play = null;
@@ -618,7 +609,7 @@ async function aiTurn() {
         }
 
         if (play && play.length > 0) {
-            // 報單頂大：下家只剩 1 張時，AI 出單張只能出自己最大的牌，出不了就過
+            // 报单顶大：下家只剩 1 张时，AI 出单张只能出自己最大的牌，出不了就过
             if (play.length === 1 && mustTopSingle(gameState.turn)) {
                 const maxCard = largestSingle(gameState.turn);
                 if (play[0] !== maxCard) {
@@ -651,12 +642,12 @@ function calculateScores(winnerIndex) {
     const info = GameLogic.getHandInfo(winnerHand);
     let winnerMult = 1;
 
-    // 贏家最後一手含「黑桃 2」→ 三家牌分再 ×2（只認黑桃 2，梅／方／紅心的 2 不算）
+    // 赢家最后一手含「黑桃 2」→ 三家牌分再 ×2（只认黑桃 2，梅／方／红心的 2 不算）
     if (info && winnerHand.some(c => GameLogic.getRank(c) === 12 && GameLogic.getSuit(c) === 3)) {
         winnerMult = 2;
     }
 
-    // ① 先算每家的「牌分」p（聯衆：剩幾張 × 張數倍率，8 張以上含黑桃2 再 ×2，贏家結尾含黑桃2 再 ×2；贏家 0 分）
+    // ① 先算每家的「牌分」p（联众：剩几张 × 张数倍率，8 张以上含黑桃2 再 ×2，赢家结尾含黑桃2 再 ×2；赢家 0 分）
     const pen = [0, 0, 0, 0];
     const detail = { winnerMult, players: [] };
     for (let i = 0; i < 4; i++) {
@@ -667,7 +658,7 @@ function calculateScores(winnerIndex) {
         const hand = gameState.players[i] || [];
         const count = hand.length;
         let countMult = 1;
-        if (count === 13) countMult = 4;          // 一張未出
+        if (count === 13) countMult = 4;          // 一张未出
         else if (count >= 10) countMult = 3;
         else if (count >= 8) countMult = 2;
 
@@ -681,8 +672,8 @@ function calculateScores(winnerIndex) {
         detail.players.push({ playerIndex: i, count, countMult, spadeTwo, base: count * countMult, pen: p });
     }
 
-    // ② 聯衆計分：每兩家互相都要比一次，得分 = Σ_{j≠i} (p_j − p_i)
-    //    官網算例：剩 5、8、0、12 張 → 牌分 5、16、0、36 → 得分 37、-7、57、-87
+    // ② 联众计分：每两家互相都要比一次，得分 = Σ_{j≠i} (p_j − p_i)
+    //    官网算例：剩 5、8、0、12 张 → 牌分 5、16、0、36 → 得分 37、-7、57、-87
     for (let i = 0; i < 4; i++) {
         let gained = 0;
         for (let j = 0; j < 4; j++) {

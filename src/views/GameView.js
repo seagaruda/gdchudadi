@@ -23,14 +23,14 @@ const RANK_LABELS = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'
 
 // Multi-row hand layout constants (declared before updateResponsiveLayout() runs,
 // because that function may re-render the hand on the very first call).
-const HAND_ROW_SIZE = 5;          // 每排最多 5 張，讓 5 張牌型能被完整看見
-const HAND_ROW_MIN_CARDS = 7;     // 6 張以下單排還放得下，不需要拆排
+const HAND_ROW_SIZE = 5;          // 每排最多 5 张，让 5 张牌型能被完整看见
+const HAND_ROW_MIN_CARDS = 7;     // 6 张以下单排还放得下，不需要拆排
 
-// 排列模式：smart = 依鋤大地 5 張牌型自動聚組；five = 每 5 張一排；single = 原本單排
+// 排列模式：smart = 依锄大地 5 张牌型自动聚组；five = 每 5 张一排；single = 原本单排
 const HAND_LAYOUT_MODES = ['smart', 'five', 'single'];
 const HAND_LAYOUT_STORAGE_KEY = 'handLayoutMode';
 
-// 5 張牌型的辨識優先度（數值越大越先聚組）
+// 5 张牌型的辨识优先度（数值越大越先聚组）
 const FIVE_CARD_PRIORITY = {
     STRAIGHT_FLUSH: 5,
     FOUR_OF_A_KIND: 4,
@@ -40,12 +40,12 @@ const FIVE_CARD_PRIORITY = {
 };
 
 const COMBO_LABELS = {
-    zh: { STRAIGHT_FLUSH: '同花順', FOUR_OF_A_KIND: '鐵支', FULL_HOUSE: '葫蘆', FLUSH: '同花', STRAIGHT: '順子' },
+    zh: { STRAIGHT_FLUSH: '同花顺', FOUR_OF_A_KIND: '铁支', FULL_HOUSE: '葫芦', FLUSH: '同花', STRAIGHT: '顺子' },
     en: { STRAIGHT_FLUSH: 'StraightFlush', FOUR_OF_A_KIND: 'FourKind', FULL_HOUSE: 'FullHouse', FLUSH: 'Flush', STRAIGHT: 'Straight' }
 };
 
 const LAYOUT_MODE_LABELS = {
-    zh: { smart: '牌型', five: '5張', single: '單排' },
+    zh: { smart: '牌型', five: '5张', single: '单排' },
     en: { smart: 'Combos', five: '5/row', single: 'Row' }
 };
 
@@ -53,8 +53,8 @@ function currentLangKey() {
     return (typeof window.currentLang === 'string' && window.currentLang.startsWith('en')) ? 'en' : 'zh';
 }
 
-// 手機豎屏：把四家的出牌槽搬進桌面中央（左/上/右/下按座位方位擺放）
-// 桌面版維持原本「出牌槽貼在座位旁」的排版。
+// 手机竖屏：把四家的出牌槽搬进桌面中央（左/上/右/下按座位方位摆放）
+// 桌面版维持原本「出牌槽贴在座位旁」的排版。
 function setupTablePlays() {
     const wrap = document.getElementById('table-plays');
     if (!wrap) return;
@@ -92,7 +92,7 @@ function updateResponsiveLayout() {
         document.body.classList.remove('mobile-layout');
         document.documentElement.classList.remove('mobile-layout');
     }
-    // 出牌槽跟著版面切換位置（桌面中央 / 座位旁）
+    // 出牌槽跟着版面切换位置（桌面中央 / 座位旁）
     setupTablePlays();
     // Re-render the hand so the multi-row split follows the active layout
     if (wasMobile !== useMobile && window.gameState && Array.isArray(window.gameState.players) &&
@@ -129,7 +129,7 @@ function updateDynamicAvatars() {
         const hand = gameState.players[playerIndex];
         if (!hand) continue;
 
-        // X: 局勢順逆
+        // X: 局势顺逆
         const progress = 1.0 - (hand.length / 13);
         let x = (progress * 2.0) - 1.0;
         if (gameState.lastPlayerIndex === -1 || gameState.lastPlayerIndex === playerIndex) {
@@ -137,7 +137,7 @@ function updateDynamicAvatars() {
         }
         x = Math.max(-1.0, Math.min(1.0, x));
 
-        // Y: 情緒張力
+        // Y: 情绪张力
         let y = 0.15;
         if (gameState.turn === playerIndex) y += 0.15;
         
@@ -165,8 +165,8 @@ function renderAll() {
 }
 
 // --- Portrait / mobile hand layout ---------------------------------------
-// 起手時把自家手牌自動分成多排（每排最多 5 張），讓 順子 / 葫蘆 / 同花 等
-// 5 張牌型可以一眼看出來。13 張 = 5+5+3（三排）、10 張 = 5+5（兩排）。
+// 起手时把自家手牌自动分成多排（每排最多 5 张），让 顺子 / 葫芦 / 同花 等
+// 5 张牌型可以一眼看出来。13 张 = 5+5+3（三排）、10 张 = 5+5（两排）。
 function isMobileLayout() {
     return document.body.classList.contains('mobile-layout');
 }
@@ -193,9 +193,9 @@ function updateHandLayoutButton() {
     btn.dataset.mode = mode;
 }
 
-// 在整手牌裡找出可以打出的 5 張牌型（鐵支 / 同花順 / 葫蘆 / 同花 / 順子），
-// 以「牌型強度優先」貪婪地挑出不重疊的組合（最多 3 組）。
-// 判定完全交給 GameLogic.getHandInfo()，所以台港規則差異（例如台版不能單打同花）自動生效。
+// 在整手牌里找出可以打出的 5 张牌型（铁支 / 同花顺 / 葫芦 / 同花 / 顺子），
+// 以「牌型强度优先」贪婪地挑出不重叠的组合（最多 3 组）。
+// 判定完全交给 GameLogic.getHandInfo()，所以台港规则差异（例如台版不能单打同花）自动生效。
 let fiveCardComboCache = new Map();
 
 function findFiveCardCombos(cards) {
@@ -259,10 +259,10 @@ function chunkHandIntoRows(cards) {
     return rows;
 }
 
-// 依模式組出「列」：每列 = { cards, combo }
-// smart：先放 5 張牌型組（整組不拆、置於該排最前），其餘散牌補在後面，
-//        總張數 >6 時盡量壓成兩排（13 張 = 7+6），比三排更省高度。
-// five ：嚴格每排 5 張。
+// 依模式组出「列」：每列 = { cards, combo }
+// smart：先放 5 张牌型组（整组不拆、置于该排最前），其余散牌补在后面，
+//        总张数 >6 时尽量压成两排（13 张 = 7+6），比三排更省高度。
+// five ：严格每排 5 张。
 function buildHandRows(cards, mode) {
     if (mode === 'smart') {
         const combos = findFiveCardCombos(cards);
@@ -299,7 +299,7 @@ function createHumanCardElement(cardId) {
         cardEl.classList.add('selected');
     }
     cardEl.onclick = () => {
-        if (gameState.gameEnded) return;   // 本局已結束：不能再選牌
+        if (gameState.gameEnded) return;   // 本局已结束：不能再选牌
         AudioPlayer.playCardSelect();
         if (gameState.selectedCards.has(cardId)) {
             gameState.selectedCards.delete(cardId);
@@ -356,7 +356,7 @@ function createCardElement(cardId) {
 }
 
 /**
- * 頭像下方的分數＝本次開 App 的累計總分（不是單局分；單局分只在計分表顯示）
+ * 头像下方的分数＝本次开 App 的累计总分（不是单局分；单局分只在计分表显示）
  */
 function formatTotalScore(playerIndex) {
     const total = (window.sessionScores || [])[playerIndex] || 0;
@@ -480,7 +480,7 @@ function renderPlayerActions() {
 function updateStatus() {
     if (!statusMessage) return;
 
-    // 首次開啟（還沒發牌）／計分框被點掉 → 提示「點桌面中間開始」
+    // 首次开启（还没发牌）／计分框被点掉 → 提示「点桌面中间开始」
     if (gameState.pendingStart) {
         statusMessage.textContent = t(gameState.pendingStart === 'first' ? 'tapCenterStart' : 'tapCenterNext');
         return;
@@ -492,7 +492,7 @@ function updateStatus() {
     }
 
     if (gameState.gameEnded) {
-        // 贏家以 gameState.winnerIndex 為唯一來源，避免掃手牌掃不到時把舊文字留在畫面上
+        // 赢家以 gameState.winnerIndex 为唯一来源，避免扫手牌扫不到时把旧文字留在画面上
         let idx = (typeof gameState.winnerIndex === 'number') ? gameState.winnerIndex : -1;
         if (idx < 0) {
             for (let i = 0; i < 4; i++) {
@@ -562,7 +562,7 @@ function showPassIndicator(playerIndex) {
     triggerShoutEffect(playerIndex, t('passMsg'), false);
 }
 
-function triggerShoutEffect(playerIndex, message = "報單", shake = true) {
+function triggerShoutEffect(playerIndex, message = "报单", shake = true) {
     const container = document.getElementById('game-container');
     const playerEl = playerIndex === 0 ? document.getElementById('human-area') : document.getElementById(`player-${playerIndex + 1}`);
     if (!playerEl) return;
@@ -626,14 +626,14 @@ document.querySelectorAll('.close-btn').forEach(btn => {
 });
 
 window.onclick = (event) => {
-    // 點遮罩關閉
+    // 点遮罩关闭
     const backdrops = [rulesModal, alertModal, confirmModal, document.getElementById('score-modal'), document.getElementById('stats-modal')];
     if (!backdrops.includes(event.target)) return;
     rulesModal.classList.add('hidden');
     alertModal.classList.add('hidden');
     confirmModal.classList.add('hidden');
     if (event.target.id === 'score-modal' && typeof window.hideScoreTable === 'function') {
-        // 計分框被點掉 → 桌面中央改為「點一下開下一局」的入口
+        // 计分框被点掉 → 桌面中央改为「点一下开下一局」的入口
         window.hideScoreTable(true);
     } else if (event.target !== rulesModal && event.target !== alertModal && event.target !== confirmModal) {
         event.target.classList.add('hidden');
@@ -669,22 +669,20 @@ window.onclick = (event) => {
     }
 })();
 
-// Hide Electron custom window controls in non-Electron environments (Android/Capacitor/Browser)
+// 隐藏桌面端自定义窗口控制按钮（Android/Capacitor 无需窗口标题栏按钮）
 (function() {
-    if (typeof AppEnv !== 'undefined' && !AppEnv.isElectron) {
         const hideControls = () => {
             const controls = document.querySelectorAll('.window-controls');
             controls.forEach(el => {
                 el.style.display = 'none';
             });
-            console.log(`[Renderer] Non-Electron environment detected. Hidden ${controls.length} .window-controls elements.`);
+            console.log(`[Renderer] Hidden ${controls.length} .window-controls elements.`);
         };
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', hideControls);
         } else {
             hideControls();
         }
-    }
 })();
 
 // Export view functions globally
@@ -702,7 +700,7 @@ window.showPassIndicator = showPassIndicator;
 window.triggerShoutEffect = triggerShoutEffect;
 window.showAlert = showAlert;
 
-// 手牌排列切換按鈕（牌型 → 5張 → 單排 → 牌型 …）
+// 手牌排列切换按钮（牌型 → 5张 → 单排 → 牌型 …）
 (function setupHandLayoutToggle() {
     const btn = document.getElementById('btn-hand-layout');
     if (!btn) return;

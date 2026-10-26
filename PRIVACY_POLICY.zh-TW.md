@@ -40,7 +40,7 @@ Android 版本只申請執行 WebView 所需的權限，未申請定位、相機
 
 ## 聯絡方式
 
-請在 <https://github.com/seagaruda/taiwan-big-two-ai> 開 issue。
+請在 <https://github.com/seagaruda/gdchudadi> 開 issue。
 
 ## 授權說明
 

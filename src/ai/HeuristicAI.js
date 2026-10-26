@@ -78,7 +78,7 @@ class ChrisAI extends AICharacter {
  */
 class OrangeCatAI extends AICharacter {
     constructor(gameLogic) {
-        super(gameLogic, "橘貓");
+        super(gameLogic, "橘猫");
         this.avatar = "src/assets/avatars/orange_cat_sprite.png";
         this.isDynamic = true;
     }

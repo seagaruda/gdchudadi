@@ -54,7 +54,7 @@ runTest("Card Comparison (Spade beats Club)", () => {
 runTest("Hand Identification (Pairs)", () => {
     const pairOf3s = [0, 13]; // Club 3, Diamond 3
     const info = GameLogic.getHandInfo(pairOf3s);
-    // 大陸花色：♠ > ♥ > ♣ > ♦，所以這對 3 取梅花 3（cardId 0）
+    // 大陆花色：♠ > ♥ > ♣ > ♦，所以这对 3 取梅花 3（cardId 0）
     return assert(info && info.type === 'PAIR', "Should detect PAIR") &&
            assert(info.value === 0, "Value should be determined by Club (higher suit than Diamond in Mainland)");
 });
@@ -109,9 +109,9 @@ runTest("Hand Identification (Dragon)", () => {
 });
 
 runTest("Special Straight Comparison (2-3-4-5-6 counts as 6, loses to 3-4-5-6-7)", () => {
-    // 2-3-4-5-6 → 大陸規則以 6 計
+    // 2-3-4-5-6 → 大陆规则以 6 计
     const s23456 = [12, 13, 27, 41, 3];
-    // 3-4-5-6-7 → 以 7 計
+    // 3-4-5-6-7 → 以 7 计
     const normalS = [0, 14, 28, 42, 4];
     return assert(GameLogic.compareHands(s23456, normalS) < 0, "2-3-4-5-6 (top 6) should lose to 3-4-5-6-7 (top 7)");
 });
@@ -130,7 +130,7 @@ runTest("Multiple Pairs Generation (Three Js should yield three pairs)", () => {
     const hand = [8, 21, 47, 0];
     const pairs = GameLogic.findPairs(hand);
     
-    // 3 對：{8,21} {8,47} {21,47}（順序不固定，按排序後的 key 比對）
+    // 3 对：{8,21} {8,47} {21,47}（顺序不固定，按排序后的 key 比对）
     const keys = pairs.map(p => p.slice().sort((a, b) => a - b).join(','));
     const want = ['21,8', '47,8', '47,21'].map(k => k.split(',').map(Number).sort((a, b) => a - b).join(','));
     const ok = want.every(w => keys.includes(w));
@@ -156,7 +156,7 @@ runTest("Mainland - Bombs cannot beat singles/pairs", () => {
     const single = [12]; // 2 of Clubs (Rank 12)
     const quad = [0, 13, 26, 39, 1]; // 3-of-a-kind + kicker
     const compareResult = GameLogic.compareHands(quad, single);
-    return assert(compareResult === 0, "5 張牌型不能壓單張（大陸規則）");
+    return assert(compareResult === 0, "5 张牌型不能压单张（大陆规则）");
 });
 
 runTest("Mainland - hasValidMoves for triples", () => {
@@ -164,7 +164,7 @@ runTest("Mainland - hasValidMoves for triples", () => {
     const handWithWorseTriple = [0, 13, 26]; // 3C, 3D, 3H (Triple 3s)
     const lastPlayTriple = [1, 14, 27]; // 4C, 4D, 4H (Triple 4s)
     
-    // 三條 2 壓三條 4（2 為 rank 12）
+    // 三条 2 压三条 4（2 为 rank 12）
     const canMoveBetter = GameLogic.hasValidMoves(handWithBetterTriple, lastPlayTriple);
     // Triple 3s cannot beat Triple 4s
     const canMoveWorse = GameLogic.hasValidMoves(handWithWorseTriple, lastPlayTriple);
@@ -172,49 +172,49 @@ runTest("Mainland - hasValidMoves for triples", () => {
            assert(canMoveWorse === false, "Worse triple should NOT be a valid move");
 });
 
-// --- 大陸規則回歸測試（1.5.36 新增）---
+// --- 大陆规则回归测试（1.5.36 新增）---
 
-runTest("Mainland: A2345 是順子（A 作最小）", () => {
-    // 梅花 3,4,5 + 梅花 A,2 → 同花順，value 應為 5（rank 2）
+runTest("Mainland: A2345 是顺子（A 作最小）", () => {
+    // 梅花 3,4,5 + 梅花 A,2 → 同花顺，value 应为 5（rank 2）
     const info = GameLogic.getHandInfo([0, 1, 2, 11, 12]);
     const ok = info && (info.type === 'STRAIGHT' || info.type === 'STRAIGHT_FLUSH') && info.value % 13 === 2;
-    return assert(ok, `A2345 判定為順子且以 5 計（實際 ${JSON.stringify(info)}）`);
+    return assert(ok, `A2345 判定为顺子且以 5 计（实际 ${JSON.stringify(info)}）`);
 });
 
-runTest("Mainland: 23456 是順子（2 作最小端）", () => {
+runTest("Mainland: 23456 是顺子（2 作最小端）", () => {
     const info = GameLogic.getHandInfo([0, 1, 2, 3, 12]);
     const ok = info && (info.type === 'STRAIGHT' || info.type === 'STRAIGHT_FLUSH') && info.value % 13 === 3;
-    return assert(ok, `23456 判定為順子且以 6 計（實際 ${JSON.stringify(info)}）`);
+    return assert(ok, `23456 判定为顺子且以 6 计（实际 ${JSON.stringify(info)}）`);
 });
 
-runTest("Mainland: 純四張同點不是合法牌型", () => {
+runTest("Mainland: 纯四张同点不是合法牌型", () => {
     const info = GameLogic.getHandInfo([0, 13, 26, 39]);
-    return assert(info === null, `四張同點應為 null（實際 ${JSON.stringify(info)}）`);
+    return assert(info === null, `四张同点应为 null（实际 ${JSON.stringify(info)}）`);
 });
 
-runTest("Mainland: 四帶一（5 張）合法", () => {
+runTest("Mainland: 四带一（5 张）合法", () => {
     const info = GameLogic.getHandInfo([0, 13, 26, 39, 1]);
-    return assert(info && info.type === 'FOUR_OF_A_KIND', `四帶一應為 FOUR_OF_A_KIND（實際 ${JSON.stringify(info)}）`);
+    return assert(info && info.type === 'FOUR_OF_A_KIND', `四带一应为 FOUR_OF_A_KIND（实际 ${JSON.stringify(info)}）`);
 });
 
-runTest("Mainland: 五張牌型不能壓單張", () => {
+runTest("Mainland: 五张牌型不能压单张", () => {
     const cmp = GameLogic.compareHands([0, 13, 26, 39, 1], [51]);
-    return assert(cmp === 0, `四帶一 vs 單張 應為 0（實際 ${cmp}）`);
+    return assert(cmp === 0, `四带一 vs 单张 应为 0（实际 ${cmp}）`);
 });
 
-runTest("Mainland: J-Q-K-A-2 不是順子（2 不得在順子中段或最高位）", () => {
+runTest("Mainland: J-Q-K-A-2 不是顺子（2 不得在顺子中段或最高位）", () => {
     const info = GameLogic.getHandInfo([8, 22, 36, 50, 12]);   // J♣ Q♦ K♥ A♠ 2♣
-    return assert(info === null, `J-Q-K-A-2 應為 null（實際 ${JSON.stringify(info)}）`);
+    return assert(info === null, `J-Q-K-A-2 应为 null（实际 ${JSON.stringify(info)}）`);
 });
 
-runTest("Mainland: A-2-3-4-5 與 2-3-4-5-6 仍是合法順子", () => {
+runTest("Mainland: A-2-3-4-5 与 2-3-4-5-6 仍是合法顺子", () => {
     const a2345 = GameLogic.getHandInfo([11, 12, 0, 14, 28]);
     const s23456 = GameLogic.getHandInfo([12, 0, 14, 28, 3]);
     return assert(a2345 && a2345.type === 'STRAIGHT' && s23456 && s23456.type === 'STRAIGHT',
         `A2345=${JSON.stringify(a2345)} 23456=${JSON.stringify(s23456)}`);
 });
 
-runTest("Mainland: 出牌實例總數 = 19,898（論文 §2.2）", () => {
+runTest("Mainland: 出牌实例总数 = 19,898（论文 §2.2）", () => {
     const counts = { SINGLE: 0, PAIR: 0, TRIPLE: 0, STRAIGHT: 0, FLUSH: 0, FULL_HOUSE: 0, FOUR: 0, STRAIGHT_FLUSH: 0 };
     const bump = (info) => {
         if (!info) return;
@@ -240,8 +240,8 @@ runTest("Mainland: 出牌實例總數 = 19,898（論文 §2.2）", () => {
         }
     }
     const total = counts.SINGLE + counts.PAIR + counts.TRIPLE + counts.STRAIGHT + counts.FLUSH + counts.FULL_HOUSE + counts.FOUR + counts.STRAIGHT_FLUSH;
-    const detail = `單${counts.SINGLE} 對${counts.PAIR} 三${counts.TRIPLE} 順${counts.STRAIGHT} 花${counts.FLUSH} 葫${counts.FULL_HOUSE} 四帶一${counts.FOUR} 同花順${counts.STRAIGHT_FLUSH}`;
-    return assert(total === 19898, `總數應為 19898（實際 ${total}：${detail}）`);
+    const detail = `单${counts.SINGLE} 对${counts.PAIR} 三${counts.TRIPLE} 顺${counts.STRAIGHT} 花${counts.FLUSH} 葫${counts.FULL_HOUSE} 四带一${counts.FOUR} 同花顺${counts.STRAIGHT_FLUSH}`;
+    return assert(total === 19898, `总数应为 19898（实际 ${total}：${detail}）`);
 });
 
 console.log(`\n${colors.cyan}Summary: ${passedCount}/${totalCount} tests passed.${colors.reset}`);

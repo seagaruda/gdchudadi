@@ -1,4 +1,4 @@
-// node scripts/app-ai-game-test.js —— 用 App 自己的 AICharacter 打完整牌局，A/B 比較「啟發式」vs「啟發式+ISMCTS 搜索」
+// node scripts/app-ai-game-test.js —— 用 App 自己的 AICharacter 打完整牌局，A/B 比较「启发式」vs「启发式+ISMCTS 搜索」
 global.window = global;
 global.AppStorage = { getItem: () => 'mainland' };
 
@@ -8,7 +8,7 @@ global.GameLogic = GameLogic;
 global.ChudadiEngine = E;
 const { AICharacter } = require('../src/ai/AICharacter.js');
 
-const NAMES = ['Alex', 'Bella', 'Chris', '橘貓'];
+const NAMES = ['Alex', 'Bella', 'Chris', '橘猫'];
 
 function dealValues(rng) {
     const deck = [];
@@ -20,11 +20,11 @@ function dealValues(rng) {
     return hands;
 }
 
-/** 一句牌：四家都用 AICharacter 決策；回傳四家得分 + 統計 */
+/** 一句牌：四家都用 AICharacter 决策；回传四家得分 + 统计 */
 async function playDeal(hands, cfg, seed) {
-    // cfg 可以是單一配置（四家共用）或 4 個配置的陣列（混合牌桌）
+    // cfg 可以是单一配置（四家共用）或 4 个配置的阵列（混合牌桌）
     const played = {};
-    // 規則對齊 App：下家報單時單張要頂大（GameController 強制），但 App 沒有「能壓過不准過牌」
+    // 规则对齐 App：下家报单时单张要顶大（GameController 强制），但 App 没有「能压过不准过牌」
     const RULES = { allowTriple: true, firstLeadMustContainD3: true, nextOneMustPlayMaxSingle: true, noPassIfCanBeatSingle: false };
     const g = new E.Game(hands.map(h => h.slice()), 0, null, -1, 0, true, played, RULES);
     // 首副牌：持 ♦3 者先出
@@ -65,13 +65,13 @@ async function playDeal(hands, cfg, seed) {
         if (move === null || move === undefined) {
             const pass = g.legalMoves().find(m => m.t === E.PASS);
             if (!pass) {
-                console.log('DEBUG 領出卻回 null', JSON.stringify({
+                console.log('DEBUG 领出却回 null', JSON.stringify({
                     seat, reason: window.__lastAIReason,
                     hand: handIds, n: g.hands[seat].length,
                     lastPlay: g.lastMove && g.lastMove.c, lastMover: g.lastMover,
                     legal: g.legalMoves().map(x => x.t + ':' + x.c.join(',')).slice(0, 6)
                 }));
-                throw new Error('AI 在領出時回傳 null（seat ' + seat + '）');
+                throw new Error('AI 在领出时回传 null（seat ' + seat + '）');
             }
             g.apply(pass);
         } else {
@@ -87,7 +87,7 @@ async function playDeal(hands, cfg, seed) {
                     legalCount: legal.length,
                     legalSame: legal.filter(x => x.c.length === m.c.length).map(x => x.t + ':' + x.c.join(',')).slice(0, 4)
                 }));
-                // 規則邊界：App 規則與引擎不同步時記錄，不要讓整局崩掉
+                // 规则边界：App 规则与引擎不同步时记录，不要让整局崩掉
                 const fallback = legal.find(x => x.t !== E.PASS);
                 if (!fallback) { g.apply(legal.find(x => x.t === E.PASS)); }
                 else { g.apply(fallback); }
@@ -111,8 +111,8 @@ let legalityMiss = 0;
     const plan = [];
     for (let d = 0; d < deals; d++) plan.push(dealValues(rng));
 
-    // 混合牌桌配對法（跟 Java 參考實作的 bench 同一套）：
-    //   同一副牌 → 先跑全啟發式基線，再把某一個座位換成「啟發式+ISMCTS」，比較該座位得分差。
+    // 混合牌桌配对法（跟 Java 参考实作的 bench 同一套）：
+    //   同一副牌 → 先跑全启发式基线，再把某一个座位换成「启发式+ISMCTS」，比较该座位得分差。
     const H = { iters: 0 };
     const S = { iters, timeMs: 400, close: 4, margin: 5 };
     let sum = 0, sumSq = 0, n = 0, wins = 0, losses = 0, ties = 0;
@@ -120,26 +120,26 @@ let legalityMiss = 0;
     const t0 = Date.now();
     for (let d = 0; d < deals; d++) {
         const base = await playDeal(plan[d], H, d);
-        if (!base.u) { console.log('  基線未完成一副，跳過'); continue; }
+        if (!base.u) { console.log('  基线未完成一副，跳过'); continue; }
         for (let seat = 0; seat < 4; seat++) {
             const cfg = [H, H, H, H];
             cfg[seat] = S;
             const got = await playDeal(plan[d], cfg, d);
-            if (!got.u) { console.log('  測試局未完成，跳過'); continue; }
+            if (!got.u) { console.log('  测试局未完成，跳过'); continue; }
             const diff = got.u[seat] - base.u[seat];
             sum += diff; sumSq += diff * diff; n++;
             if (diff > 0) wins++; else if (diff < 0) losses++; else ties++;
             searches += got.searches; searchMs += got.searchMs;
             iterSum += got.iterSum; flips += got.flips; plies += got.plies;
         }
-        if ((d + 1) % 5 === 0) console.log(`  已跑 ${d + 1}/${deals} 副，累計 ${((Date.now() - t0) / 1000).toFixed(0)}s`);
+        if ((d + 1) % 5 === 0) console.log(`  已跑 ${d + 1}/${deals} 副，累计 ${((Date.now() - t0) / 1000).toFixed(0)}s`);
     }
     const mean = sum / n;
     const sd = Math.sqrt(Math.max(0, sumSq / n - mean * mean));
-    console.log(`\n== 結果（${n} 局配對樣本，${deals} 副牌 × 4 座位輪換）==`);
-    console.log(`ISMCTS 座位 − 全啟發式座位：平均 ${mean >= 0 ? '+' : ''}${mean.toFixed(2)} 分／副（sd ${sd.toFixed(1)}，se ${(sd / Math.sqrt(n)).toFixed(2)}）`);
+    console.log(`\n== 结果（${n} 局配对样本，${deals} 副牌 × 4 座位轮换）==`);
+    console.log(`ISMCTS 座位 − 全启发式座位：平均 ${mean >= 0 ? '+' : ''}${mean.toFixed(2)} 分／副（sd ${sd.toFixed(1)}，se ${(sd / Math.sqrt(n)).toFixed(2)}）`);
     console.log(`  更差 ${losses} / 持平 ${ties} / 更好 ${wins}`);
-    console.log(`  搜索觸發 ${searches} 次／${plies} 手（${(searches / plies * 100).toFixed(0)}%），平均 ${(searchMs / Math.max(1, searches)).toFixed(0)}ms／次，迭代 ${(iterSum / Math.max(1, searches)).toFixed(0)}，翻盤 ${flips}`);
-    console.log(`規則不同步（AI 出的牌引擎不認）${legalityMiss} 次`);
-    console.log('總耗時', ((Date.now() - t0) / 1000).toFixed(0) + 's');
+    console.log(`  搜索触发 ${searches} 次／${plies} 手（${(searches / plies * 100).toFixed(0)}%），平均 ${(searchMs / Math.max(1, searches)).toFixed(0)}ms／次，迭代 ${(iterSum / Math.max(1, searches)).toFixed(0)}，翻盘 ${flips}`);
+    console.log(`规则不同步（AI 出的牌引擎不认）${legalityMiss} 次`);
+    console.log('总耗时', ((Date.now() - t0) / 1000).toFixed(0) + 's');
 })();

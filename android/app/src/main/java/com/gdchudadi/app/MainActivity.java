@@ -1,4 +1,4 @@
-package com.twbig2.app;
+package com.gdchudadi.app;
 
 import com.getcapacitor.BridgeActivity;
 

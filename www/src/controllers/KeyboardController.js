@@ -24,7 +24,7 @@ window.addEventListener('keydown', (e) => {
     }
 
     // 3. Regular game state checks
-    if (gameState.pendingStart) return;   // 首次開啟／計分框剛收：等玩家點桌面正中
+    if (gameState.pendingStart) return;   // 首次开启／计分框刚收：等玩家点桌面正中
     if (gameState.gameEnded) return;
     if (document.querySelector('.modal:not(.hidden)')) return;
 

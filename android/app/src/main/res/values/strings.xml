@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">廣東鋤大地</string>
-    <string name="title_activity_main">廣東鋤大地</string>
-    <string name="package_name">com.twbig2.app</string>
-    <string name="custom_url_scheme">com.twbig2.app</string>
+    <string name="app_name">单机AI·锄大Dee</string>
+    <string name="title_activity_main">单机AI·锄大Dee</string>
+    <string name="package_name">com.gdchudadi.app</string>
+    <string name="custom_url_scheme">com.gdchudadi.app</string>
 </resources>

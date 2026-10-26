@@ -100,8 +100,8 @@ class BaseRules {
         const is23456 = [0, 1, 2, 3, 12].every(r => rankSet.has(r));
         const isA2345 = [0, 1, 2, 11, 12].every(r => rankSet.has(r));
 
-        // 2（rank 12）不能當順子的中段或最高位：只允許 23456 與 A2345 兩個特例。
-        // 否則 J-Q-K-A-2（rank 8,9,10,11,12）會被誤判成順子（論文 §2.2 的 10 種順子不含它）。
+        // 2（rank 12）不能当顺子的中段或最高位：只允许 23456 与 A2345 两个特例。
+        // 否则 J-Q-K-A-2（rank 8,9,10,11,12）会被误判成顺子（论文 §2.2 的 10 种顺子不含它）。
         if (isStraight && rankSet.has(12) && !is23456 && !isA2345) isStraight = false;
 
         const specInfo = this.checkSpecialStraights(sorted, isStraight, isFlush, is23456, isA2345);
@@ -260,7 +260,7 @@ class BaseRules {
         if (sorted.length < 5) return [];
 
         for (let i = 0; i <= sorted.length - 5; i++) {
-            // 頂端是 2（索引 12）但不是 23456 的窗口 → JQKA2 之類，不是順子
+            // 顶端是 2（索引 12）但不是 23456 的窗口 → JQKA2 之类，不是顺子
             if (sorted[i + 4] - sorted[i] === 4 && !(sorted[i + 4] === 12 && sorted[i] !== 0)) {
                 const combination = [];
                 for (let j = 0; j < 5; j++) {
@@ -273,8 +273,8 @@ class BaseRules {
             }
         }
 
-        // 補上「A/2 當小牌」的兩個窗口：A2345、23456（大陸規則合法，港/台規則不合法，
-        // 由下面的 getHandInfo 過濾兜底）。原本漏了這兩種，AI 一輩子不會出 A2345。
+        // 补上「A/2 当小牌」的两个窗口：A2345、23456（大陆规则合法，港/台规则不合法，
+        // 由下面的 getHandInfo 过滤兜底）。原本漏了这两种，AI 一辈子不会出 A2345。
         const rankSet = new Set(cards.map(c => this.getRank(c)));
         for (const w of [[11, 12, 0, 1, 2], [12, 0, 1, 2, 3]]) {
             if (!w.every(r => rankSet.has(r))) continue;
@@ -285,7 +285,7 @@ class BaseRules {
             straights.push(combination);
         }
 
-        // 只保留「本規則真的認可」的順子
+        // 只保留「本规则真的认可」的顺子
         return straights.filter(comb => {
             const info = this.getHandInfo(comb);
             return info && (info.type === 'STRAIGHT' || info.type === 'STRAIGHT_FLUSH');
@@ -489,15 +489,15 @@ class HongKongRules extends BaseRules {
 }
 
 /**
- * 大陸鋤大地規則：花色 黑桃 > 紅桃 > 梅花 > 方塊（梅花大於方塊）、方塊3 先手、
- * 允許 5 張同花與 3 張出牌。與港式規則的差別主要在起手牌與計分倍數，
+ * 大陆锄大地规则：花色 黑桃 > 红桃 > 梅花 > 方块（梅花大于方块）、方块3 先手、
+ * 允许 5 张同花与 3 张出牌。与港式规则的差别主要在起手牌与计分倍数，
  * 因此直接沿用 HongKongRules 的花色/牌型判定。
  */
 class MainlandRules extends HongKongRules {
     /**
-     * 大陸順子：A 可接在 K 後面（10JQKA），也可作最小端（A2345）；
-     * 2 可作最小端（23456），但不入順子中間。比大小時取「該順實際最大的一張」：
-     * A2345 以 5、23456 以 6 為準（聯眾規則：A、2 作小牌處理）。
+     * 大陆顺子：A 可接在 K 后面（10JQKA），也可作最小端（A2345）；
+     * 2 可作最小端（23456），但不入顺子中间。比大小时取「该顺实际最大的一张」：
+     * A2345 以 5、23456 以 6 为准（联众规则：A、2 作小牌处理）。
      */
     checkSpecialStraights(sorted, isStraight, isFlush, is23456, isA2345) {
         const wrapStraight = (topRank) => {
@@ -515,7 +515,7 @@ class MainlandRules extends HongKongRules {
 }
 
 class GameLogic {
-    // 只有大陸鋤大地一種規則（v1.5.60 移除台/港規則與規則模式設定）
+    // 只有大陆锄大地一种规则（v1.5.60 移除台/港规则与规则模式设定）
     static strategy = new MainlandRules();
 
     static getStrategy() {

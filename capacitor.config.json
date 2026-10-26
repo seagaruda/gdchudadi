@@ -1,6 +1,6 @@
 {
-  "appId": "com.twbig2.app",
-  "appName": "廣東鋤大地",
+  "appId": "com.gdchudadi.app",
+  "appName": "单机AI·锄大Dee",
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {

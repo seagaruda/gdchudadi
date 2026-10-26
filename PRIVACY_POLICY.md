@@ -40,7 +40,7 @@ If a future version adds any online feature, this policy will be updated before 
 
 ## Contact
 
-Open an issue at <https://github.com/seagaruda/taiwan-big-two-ai>.
+Open an issue at <https://github.com/seagaruda/gdchudadi>.
 
 ## License note
 

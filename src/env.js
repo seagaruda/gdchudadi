@@ -1,6 +1,6 @@
 /**
  * Guangdong Chu Da Di - Environment & Storage Module
- * Supports Electron, Android (Capacitor), and general web browsers.
+ * 仅面向 Android (Capacitor) 与浏览器预览。
  */
 
 (function (global) {
@@ -22,31 +22,20 @@
         }
     }
 
-    // 1. Detect Platforms
-    const isElectron = typeof window !== 'undefined' && 
-                       ((window.process && window.process.versions && !!window.process.versions.electron) || 
-                        (navigator && navigator.userAgent && navigator.userAgent.includes('Electron')));
-
-    const isTauri = typeof window !== 'undefined' && 
-                    (window.__TAURI_METADATA__ !== undefined || 
-                     window.__TAURI__ !== undefined || 
-                     window.__TAURI_INTERNALS__ !== undefined);
-
-    const isAndroid = typeof window !== 'undefined' && 
-                      window.Capacitor && 
-                      ((window.Capacitor.getPlatform && window.Capacitor.getPlatform() === 'android') || 
+    // 1. 平台检测（纯 Android 工程：仅区分 Android 与浏览器预览）
+    const isAndroid = typeof window !== 'undefined' &&
+                      window.Capacitor &&
+                      ((window.Capacitor.getPlatform && window.Capacitor.getPlatform() === 'android') ||
                        window.Capacitor.platform === 'android');
 
-    const isBrowser = !isElectron && !isTauri && !isAndroid;
+    const isBrowser = !isAndroid;
 
     const AppEnv = {
-        isElectron,
-        isTauri,
+        isElectron: false,   // 兼容旧判断：桌面端已移除
+        isTauri: false,      // 兼容旧判断：桌面端已移除
         isAndroid,
         isBrowser,
         getPlatformName() {
-            if (isElectron) return 'Electron';
-            if (isTauri) return 'Tauri';
             if (isAndroid) return 'Android (Capacitor)';
             return 'Browser';
         }

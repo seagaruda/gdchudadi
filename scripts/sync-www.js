@@ -4,18 +4,18 @@ const path = require('path');
 const root = path.join(__dirname, '..');
 const dest = path.join(__dirname, '..', 'www');
 
-console.log('[Sync-WWW] 開始同步最新的網頁資源至 www/ 目錄...');
+console.log('[Sync-WWW] 开始同步最新的网页资源至 www/ 目录...');
 
 try {
-    // 1. 清理舊的 www/src 目錄並重新建立
+    // 1. 清理旧的 www/src 目录并重新建立
     const destSrc = path.join(dest, 'src');
     if (fs.existsSync(destSrc)) {
         fs.rmSync(destSrc, { recursive: true, force: true });
     }
     fs.mkdirSync(destSrc, { recursive: true });
 
-    // 2. 複製主 HTML 與腳本
-    const filesToCopy = ['index.html', 'about.html', 'aboutPreload.js'];
+    // 2. 复制主 HTML 与脚本
+    const filesToCopy = ['index.html', 'about.html'];
     for (const file of filesToCopy) {
         const srcFile = path.join(root, file);
         const destFile = path.join(dest, file);
@@ -24,7 +24,7 @@ try {
         }
     }
 
-    // 3. 遞迴複製 src 目錄到 www/src
+    // 3. 递回复制 src 目录到 www/src
     const srcFolder = path.join(root, 'src');
     if (fs.existsSync(srcFolder)) {
         fs.cpSync(srcFolder, destSrc, { recursive: true });
@@ -32,6 +32,6 @@ try {
 
     console.log('[Sync-WWW] 同步完成！');
 } catch (err) {
-    console.error('[Sync-WWW] 同步失敗:', err);
+    console.error('[Sync-WWW] 同步失败:', err);
     process.exit(1);
 }

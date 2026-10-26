@@ -1020,7 +1020,7 @@ body {
     padding-top: 10px;
 }
 
-/* 說明視窗（右上角 i 按鈕）字級與字距收斂，看起來更協調 */
+/* 说明视窗（右上角 i 按钮）字级与字距收敛，看起来更协调 */
 #rules-modal .modal-content li {
     font-size: 13px;
     line-height: 1.45;
@@ -1044,7 +1044,7 @@ body {
     letter-spacing: -0.1px;
 }
 
-/* 分頁標籤：字級收小 + 不換行 */
+/* 分页标签：字级收小 + 不换行 */
 #rules-modal .modal-tabs { gap: 6px; }
 
 #rules-modal .tab-btn {
@@ -1241,8 +1241,8 @@ body {
 
 /* ==========================================
    🃏 MULTI-ROW OWN HAND (portrait)
-   自家手牌自動分成多排，每排最多 5 張，
-   方便一眼看出 順子 / 葫蘆 / 同花 等 5 張牌型。
+   自家手牌自动分成多排，每排最多 5 张，
+   方便一眼看出 顺子 / 葫芦 / 同花 等 5 张牌型。
    ========================================== */
 .mobile-layout #human-area .hand.multi-row {
     flex-direction: column;
@@ -1259,10 +1259,10 @@ body {
     justify-content: center;
     align-items: flex-end;
     width: 100%;
-    padding-top: 13px; /* 保留選牌上浮的空間，避免被裁切 */
+    padding-top: 13px; /* 保留选牌上浮的空间，避免被裁切 */
 }
 
-/* 牌型聚組的排：左上角標出「順子 / 葫蘆 / 同花 / 鐵支 / 同花順」 */
+/* 牌型聚组的排：左上角标出「顺子 / 葫芦 / 同花 / 铁支 / 同花顺」 */
 .mobile-layout #human-area .hand .hand-row.combo-row::before {
     content: attr(data-combo);
     position: absolute;
@@ -1279,7 +1279,7 @@ body {
     pointer-events: none;
 }
 
-/* 手牌排列切換鈕：桌面版隱藏，只在手機豎屏出現 */
+/* 手牌排列切换钮：桌面版隐藏，只在手机竖屏出现 */
 #btn-hand-layout {
     display: none;
 }
@@ -1318,7 +1318,7 @@ body {
     transform: translateY(-11px);
 }
 
-/* 矮螢幕（例如 360x640）再壓縮一點，確保三排手牌與按鈕都在畫面內 */
+/* 矮萤幕（例如 360x640）再压缩一点，确保三排手牌与按钮都在画面内 */
 @media (max-height: 760px) {
     .mobile-layout #game-container {
         padding-top: calc(52px + env(safe-area-inset-top, 0px));
@@ -1460,9 +1460,9 @@ body {
 }
 
 /* ==========================================
-   🪑 MOBILE SEAT LAYOUT（豎屏牌桌座位排布）
-   參考手機棋牌桌：綠色絨面牌桌居中，三名對手座位沿上緣弧形排列
-   （頭像 + 金色虛線環 + 下方分數），自己座位固定在下方。
+   🪑 MOBILE SEAT LAYOUT（竖屏牌桌座位排布）
+   参考手机棋牌桌：绿色绒面牌桌居中，三名对手座位沿上缘弧形排列
+   （头像 + 金色虚线环 + 下方分数），自己座位固定在下方。
    ========================================== */
 .mobile-layout #game-container {
     display: flex;
@@ -1476,7 +1476,7 @@ body {
         radial-gradient(ellipse 120% 80% at 50% 34%, #10834a 0%, #0a6b3a 38%, #064d2a 66%, #032a17 100%);
 }
 
-/* 桌面絨面外框（木質桌沿氛圍） */
+/* 桌面绒面外框（木质桌沿氛围） */
 .mobile-layout #game-container::before {
     content: "";
     position: absolute;
@@ -1487,7 +1487,7 @@ body {
     pointer-events: none;
 }
 
-/* --- 對手座位：上緣弧形 --- */
+/* --- 对手座位：上缘弧形 --- */
 .mobile-layout #player-2,
 .mobile-layout #player-3,
 .mobile-layout #player-4 {
@@ -1555,7 +1555,7 @@ body {
     margin-top: 0;
 }
 
-/* 對手打出的牌：座位下方的小牌槽 */
+/* 对手打出的牌：座位下方的小牌槽 */
 .mobile-layout .player.ai .played-cards-slot {
     width: 100%;
     min-width: 0;
@@ -1588,7 +1588,7 @@ body {
     font-size: 11px;
 }
 
-/* 中央牌桌：狀態訊息 */
+/* 中央牌桌：状态讯息 */
 .mobile-layout #table-center {
     order: 0;
     flex: 1 1 auto;
@@ -1611,7 +1611,7 @@ body {
     backdrop-filter: blur(4px);
 }
 
-/* 自己的座位：固定在下方，金色桌沿看起來像「你的座位」 */
+/* 自己的座位：固定在下方，金色桌沿看起来像「你的座位」 */
 .mobile-layout #human-area {
     order: 1;
     flex: 0 0 auto;
@@ -1647,7 +1647,7 @@ body {
 }
 
 /* ==========================================
-   📏 COMPACT PASS（整體再壓縮：座位更小、下方手牌區更薄、留白收緊）
+   📏 COMPACT PASS（整体再压缩：座位更小、下方手牌区更薄、留白收紧）
    ========================================== */
 .mobile-layout #game-container {
     padding-top: calc(184px + env(safe-area-inset-top, 0px));
@@ -1660,7 +1660,7 @@ body {
     inset: calc(158px + env(safe-area-inset-top, 0px)) 4px 2px 4px;
 }
 
-/* 座位縮小 */
+/* 座位缩小 */
 .mobile-layout #player-2,
 .mobile-layout #player-3,
 .mobile-layout #player-4 {
@@ -1697,7 +1697,7 @@ body {
 .mobile-layout .slot-card .rank,
 .mobile-layout .slot-card .suit { font-size: 9px; }
 
-/* 狀態提示貼近下方手牌區，中央絨面保持乾淨 */
+/* 状态提示贴近下方手牌区，中央绒面保持干净 */
 .mobile-layout #table-center {
     align-items: flex-end;
     padding-bottom: 2px;
@@ -1708,7 +1708,7 @@ body {
     padding: 3px 12px;
 }
 
-/* 自己座位整體變薄 */
+/* 自己座位整体变薄 */
 .mobile-layout #human-area {
     gap: 3px;
     padding: 5px 8px 3px;
@@ -1753,7 +1753,7 @@ body {
     transform: translateY(-7px);
 }
 
-/* 牌型模式（兩排）：省下的高度用來放大牌面，讀牌更清楚 */
+/* 牌型模式（两排）：省下的高度用来放大牌面，读牌更清楚 */
 .mobile-layout #human-area .hand.multi-row.combo-mode .hand-row {
     padding-top: 10px;
 }
@@ -1804,7 +1804,7 @@ body {
     font-size: 12px;
 }
 
-/* 矮螢幕再收一級（360x640 等） */
+/* 矮萤幕再收一级（360x640 等） */
 @media (max-height: 760px) {
     .mobile-layout #game-container {
         padding-top: calc(158px + env(safe-area-inset-top, 0px));
@@ -1830,9 +1830,9 @@ body {
 }
 
 /* ==========================================
-   🪵 OPTION B：有框牌桌 + 座位內收
-   參考圖的層次：深色花紋地毯 → 木質桌沿 → 綠色絨面。
-   絨面改成中間一張有界的桌子，座位往內往下收，兩側留出桌面邊界。
+   🪵 OPTION B：有框牌桌 + 座位内收
+   参考图的层次：深色花纹地毯 → 木质桌沿 → 绿色绒面。
+   绒面改成中间一张有界的桌子，座位往内往下收，两侧留出桌面边界。
    ========================================== */
 .mobile-layout #game-container {
     background:
@@ -1852,7 +1852,7 @@ body {
 .mobile-layout #table-center {
     align-items: center;
     justify-content: center;
-    /* width:100% 加上左右 4px margin 會往右溢出 8px，桌面對不齊 → 扣掉 margin 並置中 */
+    /* width:100% 加上左右 4px margin 会往右溢出 8px，桌面对不齐 → 扣掉 margin 并置中 */
     width: calc(100% - 8px);
     align-self: center;
     margin: 2px 4px 8px;
@@ -1887,7 +1887,7 @@ body {
 }
 
 /* ==========================================
-   🃏 桌面上的出牌（豎屏：四家打出的牌落在桌前，按座位方位擺放）
+   🃏 桌面上的出牌（竖屏：四家打出的牌落在桌前，按座位方位摆放）
    ========================================== */
 .mobile-layout #table-center {
     position: relative;
@@ -1922,7 +1922,7 @@ body {
     display: none;
 }
 
-/* 上（柴犬）、左（河狸）、右（橘貓）、下（自己） */
+/* 上（柴犬）、左（河狸）、右（橘猫）、下（自己） */
 .mobile-layout #table-plays #played-3 { top: 16px; left: 50%; transform: translateX(-50%) !important; }
 .mobile-layout #table-plays #played-2 { left: 4px; top: 50%; transform: translateY(-50%) !important; }
 .mobile-layout #table-plays #played-4 { right: 4px; top: 50%; transform: translateY(-50%) !important; }
@@ -1950,7 +1950,7 @@ body {
     color: #cbd5e1;
 }
 
-/* 當前最大的一手：淡綠色描邊 */
+/* 当前最大的一手：淡绿色描边 */
 .mobile-layout #table-plays .played-cards-slot.active-play .slot-card {
     box-shadow: 0 0 0 1.5px rgba(52, 211, 153, 0.85), 0 2px 6px rgba(0, 0, 0, 0.45);
 }
@@ -1966,7 +1966,7 @@ body {
 }
 
 /* ==========================================
-   🪑 座位改版：柴犬在上，河狸 / 橘貓 分列桌面左右
+   🪑 座位改版：柴犬在上，河狸 / 橘猫 分列桌面左右
    ========================================== */
 .mobile-layout #player-2,
 .mobile-layout #player-4 {
@@ -2015,11 +2015,11 @@ body {
     line-height: 1.1;
 }
 
-/* 左右兩家的出牌往內縮，避免壓到座位頭像 */
+/* 左右两家的出牌往内缩，避免压到座位头像 */
 .mobile-layout #table-plays #played-2 { left: 26px; }
 .mobile-layout #table-plays #played-4 { right: 26px; }
 
-/* 中央提示縮小一點，讓左右兩手的牌有空間 */
+/* 中央提示缩小一点，让左右两手的牌有空间 */
 .mobile-layout #status-message {
     font-size: 11px;
     padding: 3px 10px;
@@ -2035,17 +2035,17 @@ body {
     .mobile-layout #table-plays #played-4 { right: 22px; }
 }
 
-/* 左右座位必須畫在桌面之上，否則會被桌子背景蓋掉一半 */
+/* 左右座位必须画在桌面之上，否则会被桌子背景盖掉一半 */
 .mobile-layout #table-center { z-index: 1; }
 .mobile-layout #player-2,
 .mobile-layout #player-3,
 .mobile-layout #player-4 { z-index: 3; }
 
-/* 座位往桌內收一點，避免貼邊被裁 */
+/* 座位往桌内收一点，避免贴边被裁 */
 .mobile-layout #player-2 { left: 12px; right: auto; }
 .mobile-layout #player-4 { right: 12px; left: auto; }
 
-/* 左右兩家的出牌再往內縮，牌面小一號，讓中間留出通道 */
+/* 左右两家的出牌再往内缩，牌面小一号，让中间留出通道 */
 .mobile-layout #table-plays #played-2 { left: 74px; }
 .mobile-layout #table-plays #played-4 { right: 74px; }
 
@@ -2056,7 +2056,7 @@ body {
     margin-right: -12px !important;
 }
 
-/* 最後一張不帶負邊距：否則右家的牌會多凸出 12px，看起來比左家更貼桌沿 */
+/* 最后一张不带负边距：否则右家的牌会多凸出 12px，看起来比左家更贴桌沿 */
 .mobile-layout #table-plays #played-2 .slot-card:last-child,
 .mobile-layout #table-plays #played-4 .slot-card:last-child {
     margin-right: 0 !important;
@@ -2067,7 +2067,7 @@ body {
 .mobile-layout #table-plays #played-2 .slot-card .suit,
 .mobile-layout #table-plays #played-4 .slot-card .suit { font-size: 10px; }
 
-/* 狀態提示固定貼在桌面底部（自己的出牌上方），不佔通道 */
+/* 状态提示固定贴在桌面底部（自己的出牌上方），不占通道 */
 .mobile-layout #status-message {
     position: absolute;
     bottom: 68px;
@@ -2077,10 +2077,10 @@ body {
 }
 
 /* ==========================================
-   🖐️ 選牌不再遮住旁邊的牌
-   牌是疊排的（下一張壓住上一張右半），選中時若把 z-index 提到 10，
-   就會反過來蓋住右邊那張的牌面（只剩邊條，看不到點數）。
-   改為維持原本的疊放順序，只做「抬起 + 描邊 + 陰影」。
+   🖐️ 选牌不再遮住旁边的牌
+   牌是叠排的（下一张压住上一张右半），选中时若把 z-index 提到 10，
+   就会反过来盖住右边那张的牌面（只剩边条，看不到点数）。
+   改为维持原本的叠放顺序，只做「抬起 + 描边 + 阴影」。
    ========================================== */
 .mobile-layout #human-area .card.selected {
     z-index: auto;
@@ -2091,7 +2091,7 @@ body {
     z-index: auto;
 }
 
-/* 觸控裝置：點過的牌不要殘留 hover 抬起，否則會壓到下一排 */
+/* 触控装置：点过的牌不要残留 hover 抬起，否则会压到下一排 */
 @media (hover: none) {
     .mobile-layout #human-area .card:hover {
         transform: none;
@@ -2108,7 +2108,7 @@ body {
 }
 
 /* ==========================================
-   🔘 頂部控制列：手機版「新遊戲」靠左、圖示留在右邊
+   🔘 顶部控制列：手机版「新游戏」靠左、图示留在右边
    ========================================== */
 .mobile-layout #top-controls {
     left: calc(12px + env(safe-area-inset-left, 0px));
@@ -2117,11 +2117,11 @@ body {
 }
 
 .mobile-layout #btn-new {
-    margin-right: auto;      /* 把語言／音效／規則圖示推到最右側 */
+    margin-right: auto;      /* 把语言／音效／规则图示推到最右侧 */
     margin-left: 0;
 }
 
-/* ===== 局末計分表（每局結束彈出）===== */
+/* ===== 局末计分表（每局结束弹出）===== */
 .score-modal-content {
     max-width: 340px;
     text-align: center;
@@ -2192,7 +2192,7 @@ body {
     min-width: 140px;
 }
 
-/* ===== 戰績表：玩家橫排、每局一列、最後一列累計 ===== */
+/* ===== 战绩表：玩家横排、每局一列、最后一列累计 ===== */
 .stats-content {
     max-width: 362px;
 }
@@ -2263,7 +2263,7 @@ body {
     font-size: 12px;
 }
 
-/* 計分表每格的加倍說明 */
+/* 计分表每格的加倍说明 */
 .score-detail {
     font-size: 9.5px;
     font-weight: 500;
@@ -2273,7 +2273,7 @@ body {
     white-space: nowrap;
 }
 
-/* 頭像下方的累計分數 */
+/* 头像下方的累计分数 */
 .score.pos { color: #4ade80; }
 .score.neg { color: #f87171; }
 

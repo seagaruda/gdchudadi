@@ -8,8 +8,8 @@ class BigTwoAI {
         this.availableBlueprints = [null, AlexAI, BellaAI, ChrisAI, OrangeCatAI, ShibaDogAI, BeaverAI];
 
         // Active characters in slots 0, 1, 2, 3
-        // 每次開啟 App 都重新洗牌三個電腦玩家（河狸／柴犬／橘貓）的座位：
-        // 1=河狸位(左)、2=柴犬位(上)、3=橘貓位(右)，名字與頭像都跟著角色走。
+        // 每次开启 App 都重新洗牌三个电脑玩家（河狸／柴犬／橘猫）的座位：
+        // 1=河狸位(左)、2=柴犬位(上)、3=橘猫位(右)，名字与头像都跟着角色走。
         const cpuBlueprints = [BeaverAI, ShibaDogAI, OrangeCatAI];
         for (let i = cpuBlueprints.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -21,7 +21,7 @@ class BigTwoAI {
             2: new cpuBlueprints[1](gameLogic),
             3: new cpuBlueprints[2](gameLogic)
         };
-        // 供測試／除錯確認本次抽到的座位順序（1=左 2=上 3=右）
+        // 供测试／除错确认本次抽到的座位顺序（1=左 2=上 3=右）
         this.seatOrder = [1, 2, 3].map(i => this.characters[i].name);
     }
 

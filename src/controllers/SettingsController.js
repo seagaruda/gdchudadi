@@ -9,7 +9,7 @@ function t(key, params = {}) {
 window.t = t;
 
 function updateRulesDescription() {
-    // 只有大陸鋤大地一種規則，說明文案直接對應 i18n key（不再用 HK/TW 後綴切換）
+    // 只有大陆锄大地一种规则，说明文案直接对应 i18n key（不再用 HK/TW 后缀切换）
     const elements = {
         'rule-desc-suit': 'ruleSuit',
         'rule-desc-start': 'ruleStart',
@@ -60,7 +60,7 @@ function updateLanguage() {
         }
     });
 
-    const buildTarget = typeof LicenseService !== 'undefined' ? LicenseService.getBuildTarget() : (ipcRenderer ? ipcRenderer.sendSync('get-build-target') : 'GITHUB');
+    const buildTarget = typeof LicenseService !== 'undefined' ? LicenseService.getBuildTarget() : 'GITHUB';
     
     const tabLicenseBtn = document.querySelector('[data-i18n="tabLicense"]');
     if (tabLicenseBtn) {
@@ -74,7 +74,7 @@ function updateLanguage() {
 
 
     // Update Rules Footer (Version & Author)
-    let pkg = window.AppVersionInfo || { version: "1.5.0", author: "mesmerli", buildVersion: "1.5.0.0" };
+    let pkg = window.AppVersionInfo || { version: "1.5.0", author: "SeaGaruda", buildVersion: "1.5.0.0" };
     if (typeof require !== 'undefined' && !window.AppVersionInfo) {
         try {
             pkg = require('./package.json');
@@ -85,7 +85,7 @@ function updateLanguage() {
     const rulesVersion = document.getElementById('rules-version');
     const rulesAuthor = document.getElementById('rules-author');
     if (rulesVersion) rulesVersion.textContent = `v${pkg.buildVersion || pkg.version}`;
-    if (rulesAuthor) rulesAuthor.textContent = `${t('author')}: ${pkg.author || 'mesmerli'}`;
+    if (rulesAuthor) rulesAuthor.textContent = `${t('author')}: ${pkg.author || 'SeaGaruda'}`;
 
     // Dynamic Character Name Sync
     const names = currentLang === 'zh' ? PLAYER_NAMES_ZH : PLAYER_NAMES_EN;
@@ -102,7 +102,7 @@ function updateLanguage() {
                 const suffix = t('npcSuffix');
 
                 let nameKey = data.name;
-                if (data.name === '橘貓' || data.name === 'OrangeCat' || data.name === 'Orange Cat') nameKey = 'charOrangeCat';
+                if (data.name === '橘猫' || data.name === 'OrangeCat' || data.name === 'Orange Cat') nameKey = 'charOrangeCat';
                 else if (data.name === '柴犬' || data.name === 'ShibaDog' || data.name === 'Shiba Dog') nameKey = 'charShibaDog';
                 else if (data.name === '河狸' || data.name === 'Beaver') nameKey = 'charBeaver';
 
@@ -111,7 +111,7 @@ function updateLanguage() {
 
                 const avatarEl = playerEl.querySelector('.avatar');
                 if (avatarEl) {
-                    if (data.name === "橘貓" || data.name === "OrangeCat" || data.isDynamic) {
+                    if (data.name === "橘猫" || data.name === "OrangeCat" || data.isDynamic) {
                         const canvasId = `canvas-avatar-${i}`;
                         let canvasEl = document.getElementById(canvasId);
                         if (!canvasEl) {
@@ -181,24 +181,6 @@ function updateLanguage() {
     }
 
     document.title = t('title');
-    if (ipcRenderer) {
-        ipcRenderer.send('update-lang', currentLang);
-    }
-    
-    // Sync Tauri Windows Jump List language
-    const isTauriEnv = typeof AppEnv !== 'undefined' ? AppEnv.isTauri : 
-                         (typeof window !== 'undefined' && 
-                          (window.__TAURI_METADATA__ !== undefined || 
-                           window.__TAURI__ !== undefined || 
-                           window.__TAURI_INTERNALS__ !== undefined));
-    if (isTauriEnv && typeof window !== 'undefined' && window.__TAURI__) {
-        const invoke = window.__TAURI__.core ? window.__TAURI__.core.invoke : window.__TAURI__.invoke;
-        if (typeof invoke === 'function') {
-            invoke('update_jump_list', { lang: currentLang }).catch(err => {
-                console.error("[Tauri] Failed to update jump list:", err);
-            });
-        }
-    }
 
     updateMuteUI();
     updateTrialStatusUI();
@@ -218,26 +200,13 @@ window.updateTrialStatusUI = updateTrialStatusUI;
 const openStore = () => {
     if (typeof LicenseService !== 'undefined') {
         LicenseService.openStore();
-    } else if (ipcRenderer) {
-        ipcRenderer.send('open-store');
     } else if (typeof SystemService !== 'undefined') {
-        SystemService.openExternal('ms-windows-store://pdp/?ProductId=9PM1S8GKBLK9');
+        SystemService.openExternal('https://appgallery.huawei.com/');
     }
 };
 
 if (trialStatus) {
     trialStatus.addEventListener('click', openStore);
-}
-
-if (ipcRenderer) {
-    ipcRenderer.on('license-status', (event, status) => {
-        if (status.isTrial) {
-            window.trialDaysRemaining = status.daysLeft;
-        } else if (status.isFullVersion) {
-            window.trialDaysRemaining = null;
-        }
-        updateLanguage();
-    });
 }
 
 function updateMuteUI() {
@@ -252,7 +221,7 @@ window.updateMuteUI = updateMuteUI;
 
 if (muteToggle) {
     muteToggle.onclick = () => {
-        // 只有「報牌配音 開／關」兩態（背景音樂已移除）；每次點擊都先試聽「對二」
+        // 只有「报牌配音 开／关」两态（背景音乐已移除）；每次点击都先试听「对二」
         window.soundMode = (soundMode === 2) ? 0 : 2;
         AppStorage.setItem('soundMode', soundMode);
         updateMuteUI();
@@ -263,7 +232,7 @@ if (muteToggle) {
 
 
 function setupAvatarClickListeners() {
-    // 點頭像＝換一位對手角色（純本機規則 AI，沒有大模型設定）
+    // 点头像＝换一位对手角色（纯本机规则 AI，没有大模型设定）
     for (let i = 0; i <= 3; i++) {
         const playerEl = document.getElementById(i === 0 ? 'human-area' : `player-${i + 1}`);
         if (!playerEl) continue;

@@ -6,17 +6,17 @@ class AICharacter {
         this.GameLogic = gameLogic;
         this.name = name;
         this.type = "NPC";
-        // 性格只調整「攻擊性」權重，不改變策略本體（策略本體是期望得分最大化）
-        const STYLE = { Alex: 0.78, Bella: 0.3, Chris: 0.55, "橘貓": 0.62, "柴犬": 0.5, "河狸": 0.44 };
-        // 論文 §6 的 ISMCTS 再排序 —— v1.5.59 起**固定開啟（= 舊「困難 · 會算」檔位）**。
-        // 使用者要求取消「對手強度」分頁，一律用會算的 AI；要回退成純啟發式就把 searchIters 設 0。
-        // 實測（scripts/app-ai-game-test.js，40 副 × 4 座位 = 160 局配對）：
+        // 性格只调整「攻击性」权重，不改变策略本体（策略本体是期望得分最大化）
+        const STYLE = { Alex: 0.78, Bella: 0.3, Chris: 0.55, "橘猫": 0.62, "柴犬": 0.5, "河狸": 0.44 };
+        // 论文 §6 的 ISMCTS 再排序 —— v1.5.59 起**固定开启（= 旧「困难 · 会算」档位）**。
+        // 使用者要求取消「对手强度」分页，一律用会算的 AI；要回退成纯启发式就把 searchIters 设 0。
+        // 实测（scripts/app-ai-game-test.js，40 副 × 4 座位 = 160 局配对）：
         //   +2.16 分／副（se 0.98），更好 13 局 / 更差 9 局 / 持平 138；
-        //   搜索只在 8% 的手觸發，每次約 39ms。
+        //   搜索只在 8% 的手触发，每次约 39ms。
         this.searchIters = 200;
-        this.searchTimeMs = 400;   // 真機保險：迭代數與時間先到者為準
-        this.searchClose = 4;      // 只搜「啟發式分數在最佳值 4 分內」的候選
-        this.searchMargin = 5;     // 搜索要領先 5 分以上才翻盤
+        this.searchTimeMs = 400;   // 真机保险：迭代数与时间先到者为准
+        this.searchClose = 4;      // 只搜「启发式分数在最佳值 4 分内」的候选
+        this.searchMargin = 5;     // 搜索要领先 5 分以上才翻盘
         this.traits = { aggr: STYLE[name] !== undefined ? STYLE[name] : 0.5 };
     }
 
@@ -24,14 +24,14 @@ class AICharacter {
         return this.GameLogic || window.GameLogic || (typeof GameLogic !== 'undefined' ? GameLogic : null);
     }
 
-    // ── 依論文《锄大地(广东规则)的不完全信息博弈建模与最优策略求解》重寫 ──
-    //  §7 手牌拆牌 DP：f(H) = 打完這手牌最少需要幾輪
-    //  V(H) = −α·f(H) + β·κ(H) − γ·ω(H)（κ 控制力、ω 孤張小單）
-    //  §2.3 收益 u_i = Σ_{j≠i} p_j − 3·p_i（p 為聯衆牌分，含黑桃2 翻倍）
-    //  §8 命題2：下家報單時，領多張牌型（他接不上），不要領單張
-    //  §8 黑桃2 止損：預期終局剩 ≥8 張時，早點把黑桃2 打掉，避免牌分翻倍
+    // ── 依论文《锄大地(广东规则)的不完全信息博弈建模与最优策略求解》重写 ──
+    //  §7 手牌拆牌 DP：f(H) = 打完这手牌最少需要几轮
+    //  V(H) = −α·f(H) + β·κ(H) − γ·ω(H)（κ 控制力、ω 孤张小单）
+    //  §2.3 收益 u_i = Σ_{j≠i} p_j − 3·p_i（p 为联众牌分，含黑桃2 翻倍）
+    //  §8 命题2：下家报单时，领多张牌型（他接不上），不要领单张
+    //  §8 黑桃2 止损：预期终局剩 ≥8 张时，早点把黑桃2 打掉，避免牌分翻倍
 
-    /** 用「手牌內索引」做位元遮罩（n ≤ 13，避免 1<<51 這種 32 位溢位） */
+    /** 用「手牌内索引」做位元遮罩（n ≤ 13，避免 1<<51 这种 32 位溢位） */
     _maskOf(cards, table) {
         let m = 0;
         for (const c of cards) {
@@ -41,7 +41,7 @@ class AICharacter {
         return m;
     }
 
-    /** 建一次拆牌表，之後查 f[mask] 就是「打完這個子集最少幾輪」 */
+    /** 建一次拆牌表，之后查 f[mask] 就是「打完这个子集最少几轮」 */
     _buildShedTable(hand) {
         const Logic = this.getLogic();
         const ids = hand.slice();
@@ -87,7 +87,7 @@ class AICharacter {
         return { f, full, ids, plays, n };
     }
 
-    /** 從拆牌表取某個子集的手牌特徵 */
+    /** 从拆牌表取某个子集的手牌特征 */
     _handFeatures(table, mask) {
         const Logic = this.getLogic();
         const f = table.f[mask];
@@ -106,7 +106,7 @@ class AICharacter {
             if (r === 12) kappa += 1.0;                // 2
             else if (r === 11) kappa += 0.55;          // A
         }
-        // 大牌型（四帶一 / 同花順 / 葫蘆 / 同花）也算控制力
+        // 大牌型（四带一 / 同花顺 / 葫芦 / 同花）也算控制力
         let hasBigFive = false;
         for (const p of table.plays) {
             if (p.size !== 5) continue;
@@ -117,7 +117,7 @@ class AICharacter {
                 if (info && info.strength >= 3) { kappa += 0.5; hasBigFive = true; }
             }
         }
-        // 孤張小單：點數 ≤ 5 又不屬於任何多張牌型
+        // 孤张小单：点数 ≤ 5 又不属于任何多张牌型
         for (let i = 0; i < table.n; i++) {
             if (!(mask & (1 << i))) continue;
             if (Logic.getRank(table.ids[i]) > 5) continue;
@@ -132,18 +132,18 @@ class AICharacter {
         return -1.0 * feat.f + 0.55 * feat.kappa - 0.28 * feat.omega;
     }
 
-    /** 聯衆牌分：n 張的牌分（8 張以上含黑桃2 再 ×2） */
+    /** 联众牌分：n 张的牌分（8 张以上含黑桃2 再 ×2） */
     _penalty(count, hasSpade2) {
         if (count <= 0) return 0;
         const m = count >= 13 ? 4 : count >= 10 ? 3 : count >= 8 ? 2 : 1;
         let p = count * m;
-        // 黑桃2 止損（論文 §8）：只有在「剩 8~10 張、真的可能帶著 ≥8 張結束」時才把翻倍算進來。
-        // 11 張以上時間还够，先专心甩牌，不要为了怕翻倍把黑桃2 早早丢掉。
+        // 黑桃2 止损（论文 §8）：只有在「剩 8~10 张、真的可能带着 ≥8 张结束」时才把翻倍算进来。
+        // 11 张以上时间还够，先专心甩牌，不要为了怕翻倍把黑桃2 早早丢掉。
         if (count >= 8 && count <= 10 && hasSpade2) p *= 2;
         return p;
     }
 
-    /** 用 V(H) 的 softmax 估計四家勝率（對手只知道張數，用 f≈n/1.9 估） */
+    /** 用 V(H) 的 softmax 估计四家胜率（对手只知道张数，用 f≈n/1.9 估） */
     _winProbs(feat, counts, me) {
         const T = 1.2;
         const vals = [0, 0, 0, 0].map((_, i) => {
@@ -173,7 +173,7 @@ class AICharacter {
         }
     }
 
-    /** 所有合法候選（單張 / 對子 / 五張牌型），跟牌時只留能壓過的 */
+    /** 所有合法候选（单张 / 对子 / 五张牌型），跟牌时只留能压过的 */
     buildCandidates(sorted, lastPlay) {
         const Logic = this.getLogic();
         const out = [];
@@ -184,7 +184,7 @@ class AICharacter {
         return out.filter(cs => cs.length === lastPlay.length && Logic.compareHands(cs, lastPlay) > 0);
     }
 
-    /** 期望收益：Σ_{j≠i}(1−p_j)·p_j牌分 − 3·(1−p_i)·p_i牌分 + 拆牌進度 + 命題2 修正 + 動態盟友/打擊 */
+    /** 期望收益：Σ_{j≠i}(1−p_j)·p_j牌分 − 3·(1−p_i)·p_i牌分 + 拆牌进度 + 命题2 修正 + 动态盟友/打击 */
     _evaluate(cards, context, table) {
         const me = (typeof context.playerIndex === 'number') ? context.playerIndex : 0;
         const counts = [0, 1, 2, 3].map(i => (context.players[i] ? context.players[i].length : 0));
@@ -205,11 +205,11 @@ class AICharacter {
         }
         u -= 3 * (1 - probs[me]) * pen[me];
 
-        // 拆牌進度：這一手有沒有真的推進最優拆牌
+        // 拆牌进度：这一手有没有真的推进最优拆牌
         const fNow = table.f[table.full];
         u += 0.35 * (fNow - feat.f);
 
-        // 命題2：下家只剩 1 張 → 領多張牌型（他接不上），別領單張
+        // 命题2：下家只剩 1 张 → 领多张牌型（他接不上），别领单张
         const nextIdx = (me + 3) % 4;
         if (after[nextIdx] === 1) {
             if (k === 0) u -= 1.2;
@@ -217,15 +217,15 @@ class AICharacter {
             else u += 0.7;
         }
 
-        // 有人剩 1 張還拿牌權：直接過牌等於送他贏
+        // 有人剩 1 张还拿牌权：直接过牌等于送他赢
         if (context.lastPlayerIndex >= 0 && after[context.lastPlayerIndex] === 1 && k === 0) u -= 1.5;
 
-        // ── 動態盟友／動態打擊對象 ──────────────────────────────
-        // 兩兩互比計分下：若 j 贏，我的分數 = Σ_{k≠i,j} p_k − 3·p_i（j 的牌分歸零不算）。
-        // 所以「誰贏對我最有利」是隨牌局變化的：
-        //   · 牌少的贏 → 他只是把一個很小的 p 抹掉，肥的兩家全都留著計入我的分 → 對我最有利
-        //   · 肥的贏 → 他那筆大 p 被抹掉 → 對我最不利
-        // 於是「幫小弟先跑、死掐肥仔」不是我寫死的規則，而是這個公式的直接推論。
+        // ── 动态盟友／动态打击对象 ──────────────────────────────
+        // 两两互比计分下：若 j 赢，我的分数 = Σ_{k≠i,j} p_k − 3·p_i（j 的牌分归零不算）。
+        // 所以「谁赢对我最有利」是随牌局变化的：
+        //   · 牌少的赢 → 他只是把一个很小的 p 抹掉，肥的两家全都留着计入我的分 → 对我最有利
+        //   · 肥的赢 → 他那笔大 p 被抹掉 → 对我最不利
+        // 于是「帮小弟先跑、死掐肥仔」不是我写死的规则，而是这个公式的直接推论。
         const winValueOf = (j) => {
             let v = -3 * pen[me];
             for (let q = 0; q < 4; q++) {
@@ -238,17 +238,17 @@ class AICharacter {
         const meanWinValue = otherSeats.reduce((a, j) => a + winValueOf(j), 0) / otherSeats.length;
         const leaderSeat = (typeof context.lastPlayerIndex === 'number') ? context.lastPlayerIndex : -1;
         if (leaderSeat >= 0 && leaderSeat !== me) {
-            const swing = winValueOf(leaderSeat) - meanWinValue;   // >0：讓他繼續掌權比平均好
-            // 只有自己「幾乎沒戲」（勝率 < 20%）時才靠這條動態選邊；
-            // 而且影響力上限 ±1.2 分 —— 它只能改變「幾乎同分」的選擇，
-            // 不可能蓋掉「甩牌跨加倍坎」「壓住快贏的人」這種明確賺分的打法。
+            const swing = winValueOf(leaderSeat) - meanWinValue;   // >0：让他继续掌权比平均好
+            // 只有自己「几乎没戏」（胜率 < 20%）时才靠这条动态选边；
+            // 而且影响力上限 ±1.2 分 —— 它只能改变「几乎同分」的选择，
+            // 不可能盖掉「甩牌跨加倍坎」「压住快赢的人」这种明确赚分的打法。
             const allyW = 0.55 * Math.max(0, 0.20 - probs[me]) / 0.20;
             const st = k > 0 ? this._playStrength(cards) : 1;
             const raw = k === 0 ? allyW * swing : -allyW * swing * st;
             u += Math.max(-1.2, Math.min(1.2, raw));
         }
 
-        // 保留控制力：手上還很多牌時，丟大牌要付出一點代價（κ 已經在 V 裡，這裡再加一點）
+        // 保留控制力：手上还很多牌时，丢大牌要付出一点代价（κ 已经在 V 里，这里再加一点）
         if (k > 0 && feat.count >= 4) {
             const Logic = this.getLogic();
             const bigCost = cards.reduce((a, c) => {
@@ -262,7 +262,7 @@ class AICharacter {
     }
 
     /**
-     * 決策：先套規則（首輪帶 ♦3、報單頂大），其餘一律用期望得分挑最優解
+     * 决策：先套规则（首轮带 ♦3、报单顶大），其余一律用期望得分挑最优解
      */
     async decide(context) {
         const Logic = this.getLogic();
@@ -274,7 +274,7 @@ class AICharacter {
         const sorted = Logic.sortCards(hand);
         const isLead = !lastPlay || lastPlay.length === 0;
 
-        // 規則（非策略）：只有第一局的首手必須帶 ♦3；第二局起贏家先出，不受此限
+        // 规则（非策略）：只有第一局的首手必须带 ♦3；第二局起赢家先出，不受此限
         if (isLead && context.requireStartCard !== false) {
             const startCard = 13;   // ♦3
             if (hand.includes(startCard) && (lastPlayerIndex === -1 || lastPlayerIndex === undefined)) {
@@ -286,11 +286,11 @@ class AICharacter {
             }
         }
 
-        // 規則（非策略）：報單頂大由 GameController 強制（出單張時必須打最大單張）。
-        // 這裡不提前返回，否則「下家報單」時就永遠只能領單張——論文 §8 命題2 明確說
-        // 這種局面應該優先領多張牌型（他只剩一張，接不上），單張才受頂大限制。
+        // 规则（非策略）：报单顶大由 GameController 强制（出单张时必须打最大单张）。
+        // 这里不提前返回，否则「下家报单」时就永远只能领单张——论文 §8 命题2 明确说
+        // 这种局面应该优先领多张牌型（他只剩一张，接不上），单张才受顶大限制。
 
-        // 其餘：博弈 —— 每個合法選擇都算期望得分
+        // 其余：博弈 —— 每个合法选择都算期望得分
         const table = this._buildShedTable(sorted);
         const candidates = this.buildCandidates(sorted, isLead ? null : lastPlay);
 
@@ -299,12 +299,12 @@ class AICharacter {
 
         let pick = scored.reduce((a, b) => (b.score > a.score ? b : a), scored[0]);
 
-        // 論文 §6 / §9.1：資訊集蒙特卡洛樹搜索（SO-ISMCTS）對「接近的候選」做再排序。
-        // 引擎實作見 src/ai/ChudadiEngine.js（移植自論文配套 Java 版，含 19898 種牌型枚舉自檢）。
-        // 判決規則（可量化、可回滾）：
-        //   1) 只取啟發式分數在最佳值 CLOSE 分以內的候選（最多 4 個）；
-        //   2) 搜索給出每個候選的「期望得分」平均 u（聯眾兩兩計分，單位＝分）；
-        //   3) 只有當搜索認為某候選比啟發式首選高出 SWITCH_MARGIN 分以上，才翻盤。
+        // 论文 §6 / §9.1：资讯集蒙特卡洛树搜索（SO-ISMCTS）对「接近的候选」做再排序。
+        // 引擎实作见 src/ai/ChudadiEngine.js（移植自论文配套 Java 版，含 19898 种牌型枚举自检）。
+        // 判决规则（可量化、可回滚）：
+        //   1) 只取启发式分数在最佳值 CLOSE 分以内的候选（最多 4 个）；
+        //   2) 搜索给出每个候选的「期望得分」平均 u（联众两两计分，单位＝分）；
+        //   3) 只有当搜索认为某候选比启发式首选高出 SWITCH_MARGIN 分以上，才翻盘。
         const SEARCH = this._effectiveSearchIters(context);
         const ENGINE = (typeof ChudadiEngine !== 'undefined') ? ChudadiEngine
             : (typeof window !== 'undefined' ? window.ChudadiEngine : null);
@@ -371,9 +371,9 @@ class AICharacter {
 
 
     /**
-     * 這次決策要不要搜索、搜多少次。
-     * v1.5.59 起沒有「對手強度」設定，一律走會算的檔位（this.searchIters 預設 200）。
-     * 優先序：context.searchIters（測試/工具注入）> this.searchIters
+     * 这次决策要不要搜索、搜多少次。
+     * v1.5.59 起没有「对手强度」设定，一律走会算的档位（this.searchIters 预设 200）。
+     * 优先序：context.searchIters（测试/工具注入）> this.searchIters
      */
     _effectiveSearchIters(context) {
         if (context && typeof context.searchIters === 'number') return context.searchIters;
@@ -381,19 +381,19 @@ class AICharacter {
     }
 
     /**
-     * 把 App 的 context 轉成引擎的 Observation（只用自己手牌 + 公開資訊，不偷看對手）
+     * 把 App 的 context 转成引擎的 Observation（只用自己手牌 + 公开资讯，不偷看对手）
      */
     _buildObservation(ENGINE, context, isLead) {
-        // 引擎只實作「大陸鋤大地」規則（同張數才可壓、三條可單出、含 5 張同花），與 App 一致。
+        // 引擎只实作「大陆锄大地」规则（同张数才可压、三条可单出、含 5 张同花），与 App 一致。
         const obs = ENGINE.observationFromContext(context, {
             firstPlay: isLead && context.requireStartCard !== false,
             passes: 0
         });
         if (!obs) return null;
-        // 桌面上有牌但引擎認不出牌型 → 不搜尋（避免用錯規則）
+        // 桌面上有牌但引擎认不出牌型 → 不搜寻（避免用错规则）
         if (context.lastPlay && context.lastPlay.length && !obs.lastMove) return null;
-        // 規則對齊 App：下家報單時出單張必須頂大（GameController 已強制）；
-        // 但 App 沒有「能壓過就不准過牌」這條，所以搜尋裡也不要假設。
+        // 规则对齐 App：下家报单时出单张必须顶大（GameController 已强制）；
+        // 但 App 没有「能压过就不准过牌」这条，所以搜寻里也不要假设。
         obs.rules = {
             allowTriple: true,
             firstLeadMustContainD3: !!(isLead && context.requireStartCard !== false),
@@ -405,7 +405,7 @@ class AICharacter {
     }
 
     /**
-     * 這回合能不能把手上剩下的牌一次出完（用來判斷「要不要搶盟友的牌權」）
+     * 这回合能不能把手上剩下的牌一次出完（用来判断「要不要抢盟友的牌权」）
      */
     canFinishNow(sorted, lastPlay) {
         const Logic = this.getLogic();
@@ -424,17 +424,17 @@ class AICharacter {
         const Logic = this.getLogic();
         const { lastPlay } = context;
         const targetLen = lastPlay.length;
-        // 抓倒霉蛋：如果他正拿著牌權（剛出完牌），一定要壓過去，讓他繼續憋
+        // 抓倒霉蛋：如果他正拿着牌权（刚出完牌），一定要压过去，让他继续憋
         const huntingTarget = !!context.pressureActive &&
             context.lastPlayerIndex === context.pressureTarget;
 
-        // 配合小戶：盟友拿著牌權在跑牌 → 讓他跑，不壓
+        // 配合小户：盟友拿着牌权在跑牌 → 让他跑，不压
         const allyLeads = !!context.allianceActive &&
             Array.isArray(context.allyIndices) &&
             context.allyIndices.includes(context.lastPlayerIndex);
 
         if (allyLeads && !huntingTarget) {
-            // 例外：自己也能一把走完（手牌 <= 2 張且剛好壓得住），才搶這個牌權
+            // 例外：自己也能一把走完（手牌 <= 2 张且刚好压得住），才抢这个牌权
             const finishNow = sorted.length <= 2 && this.canFinishNow(sorted, lastPlay);
             if (!finishNow) {
                 window.__lastAIReason = 'yield-to-ally';

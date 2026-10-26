@@ -12,7 +12,7 @@
     <!-- Avoid numerical card elements (e.g. 2, 3, 4) from being treated as Telephone links -->
     <meta name="format-detection" content="telephone=no">
     
-    <title>廣東鋤大地</title>
+    <title>单机AI·锄大Dee</title>
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="stylesheet" href="src/styles.css">
     <!-- Tailwind CSS CDN -->
@@ -79,7 +79,7 @@
                 <span class="close-btn" onclick="document.getElementById('rules-modal').classList.add('hidden')">&times;</span>
                 <h2>
                     <img src="src/assets/logo.png" alt="Logo" class="rules-logo">
-                    <span data-i18n="rulesTitle">Game Rules (廣東鋤大地)</span>
+                    <span data-i18n="rulesTitle">游戏规则</span>
                 </h2>
                 <div class="modal-tabs">
                     <button class="tab-btn active" data-tab="rules" data-i18n="tabRules">Rules</button>
@@ -99,7 +99,7 @@
                             </ul>
                         </section>
                         <section>
-                            <h3 data-i18n="scoringTitle">Scoring (計分)</h3>
+                            <h3 data-i18n="scoringTitle">Scoring (计分)</h3>
                             <ul>
                                 <li id="rule-desc-basescore"></li>
                                 <li id="rule-desc-pairwise"></li>
@@ -120,11 +120,11 @@
             </div>
         </div>
 
-        <!-- 本次開 App 的戰績 -->
+        <!-- 本次开 App 的战绩 -->
         <div id="stats-modal" class="modal hidden">
             <div class="modal-content score-modal-content stats-content">
                 <span class="close-btn" id="stats-close-btn">&times;</span>
-                <h2 id="stats-title">本次開 App 戰績</h2>
+                <h2 id="stats-title">本次开 App 战绩</h2>
                 <p id="stats-rounds" class="score-winner"></p>
                 <div class="stats-scroll">
                     <table class="score-table stats-table">
@@ -135,17 +135,17 @@
             </div>
         </div>
 
-        <!-- 每局結束的計分表 -->
+        <!-- 每局结束的计分表 -->
         <div id="score-modal" class="modal hidden">
             <div class="modal-content score-modal-content">
-                <h2 data-i18n="roundScoreTitle">本局計分</h2>
+                <h2 data-i18n="roundScoreTitle">本局计分</h2>
                 <p id="score-modal-winner" class="score-winner"></p>
                 <table class="score-table">
                     <thead>
                         <tr>
                             <th data-i18n="thPlayer">玩家</th>
                             <th data-i18n="thRound">本局</th>
-                            <th data-i18n="thTotal">累計</th>
+                            <th data-i18n="thTotal">累计</th>
                         </tr>
                     </thead>
                     <tbody id="score-table-body"></tbody>
@@ -192,7 +192,7 @@
 
         <!-- Table Center -->
         <div id="table-center">
-            <div id="table-plays"><!-- 手機豎屏：四家打出的牌會搬到桌面 --></div>
+            <div id="table-plays"><!-- 手机竖屏：四家打出的牌会搬到桌面 --></div>
             <div id="status-message">Waiting for game to start...</div>
         </div>
 
@@ -210,7 +210,7 @@
             <div id="controls">
                 <button id="btn-play" class="premium-btn"><span class="kbd-hint">↑</span> <span data-i18n="play">Play</span></button>
                 <button id="btn-pass" class="premium-btn secondary"><span class="kbd-hint space-key small"></span> <span data-i18n="pass">Pass</span></button>
-                <button id="btn-hand-layout" class="premium-btn ghost mini" title="切換手牌排列 / Switch hand layout">🃏 牌型</button>
+                <button id="btn-hand-layout" class="premium-btn ghost mini" title="切换手牌排列 / Switch hand layout">🃏 牌型</button>
             </div>
         </div>
 
@@ -228,7 +228,7 @@
             try {
                 // Wait for storage (including Capacitor Preferences) to initialize
                 await window.AppStorage.init();
-                // 初始化授權與建置類型服務
+                // 初始化授权与建置类型服务
                 if (window.LicenseService && typeof window.LicenseService.init === 'function') {
                     await window.LicenseService.init();
                 }

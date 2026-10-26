@@ -1,4 +1,4 @@
-// node scripts/ai-search-test.js —— 驗證 AICharacter + ChudadiEngine 搜索層的整合（不進瀏覽器）
+// node scripts/ai-search-test.js —— 验证 AICharacter + ChudadiEngine 搜索层的整合（不进浏览器）
 global.window = global;
 global.AppStorage = { getItem: () => 'mainland' };
 
@@ -6,7 +6,7 @@ const GameLogic = require('../src/gameLogic.js');
 const { AICharacter } = require('../src/ai/AICharacter.js');
 const E = require('../src/ai/ChudadiEngine.js');
 global.GameLogic = GameLogic;
-global.ChudadiEngine = E;   // 瀏覽器裡由 index.html 的 script 標籤掛到 window
+global.ChudadiEngine = E;   // 浏览器里由 index.html 的 script 标签挂到 window
 
 function deal(rng) {
     const deck = [];
@@ -18,7 +18,7 @@ function deal(rng) {
     return players;
 }
 
-/** 用引擎的合法動作隨機推進到某一步，產生「輪到 seat 決策」的局面 */
+/** 用引擎的合法动作随机推进到某一步，产生「轮到 seat 决策」的局面 */
 function randomPosition(rng, steps) {
     const players = deal(rng);
     const played = [];
@@ -27,7 +27,7 @@ function randomPosition(rng, steps) {
     for (let s = 0; s < steps; s++) {
         let legal = GameLogic.getLegalMoves(players[turn], lastPlay) || [];
         if (!legal.length) {
-            // 過牌
+            // 过牌
             if (lastPlay === null) break;
             turn = (turn + 1) % 4;
             continue;
@@ -66,7 +66,7 @@ function ctxOf(pos) {
 }
 
 function legalCheck(ctx, move) {
-    if (move === null) return ctx.lastPlay !== null;   // 過牌：領出時不合法
+    if (move === null) return ctx.lastPlay !== null;   // 过牌：领出时不合法
     const legal = GameLogic.getLegalMoves(ctx.hand, ctx.lastPlay) || [];
     return legal.some(m => m.cards.length === move.length && m.cards.every(c => move.includes(c)));
 }
@@ -107,15 +107,15 @@ function legalCheck(ctx, move) {
         if (!same) differ++;
         n++;
     }
-    console.log(`決策樣本 ${n}`);
-    console.log(`  關閉搜索：不合法 ${illegalOff}，平均 ${(msOff / n).toFixed(1)}ms`);
-    console.log(`  開啟搜索：不合法 ${illegalOn}，平均 ${(msOn / n).toFixed(1)}ms，平均迭代 ${(iters / n).toFixed(0)}，翻盤 ${flips}，超時 ${timeouts}`);
-    console.log(`  兩種設定選出不同動作的比例 ${(differ / n * 100).toFixed(0)}%`);
-    console.log('  前 4 名分數樣本：');
+    console.log(`决策样本 ${n}`);
+    console.log(`  关闭搜索：不合法 ${illegalOff}，平均 ${(msOff / n).toFixed(1)}ms`);
+    console.log(`  开启搜索：不合法 ${illegalOn}，平均 ${(msOn / n).toFixed(1)}ms，平均迭代 ${(iters / n).toFixed(0)}，翻盘 ${flips}，超时 ${timeouts}`);
+    console.log(`  两种设定选出不同动作的比例 ${(differ / n * 100).toFixed(0)}%`);
+    console.log('  前 4 名分数样本：');
     for (const s of samples) console.log('   ', JSON.stringify(s));
     if (gaps.length) {
         gaps.sort((a, b) => a - b);
-        console.log(`  啟發式前 4 名分差：中位數 ${gaps[(gaps.length / 2) | 0]}，<=6 的比例 ${(gaps.filter(g => g <= 6).length / gaps.length * 100).toFixed(0)}%，進入搜索 ${searched}，obs 為 null ${obsNull}`);
+        console.log(`  启发式前 4 名分差：中位数 ${gaps[(gaps.length / 2) | 0]}，<=6 的比例 ${(gaps.filter(g => g <= 6).length / gaps.length * 100).toFixed(0)}%，进入搜索 ${searched}，obs 为 null ${obsNull}`);
     }
     console.log(illegalOff === 0 && illegalOn === 0 ? 'ALL OK' : 'FAILED');
 })();

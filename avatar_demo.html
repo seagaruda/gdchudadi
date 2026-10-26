@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>玩家動態心理指標頭像 - 互動測試面板</title>
+    <title>玩家动态心理指标头像 - 互动测试面板</title>
     <!-- Google Fonts: Outfit & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,7 +56,7 @@
             }
         }
 
-        /* 標題樣式 */
+        /* 标题样式 */
         header {
             text-align: center;
             margin-bottom: 1rem;
@@ -111,7 +111,7 @@
             margin-bottom: 0.25rem;
         }
 
-        /* 控制滑桿區 */
+        /* 控制滑杆区 */
         .control-group {
             display: flex;
             flex-direction: column;
@@ -179,7 +179,7 @@
             margin-top: 0.25rem;
         }
 
-        /* 頭像展示區 */
+        /* 头像展示区 */
         .avatar-showcase {
             display: flex;
             flex-direction: column;
@@ -204,7 +204,7 @@
             overflow: visible;
         }
 
-        /* Y 軸高張力狀態下的 CSS 震動與紅光脈衝效果 */
+        /* Y 轴高张力状态下的 CSS 震动与红光脉冲效果 */
         .avatar-frame.tension-high {
             border-color: var(--accent-red);
             box-shadow: 0 0 25px var(--accent-red-glow), inset 0 0 15px var(--accent-red-glow);
@@ -237,7 +237,7 @@
             display: block;
         }
 
-        /* 情緒文字解說卡 */
+        /* 情绪文字解说卡 */
         .emotion-info {
             text-align: center;
             min-height: 80px;
@@ -258,7 +258,7 @@
             line-height: 1.4;
         }
 
-        /* 2D 心理指標視覺網格 */
+        /* 2D 心理指标视觉网格 */
         .grid-container {
             width: 100%;
             aspect-ratio: 1.5;
@@ -320,7 +320,7 @@
             z-index: 10;
         }
 
-        /* 區域標示 */
+        /* 区域标示 */
         .zone-highlight {
             position: absolute;
             border: 1px dashed rgba(139, 92, 246, 0.25);
@@ -342,7 +342,7 @@
             font-weight: 600;
         }
 
-        /* 數據與導出功能 */
+        /* 数据与导出功能 */
         .telemetry-row {
             display: flex;
             justify-content: space-between;
@@ -393,7 +393,7 @@
             transform: translateY(1px);
         }
 
-        /* 導出預覽區 */
+        /* 导出预览区 */
         .export-preview-box {
             display: none;
             flex-direction: column;
@@ -476,124 +476,124 @@
 <body>
 
     <header>
-        <h1>玩家動態心理頭像測試</h1>
-        <p>此工具用於即時模擬「台灣大老二撲克牌遊戲」中的玩家心理 telemetry 座標 (X, Y 軸)，藉以驅動並渲染出最合適的 Q 版表情貼圖。</p>
+        <h1>玩家动态心理头像测试</h1>
+        <p>此工具用于即时模拟「台湾大老二扑克牌游戏」中的玩家心理 telemetry 座标 (X, Y 轴)，借以驱动并渲染出最合适的 Q 版表情贴图。</p>
     </header>
 
     <div class="container">
-        <!-- 左側：輸入與數值面板 -->
+        <!-- 左侧：输入与数值面板 -->
         <div class="glass-panel">
-            <h2 class="panel-title">選擇頭像與心理指標輸入</h2>
+            <h2 class="panel-title">选择头像与心理指标输入</h2>
             
-            <!-- 選擇角色與自訂圖檔 -->
+            <!-- 选择角色与自订图档 -->
             <div class="control-group">
-                <label class="slider-label">選擇角色預設或自訂圖檔</label>
+                <label class="slider-label">选择角色预设或自订图档</label>
                 <div style="display: flex; gap: 0.75rem; align-items: center;">
                     <select id="preset-select" style="flex: 1; padding: 0.6rem; border-radius: 8px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--panel-border); color: var(--text-primary); outline: none; font-family: inherit; font-size: 0.9rem; cursor: pointer;">
-                        <option value="src/assets/avatars/orange_cat_sprite.png">橘貓 (Orange Cat)</option>
+                        <option value="src/assets/avatars/orange_cat_sprite.png">橘猫 (Orange Cat)</option>
                         <option value="src/assets/avatars/shiba_dog_sprite.png">柴犬 (Shiba Dog)</option>
-                        <option value="src/assets/avatars/panda_sprite.png">貓熊 (Panda)</option>
+                        <option value="src/assets/avatars/panda_sprite.png">猫熊 (Panda)</option>
                         <option value="src/assets/avatars/beaver_sprite.png">河狸 (Beaver)</option>
                     </select>
                     <label for="input-sprite-file" style="cursor: pointer; background: rgba(139, 92, 246, 0.2); border: 1px solid var(--accent-purple); color: var(--text-primary); padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; display: inline-block; transition: all 0.2s; white-space: nowrap;">
-                        選擇圖檔
+                        选择图档
                     </label>
                     <input type="file" id="input-sprite-file" accept="image/*" style="display: none;">
                 </div>
             </div>
             
-            <!-- X 軸滑桿 -->
+            <!-- X 轴滑杆 -->
             <div class="control-group">
                 <div class="slider-label">
-                    <span>X 軸：局勢順逆 (牌爛 ↔ 聽牌)</span>
+                    <span>X 轴：局势顺逆 (牌烂 ↔ 听牌)</span>
                     <span id="val-x" class="slider-value">0.00</span>
                 </div>
                 <div class="slider-container">
                     <input type="range" id="input-x" min="-1.0" max="1.0" step="0.05" value="0.0">
                 </div>
                 <div class="range-ticks">
-                    <span>-1.0 (極度逆風)</span>
+                    <span>-1.0 (极度逆风)</span>
                     <span>0.0 (普通)</span>
-                    <span>1.0 (極度順風)</span>
+                    <span>1.0 (极度顺风)</span>
                 </div>
             </div>
 
-            <!-- Y 軸滑桿 -->
+            <!-- Y 轴滑杆 -->
             <div class="control-group">
                 <div class="slider-label">
-                    <span>Y 軸：情緒張力 (平靜 ↔ 抓狂)</span>
+                    <span>Y 轴：情绪张力 (平静 ↔ 抓狂)</span>
                     <span id="val-y" class="slider-value">0.20</span>
                 </div>
                 <div class="slider-container">
                     <input type="range" id="input-y" min="0.0" max="1.0" step="0.05" value="0.2">
                 </div>
                 <div class="range-ticks">
-                    <span>0.0 (內斂沉穩)</span>
+                    <span>0.0 (内敛沉稳)</span>
                     <span>0.5 (起伏)</span>
-                    <span>1.0 (浮誇狂暴)</span>
+                    <span>1.0 (浮夸狂暴)</span>
                 </div>
             </div>
 
-            <!-- 2D 坐標軸區域視覺化圖表 -->
+            <!-- 2D 坐标轴区域视觉化图表 -->
             <div class="control-group">
-                <label class="slider-label">2D 象限區間視覺化 (Emotion Quadrant Chart)</label>
+                <label class="slider-label">2D 象限区间视觉化 (Emotion Quadrant Chart)</label>
                 <div class="grid-container" id="quadrant-chart">
                     <div class="quadrant-line-h"></div>
                     <div class="quadrant-line-v"></div>
-                    <span class="grid-label-y">張力 Y 軸</span>
-                    <span class="grid-label-x">局勢 X 軸</span>
+                    <span class="grid-label-y">张力 Y 轴</span>
+                    <span class="grid-label-x">局势 X 轴</span>
                     
-                    <!-- 點擊指示器 -->
+                    <!-- 点击指示器 -->
                     <div class="tracker-dot" id="tracker-dot"></div>
                 </div>
             </div>
         </div>
 
-        <!-- 右側：頭像渲染與特效面板 -->
+        <!-- 右侧：头像渲染与特效面板 -->
         <div class="glass-panel">
-            <h2 class="panel-title">動態渲染頭像 (Dynamic Canvas View)</h2>
+            <h2 class="panel-title">动态渲染头像 (Dynamic Canvas View)</h2>
 
             <div class="avatar-showcase">
-                <!-- 頭像框框 (支援震動特效與紅光 glow) -->
+                <!-- 头像框框 (支援震动特效与红光 glow) -->
                 <div class="avatar-frame" id="avatar-frame">
                     <canvas id="avatar-canvas" width="200" height="200"></canvas>
-                    <div class="tension-badge">張力飆高！⚡</div>
+                    <div class="tension-badge">张力飙高！⚡</div>
                 </div>
 
-                <!-- 目前情緒標籤與描述 -->
+                <!-- 目前情绪标签与描述 -->
                 <div class="emotion-info">
-                    <div class="emotion-name" id="emotion-name">讀取中...</div>
-                    <div class="emotion-desc" id="emotion-desc">正在加載表情配置物件...</div>
+                    <div class="emotion-name" id="emotion-name">读取中...</div>
+                    <div class="emotion-desc" id="emotion-desc">正在加载表情配置物件...</div>
                 </div>
             </div>
 
-            <!-- 狀態追蹤面板 -->
+            <!-- 状态追踪面板 -->
             <div>
-                <h3 class="slider-label" style="margin-bottom: 0.5rem;">數據 telemetry 偵測</h3>
+                <h3 class="slider-label" style="margin-bottom: 0.5rem;">数据 telemetry 侦测</h3>
                 <div class="telemetry-row">
-                    <span class="telemetry-label">目前座標 (X, Y)</span>
+                    <span class="telemetry-label">目前座标 (X, Y)</span>
                     <span class="telemetry-val" id="tel-coords">(0.00, 0.20)</span>
                 </div>
                 <div class="telemetry-row">
-                    <span class="telemetry-label">雪碧圖索引 (Index)</span>
+                    <span class="telemetry-label">雪碧图索引 (Index)</span>
                     <span class="telemetry-val" id="tel-index">-</span>
                 </div>
                 <div class="telemetry-row">
-                    <span class="telemetry-label">當前裁切座標 (sx, sy)</span>
+                    <span class="telemetry-label">当前裁切座标 (sx, sy)</span>
                     <span class="telemetry-val" id="tel-pixels">sx: 0px, sy: 0px</span>
                 </div>
             </div>
 
-            <!-- 導出 Base64 功能 -->
+            <!-- 导出 Base64 功能 -->
             <button class="action-button" id="btn-export">
-                <span>📸</span> 導出當前表情 (Base64 PNG)
+                <span>📸</span> 导出当前表情 (Base64 PNG)
             </button>
 
-            <!-- 導出結果預覽區 -->
+            <!-- 导出结果预览区 -->
             <div class="export-preview-box" id="export-box">
                 <div class="export-preview-header">
-                    <span>導出成功！可用於 Discord API 發送或儲存</span>
-                    <a href="#" style="color: #8b5cf6; text-decoration: none;" id="btn-close-export">關閉</a>
+                    <span>导出成功！可用于 Discord API 发送或储存</span>
+                    <a href="#" style="color: #8b5cf6; text-decoration: none;" id="btn-close-export">关闭</a>
                 </div>
                 <div class="export-preview-content">
                     <img class="export-preview-img" id="export-preview-img" src="" alt="Exported">
@@ -603,7 +603,7 @@
         </div>
     </div>
 
-    <!-- 載入核心組件腳本 -->
+    <!-- 载入核心组件脚本 -->
     <script src="src/views/DynamicAvatar.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -634,18 +634,18 @@
             const presetSelect = document.getElementById("preset-select");
             const inputSpriteFile = document.getElementById("input-sprite-file");
 
-            // 1. 初始化 2D 圖表各表情區間標籤
+            // 1. 初始化 2D 图表各表情区间标签
             stickersMetadata.forEach(sticker => {
                 const zone = document.createElement("div");
                 zone.className = "zone-highlight";
                 zone.id = `zone-${sticker.index}`;
                 zone.innerText = sticker.name;
 
-                // 將 X (-1 to 1) 轉換為百分比 (0 to 100%)
+                // 将 X (-1 to 1) 转换为百分比 (0 to 100%)
                 const left = ((sticker.xRange[0] + 1) / 2) * 100;
                 const width = ((sticker.xRange[1] - sticker.xRange[0]) / 2) * 100;
                 
-                // 將 Y (0 to 1) 轉換為百分比 (0 to 100% 由下而上)
+                // 将 Y (0 to 1) 转换为百分比 (0 to 100% 由下而上)
                 const bottom = sticker.yRange[0] * 100;
                 const height = (sticker.yRange[1] - sticker.yRange[0]) * 100;
 
@@ -658,26 +658,26 @@
             });
 
             // 2. 初始化 DynamicAvatar
-            // 載入我們產生的橘貓雪碧圖
+            // 载入我们产生的橘猫雪碧图
             const avatar = new DynamicAvatar(canvas, "src/assets/avatars/orange_cat_sprite.png", {
                 onStateChange: (state) => {
-                    // 表情發生改變時更新 UI
+                    // 表情发生改变时更新 UI
                     emotionName.innerText = state.name;
                     emotionDesc.innerText = state.description;
                     
-                    // 更新 2D 視覺圖表中 active 狀態的區塊
+                    // 更新 2D 视觉图表中 active 状态的区块
                     document.querySelectorAll(".zone-highlight").forEach(z => z.classList.remove("active"));
                     const activeZone = document.getElementById(`zone-${state.index}`);
                     if (activeZone) {
                         activeZone.classList.add("active");
                     }
 
-                    // 更新 telemetry 資訊
+                    // 更新 telemetry 资讯
                     telIndex.innerText = `${state.index}`;
                     telPixels.innerText = `sx: ${state.grid.col * 200}px, sy: ${state.grid.row * 200}px`;
                 },
                 onTensionChange: (y) => {
-                    // 當張力大於 0.8 時，加入紅光與震動特效
+                    // 当张力大于 0.8 时，加入红光与震动特效
                     if (y > 0.8) {
                         avatarFrame.classList.add("tension-high");
                     } else {
@@ -686,7 +686,7 @@
                 }
             });
 
-            // 選擇預設或自訂圖檔的處理事件
+            // 选择预设或自订图档的处理事件
             function updateAvatarSprite(url) {
                 avatar.spriteUrl = url;
                 avatar.isLoaded = false;
@@ -707,47 +707,47 @@
                     const reader = new FileReader();
                     reader.onload = (event) => {
                         updateAvatarSprite(event.target.result);
-                        // 清空 file input 的 value，以便使用者能重選同張圖
+                        // 清空 file input 的 value，以便使用者能重选同张图
                         inputSpriteFile.value = "";
                     };
                     reader.readAsDataURL(file);
                 }
             });
 
-            // 3. 事件監聽：滑桿數值變更
+            // 3. 事件监听：滑杆数值变更
             function updateTelemetry() {
                 const x = parseFloat(inputX.value);
                 const y = parseFloat(inputY.value);
 
-                // 更新文字顯示
+                // 更新文字显示
                 valX.innerText = x.toFixed(2);
                 valY.innerText = y.toFixed(2);
                 telCoords.innerText = `(${x.toFixed(2)}, ${y.toFixed(2)})`;
 
-                // 更新 2D 指標點的位置
+                // 更新 2D 指标点的位置
                 const dotLeft = ((x + 1) / 2) * 100;
                 const dotBottom = y * 100;
                 trackerDot.style.left = `${dotLeft}%`;
                 trackerDot.style.bottom = `${dotBottom}%`;
 
-                // 更新頭像狀態與渲染
+                // 更新头像状态与渲染
                 avatar.updatePsychologicalState(x, y);
             }
 
             inputX.addEventListener("input", updateTelemetry);
             inputY.addEventListener("input", updateTelemetry);
 
-            // 支援在 2D 圖表上直接點擊/拖移來定位
+            // 支援在 2D 图表上直接点击/拖移来定位
             function handleQuadrantClick(e) {
                 const rect = quadrantChart.getBoundingClientRect();
                 const clickX = e.clientX - rect.left;
                 const clickY = e.clientY - rect.top;
 
-                // 轉換回 -1.0 到 1.0 (X) 與 0.0 到 1.0 (Y，因為畫布 Y 軸是倒置的，所以用 1 - percent)
+                // 转换回 -1.0 到 1.0 (X) 与 0.0 到 1.0 (Y，因为画布 Y 轴是倒置的，所以用 1 - percent)
                 const x = ((clickX / rect.width) * 2) - 1;
                 const y = 1 - (clickY / rect.height);
 
-                // 設定滑桿值並更新
+                // 设定滑杆值并更新
                 inputX.value = x.toFixed(2);
                 inputY.value = y.toFixed(2);
                 updateTelemetry();
@@ -765,7 +765,7 @@
                 isDragging = false;
             });
 
-            // 4. 導出頭像功能
+            // 4. 导出头像功能
             btnExport.addEventListener("click", () => {
                 const base64Str = avatar.exportCurrentAvatar();
                 exportPreviewImg.src = base64Str;
@@ -778,7 +778,7 @@
                 exportBox.style.display = "none";
             });
 
-            // 延遲一下讓 Image 載入並進行首次渲染
+            // 延迟一下让 Image 载入并进行首次渲染
             setTimeout(() => {
                 updateTelemetry();
             }, 100);

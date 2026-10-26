@@ -1,5 +1,5 @@
 const PERSONA_VOICE_MAP = {
-    '橘貓': 'cat',
+    '橘猫': 'cat',
     'orangecat': 'cat',
     'orange': 'cat',
     '柴犬': 'dog',
@@ -15,10 +15,10 @@ const PERSONA_VOICE_MAP = {
 class SoundEngine {
     constructor() {
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        this.soundMode = 0; // 0: 報牌配音開, 2: 全關（音樂已移除）
+        this.soundMode = 0; // 0: 报牌配音开, 2: 全关（音乐已移除）
     }
 
-    // 語音目錄：中文 voice/、英文 voice_en/
+    // 语音目录：中文 voice/、英文 voice_en/
     voiceDir() {
         return (window.currentLang === 'en') ? 'voice_en' : 'voice';
     }
@@ -66,7 +66,7 @@ class SoundEngine {
         // Always play SFX (Tone)
         this.playTone(200, 'sine', 0.2, 0.1);
 
-        // 語音：一律用 TTS 念「過」（原本的動物配音已刪除）
+        // 语音：一律用 TTS 念「过」（原本的动物配音已删除）
         const personaKeyRaw = persona.toLowerCase().split(' ')[0];
         const mapped = PERSONA_VOICE_MAP[personaKeyRaw] || personaKeyRaw;
         const personaKey = ['cat', 'dog', 'beaver', 'you'].includes(mapped) ? mapped : 'you';
@@ -92,8 +92,8 @@ class SoundEngine {
     }
 
     /**
-     * 報牌配音：手牌只剩 1 張「報單」時播放該角色的語音。
-     * 音樂（BGM）已整個移除，這裡只保留配音與提示音效。
+     * 报牌配音：手牌只剩 1 张「报单」时播放该角色的语音。
+     * 音乐（BGM）已整个移除，这里只保留配音与提示音效。
      */
     playDeclare(persona = 'you') {
         if (this.soundMode === 2) return;
@@ -104,7 +104,7 @@ class SoundEngine {
         
         const personaKeyRaw = persona.toLowerCase().split(' ')[0];
         const mapped = PERSONA_VOICE_MAP[personaKeyRaw] || personaKeyRaw;
-        // 只認 cat / dog / beaver / you，其它角色（Alex、Bella…）回退人類語音
+        // 只认 cat / dog / beaver / you，其它角色（Alex、Bella…）回退人类语音
         const personaKey = ['cat', 'dog', 'beaver', 'you'].includes(mapped) ? mapped : 'you';
 
         const audioPath = `src/assets/mp3/${this.voiceDir()}/declare_${personaKey}.mp3`;
@@ -120,14 +120,14 @@ class SoundEngine {
         });
     }
 
-    // 相容舊呼叫
+    // 相容旧呼叫
     playLa(persona = 'you') {
         this.playDeclare(persona);
     }
 
     /**
-     * 報牌名：AI 出牌時念出牌型，例如「對二」「順子」「同花」。
-     * 單張／對子／三條會帶點數（single_0..12 = 三..二），五張牌型只念類型。
+     * 报牌名：AI 出牌时念出牌型，例如「对二」「顺子」「同花」。
+     * 单张／对子／三条会带点数（single_0..12 = 三..二），五张牌型只念类型。
      */
     playHandName(info, cards) {
         if (this.soundMode === 2 || !info) return;
@@ -146,7 +146,7 @@ class SoundEngine {
             key = `${typeKey}_${rank}`;
         }
 
-        // 新的一聲蓋掉上一聲，避免連續出牌時疊音
+        // 新的一声盖掉上一声，避免连续出牌时叠音
         if (this.handVoice) {
             try { this.handVoice.pause(); } catch (e) { /* ignore */ }
         }
@@ -155,7 +155,7 @@ class SoundEngine {
         audio.play().catch(err => console.warn(`Hand name voice failed (${key}):`, err));
     }
 
-    // 右上角按鈕只切換開關：不念任何牌名，僅一聲輕提示音（避免誤以為在報牌）
+    // 右上角按钮只切换开关：不念任何牌名，仅一声轻提示音（避免误以为在报牌）
     playToggleBeep() {
         if (this.ctx && this.ctx.state === 'suspended') {
             this.ctx.resume().catch(() => {});

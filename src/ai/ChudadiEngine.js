@@ -1,22 +1,22 @@
 /**
- * ChudadiEngine.js —— 論文《锄大地(广东规则)的不完全信息博弈建模与最优策略求解》
- * 第 6 節 SO-ISMCTS 的 JS 移植版（對照材料：chudadi-ai 的 Java 參考實作）。
+ * ChudadiEngine.js —— 论文《锄大地(广东规则)的不完全信息博弈建模与最优策略求解》
+ * 第 6 节 SO-ISMCTS 的 JS 移植版（对照材料：chudadi-ai 的 Java 参考实作）。
  *
- * 與舊 ISMC.js 的差別：
- *   1) 真的建「資訊集樹」（UCB 選擇 + max^n 回傳），不是每個候選各自跑一堆獨立 playout；
- *   2) 確定化(determinization)嚴格排除「已出的牌」，舊版 pool 會把打過的牌重新發給對手；
- *   3) 滾動策略用 HeuristicPolicy（論文 §6.2 的 rollout），帶 ε 噪聲；
- *   4) 計分沿用本 App 的聯眾兩兩比較結算（含「贏家最後一手含黑桃 2 → 三家 ×2」）；
- *   5) 報單推斷：下家剩 1 張時，上家若過牌單張 ⇒ 他沒有更大的單張（寫進 forbidden）。
+ * 与旧 ISMC.js 的差别：
+ *   1) 真的建「资讯集树」（UCB 选择 + max^n 回传），不是每个候选各自跑一堆独立 playout；
+ *   2) 确定化(determinization)严格排除「已出的牌」，旧版 pool 会把打过的牌重新发给对手；
+ *   3) 滚动策略用 HeuristicPolicy（论文 §6.2 的 rollout），带 ε 噪声；
+ *   4) 计分沿用本 App 的联众两两比较结算（含「赢家最后一手含黑桃 2 → 三家 ×2」）；
+ *   5) 报单推断：下家剩 1 张时，上家若过牌单张 ⇒ 他没有更大的单张（写进 forbidden）。
  *
- * 牌編碼：內部用 value = rank * 4 + 花色強度（0..51），與本 App 的 cardId 互轉見 encode/decode。
+ * 牌编码：内部用 value = rank * 4 + 花色强度（0..51），与本 App 的 cardId 互转见 encode/decode。
  */
 (function (global) {
     'use strict';
 
-    // ---------------------------------------------------------------- 基礎編碼
-    const SUIT_STRENGTH = [1, 0, 2, 3];      // CLUB<DIAMOND<HEART<SPADE → 方塊<梅花<紅桃<黑桃
-    const SUIT_OF_STRENGTH = [1, 0, 2, 3];   // 反向：花色強度 → 本 App 花色編號
+    // ---------------------------------------------------------------- 基础编码
+    const SUIT_STRENGTH = [1, 0, 2, 3];      // CLUB<DIAMOND<HEART<SPADE → 方块<梅花<红桃<黑桃
+    const SUIT_OF_STRENGTH = [1, 0, 2, 3];   // 反向：花色强度 → 本 App 花色编号
 
     const PASS = 0, SINGLE = 1, PAIR = 2, TRIPLE = 3, STRAIGHT = 4,
         FLUSH = 5, FULL_HOUSE = 6, FOUR_KIND = 7, STRAIGHT_FLUSH = 8;
@@ -34,7 +34,7 @@
     const ALL_VALUES = [];
     for (let v = 0; v < 52; v++) ALL_VALUES.push(v);
 
-    // 順子窗口（rank 索引：0=3 … 11=A、12=2），共 10 個；A 只能在兩端，2 作小牌
+    // 顺子窗口（rank 索引：0=3 … 11=A、12=2），共 10 个；A 只能在两端，2 作小牌
     const WINDOWS = [
         { ranks: [11, 12, 0, 1, 2], top: 2 },   // A2345 → 取 5
         { ranks: [12, 0, 1, 2, 3], top: 3 },    // 23456 → 取 6
@@ -58,7 +58,7 @@
         return m.c.join(',');
     }
 
-    /** 5 張牌型判斷（不含順子/同花順的窗口匹配以外的容錯） */
+    /** 5 张牌型判断（不含顺子/同花顺的窗口匹配以外的容错） */
     function classify5(cards) {
         let rankBits = 0, flushSuit = -1, flush = true;
         for (const v of cards) {
@@ -102,7 +102,7 @@
         return null;
     }
 
-    /** 任意張數的牌型識別（不是合法牌型回 null） */
+    /** 任意张数的牌型识别（不是合法牌型回 null） */
     function classify(cards) {
         if (!cards || !cards.length) return null;
         const n = cards.length;
@@ -118,8 +118,8 @@
         return null;
     }
 
-    // ---------------------------------------------------------------- 出牌枚舉
-    const _out = [];   // 內部暫存，避免熱路徑反覆配置
+    // ---------------------------------------------------------------- 出牌枚举
+    const _out = [];   // 内部暂存，避免热路径反复配置
 
     function genSingles(hand, prev, out) {
         for (let i = 0; i < hand.length; i++) {
@@ -170,7 +170,7 @@
         const minCat = prev ? (prev.s >> 6) : 0;
         const g = byRank(hand);
 
-        // (a) 同花（非順）
+        // (a) 同花（非顺）
         if (minCat <= 1) {
             for (let su = 0; su < 4; su++) {
                 const sm = hand.filter(v => (v & 3) === su);
@@ -188,7 +188,7 @@
             }
         }
 
-        // (b) 順子 / 同花順
+        // (b) 顺子 / 同花顺
         for (const w of WINDOWS) {
             const opts = [];
             let ok = true;
@@ -216,7 +216,7 @@
             }
         }
 
-        // (c) 葫蘆
+        // (c) 葫芦
         if (minCat <= 2) {
             const ranks = [...g.keys()].sort((a, b) => a - b);
             for (const rt of ranks) {
@@ -239,7 +239,7 @@
             }
         }
 
-        // (d) 四帶一
+        // (d) 四带一
         if (minCat <= 3) {
             for (const [r, q] of g) {
                 if (q.length !== 4) continue;
@@ -253,7 +253,7 @@
         }
     }
 
-    /** hand: 已排序的 value 陣列；prev: null=領出。回傳所有合法出牌（不含過牌） */
+    /** hand: 已排序的 value 阵列；prev: null=领出。回传所有合法出牌（不含过牌） */
     function generate(hand, prev, rules) {
         const out = [];
         const want = prev ? prev.n : 0;
@@ -265,7 +265,7 @@
         return out;
     }
 
-    // ---------------------------------------------------------------- 計分（本 App 規則）
+    // ---------------------------------------------------------------- 计分（本 App 规则）
     const START_CARD_ID = 13;   // ♦3
 
     function cardPoint(n, hasSpade2) {
@@ -278,8 +278,8 @@
     }
 
     /**
-     * counts: 四家剩餘張數；spade2: 四家是否持 ♠2；winner: 贏家座位；winnerHadTwo: 贏家最後一手是否含 2
-     * 回傳四家得分（Σ=0）
+     * counts: 四家剩余张数；spade2: 四家是否持 ♠2；winner: 赢家座位；winnerHadTwo: 赢家最后一手是否含 2
+     * 回传四家得分（Σ=0）
      */
     function scores(counts, spade2, winner, winnerHadTwo) {
         const mult = winnerHadTwo ? 2 : 1;
@@ -301,7 +301,7 @@
     function Game(hands, current, lastMove, lastMover, passes, firstPlay, played, rules) {
         this.hands = hands;              // 4 × sorted value array
         this.current = current;
-        this.lastMove = lastMove;        // null = 領出
+        this.lastMove = lastMove;        // null = 领出
         this.lastMover = lastMover;
         this.passes = passes;
         this.firstPlay = firstPlay;
@@ -371,7 +371,7 @@
         this.firstPlay = false;
         if (hand.length === 0) {
             this.winner = me;
-            // 只認黑桃 2：value & 3 === 3 即 ♠
+            // 只认黑桃 2：value & 3 === 3 即 ♠
             this.winnerHadTwo = m.c.some(v => rankOf(v) === 12 && (v & 3) === 3);
             return;
         }
@@ -389,10 +389,10 @@
         return scores(counts, sp2, this.winner, this.winnerHadTwo);
     };
 
-    // ---------------------------------------------------------------- 確定化
+    // ---------------------------------------------------------------- 确定化
     /**
      * obs: { seat, hand:[value], counts:[4], played:{v:1}, current, lastMove, lastMover, passes, firstPlay }
-     * forbidden: 4 × Set(value) 由報單過牌推斷出的「該家不可能持有」
+     * forbidden: 4 × Set(value) 由报单过牌推断出的「该家不可能持有」
      */
     function determinize(obs, rng, forbidden) {
         const mine = new Set(obs.hand);
@@ -402,7 +402,7 @@
             if (obs.played && obs.played[v]) continue;
             pool.push(v);
         }
-        // 補齊（資料異常時容錯）
+        // 补齐（资料异常时容错）
         const need = obs.counts.reduce((a, b, i) => a + (i === obs.seat ? 0 : b), 0);
         if (pool.length !== need) {
             const uniq = new Set(pool);
@@ -417,7 +417,7 @@
             const j = (rng() * (i + 1)) | 0;
             const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
         }
-        // 先發受約束的牌
+        // 先发受约束的牌
         const hands = [[], [], [], []];
         hands[obs.seat] = obs.hand.slice();
         const rem = obs.counts.slice();
@@ -452,13 +452,13 @@
             }
         }
         for (let p = 0; p < 4; p++) hands[p].sort((a, b) => a - b);
-        // 注意：Game.apply 會寫 this.played，必須用副本，否則會污染呼叫端的觀察（舊 ISMC 的坑）
+        // 注意：Game.apply 会写 this.played，必须用副本，否则会污染呼叫端的观察（旧 ISMC 的坑）
         const playedCopy = {};
         if (obs.played) for (const k in obs.played) playedCopy[k] = obs.played[k];
         return new Game(hands, obs.current, obs.lastMove, obs.lastMover, obs.passes, obs.firstPlay, playedCopy, obs.rules);
     }
 
-    // ---------------------------------------------------------------- 滾動策略
+    // ---------------------------------------------------------------- 滚动策略
     function pickRollout(g, moves, rng, eps) {
         const n = moves.length;
         if (n === 1) return moves[0];
@@ -481,7 +481,7 @@
             if (best) return best;
         }
 
-        if (g.lastMove === null) {   // 領出：張數多的優先，同張數取小的
+        if (g.lastMove === null) {   // 领出：张数多的优先，同张数取小的
             let best = null, bs = -1e9;
             for (const m of moves) {
                 const sc = m.n * 100 - m.s + rng() * 6;
@@ -508,7 +508,7 @@
         return cheapest;
     }
 
-    /** 一路滾動到終局 */
+    /** 一路滚动到终局 */
     function rollout(g, rng, eps) {
         let plies = 0;
         while (!g.isOver() && plies++ < 400) {
@@ -526,7 +526,7 @@
         this.mover = mover;
         this.visits = 0;
         this.avail = 0;
-        this.reward = 0;      // 對 mover 的累計獎勵
+        this.reward = 0;      // 对 mover 的累计奖励
         this.children = null; // Map<key, Node>
     }
 
@@ -541,9 +541,9 @@
     }
 
     /**
-     * 對 obs 做 ISMCTS。
-     * opts: { iters, timeMs, seed, rootMoves (只搜這幾個動作，用於候選重排), exploration, rewardScale, eps }
-     * 回傳 { best, stats:[{move, visits, avgU, avgR}], iterations }
+     * 对 obs 做 ISMCTS。
+     * opts: { iters, timeMs, seed, rootMoves (只搜这几个动作，用于候选重排), exploration, rewardScale, eps }
+     * 回传 { best, stats:[{move, visits, avgU, avgR}], iterations }
      */
     function search(obs, opts) {
         const o = opts || {};
@@ -562,7 +562,7 @@
 
         const root = new Node(null, null, -1);
         root.children = new Map();
-        const rawSum = new Map();   // key -> 累計原始得分（對 seat）
+        const rawSum = new Map();   // key -> 累计原始得分（对 seat）
         const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
         let it = 0;
         for (; it < iters; it++) {
@@ -570,10 +570,10 @@
                 const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
                 if (now - t0 >= timeMs) break;
             }
-            // 每次迭代都重新確定化（SO-ISMCTS）
+            // 每次迭代都重新确定化（SO-ISMCTS）
             const g = determinize(obs, rng);
             let node = root;
-            // 選擇 + 擴展
+            // 选择 + 扩展
             while (!g.isOver()) {
                 let ms = g.legalMoves();
                 if (node === root && o.rootMoves) ms = ms.filter(m => o.rootMoves.some(k => k === moveKey(m)));
@@ -608,7 +608,7 @@
                 g.apply(best.move);
                 node = best;
             }
-            // 滾動到終局
+            // 滚动到终局
             if (!g.isOver()) rollout(g, rng, eps);
             const u = g.isOver() ? g.scoresNow() : [0, 0, 0, 0];
             const uMe = u[obs.seat];
@@ -616,12 +616,12 @@
                 o.debug.push({ it, over: g.isOver(), winner: g.winner, sizes: g.hands.map(h => h.length), u: u.slice() });
                 if (o.debug.length > 30) o.debug.shift();
             }
-            // 回傳（max^n）
+            // 回传（max^n）
             for (let n = node; n; n = n.parent) {
                 n.visits++;
                 if (n.parent) n.reward += 0.5 + 0.5 * Math.tanh(u[n.mover] / rewardScale);
             }
-            // 根節點分動作統計（回到 root 的直接子節點）
+            // 根节点分动作统计（回到 root 的直接子节点）
             let cur = node;
             while (cur && cur.parent !== root) cur = cur.parent;
             if (cur) {
@@ -643,12 +643,12 @@
         return { best: best ? best.move : null, stats, iterations: it };
     }
 
-    // ---------------------------------------------------------------- 對外 API
+    // ---------------------------------------------------------------- 对外 API
     const api = {
         PASS, SINGLE, PAIR, TRIPLE, STRAIGHT, FLUSH, FULL_HOUSE, FOUR_KIND, STRAIGHT_FLUSH,
         encode, decode, rankOf, classify, generate, scores, cardPoint, determinize, Game,
         search, rollout, pickRollout, moveKey, makeRng,
-        /** 給 AICharacter 用：把 context 轉成 Observation（value 空間） */
+        /** 给 AICharacter 用：把 context 转成 Observation（value 空间） */
         observationFromContext(ctx, extra) {
             const seat = ctx.playerIndex;
             const hand = (ctx.hand || []).map(encode).sort((a, b) => a - b);

@@ -2,5 +2,5 @@
 window.AppVersionInfo = {
   version: "1.5.62",
   buildVersion: "1.5.62.0",
-  author: "mesmerli"
+  author: "SeaGaruda"
 };

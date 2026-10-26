@@ -7,7 +7,7 @@ function counts(ms) {
     return c;
 }
 
-console.log('== 1) 全牌枚舉（論文 2.2 / Java self-test 期望值）');
+console.log('== 1) 全牌枚举（论文 2.2 / Java self-test 期望值）');
 const all = [];
 for (let v = 0; v < 52; v++) all.push(v);
 const every = E.generate(all, null, { allowTriple: true });
@@ -22,7 +22,7 @@ for (const k of Object.keys(expect)) {
 }
 console.log(`  total=${every.length} (expect 19898) ${every.length === 19898 ? 'OK' : 'FAIL'}`);
 
-console.log('== 2) 聯眾結算算例：剩 5、8、0、12 張 → 37、-7、57、-87');
+console.log('== 2) 联众结算算例：剩 5、8、0、12 张 → 37、-7、57、-87');
 {
     const u = E.scores([5, 8, 0, 12], [false, false, false, false], 2, false);
     console.log('  got', u.join(','));
@@ -31,10 +31,10 @@ console.log('== 2) 聯眾結算算例：剩 5、8、0、12 張 → 37、-7、57�
     if (u.join(',') !== want) ok = false;
 }
 
-console.log('== 2b) 贏家加倍只認「黑桃 2」：♠2 結尾 ×2、♥2 結尾 ×1');
+console.log('== 2b) 赢家加倍只认「黑桃 2」：♠2 结尾 ×2、♥2 结尾 ×1');
 {
     const run = (spade) => {
-        const two = spade ? 51 : 50;                 // ♠2 = 51、♥2 = 50（value 編碼）
+        const two = spade ? 51 : 50;                 // ♠2 = 51、♥2 = 50（value 编码）
         const hands = [[two], [0,1,2,3,4,5,6,7], [8,9,10,11,12], [13,14,15,16,17,18,19]];
         const g = new E.Game(hands.map(h => h.slice()), 0, null, -1, 0, false, {}, { allowTriple: true });
         const single = g.legalMoves().find(m => m.t === 1 && m.c.length === 1 && m.c[0] === two);
@@ -45,12 +45,12 @@ console.log('== 2b) 贏家加倍只認「黑桃 2」：♠2 結尾 ×2、♥2 �
     const sumOk = sp.scores.reduce((a,b) => a+b, 0) === 0 && ht.scores.reduce((a,b) => a+b, 0) === 0;
     const pass = sp.winner === 0 && sp.flag === true && ht.winner === 0 && ht.flag === false &&
         sumOk && sp.scores[0] === 2 * ht.scores[0];
-    console.log(`  ♠2 結尾 ${sp.scores.join(',')}｜♥2 結尾 ${ht.scores.join(',')}`);
-    console.log('  ' + (pass ? 'OK' : 'FAIL') + ' (expect ♠2 分數 = 2 × ♥2 分數，四家合計 0)');
+    console.log(`  ♠2 结尾 ${sp.scores.join(',')}｜♥2 结尾 ${ht.scores.join(',')}`);
+    console.log('  ' + (pass ? 'OK' : 'FAIL') + ' (expect ♠2 分数 = 2 × ♥2 分数，四家合计 0)');
     if (!pass) ok = false;
 }
 
-console.log('== 3) 隨機對局（牌守恒 / 不卡死）');
+console.log('== 3) 随机对局（牌守恒 / 不卡死）');
 {
     const rng = E.makeRng(12345);
     let bad = 0, plies = 0;
@@ -77,11 +77,11 @@ console.log('== 3) 隨機對局（牌守恒 / 不卡死）');
         if (u && u.reduce((a, b) => a + b, 0) !== 0) bad++;
         if (game.isOver() && totalCards < 0) bad++;
     }
-    console.log(`  500 局：異常 ${bad}，平均 ${(plies / 500).toFixed(1)} 手`);
+    console.log(`  500 局：异常 ${bad}，平均 ${(plies / 500).toFixed(1)} 手`);
     if (bad) ok = false;
 }
 
-console.log('== 4) 速度（中局 follow 決策的 ISMCTS）');
+console.log('== 4) 速度（中局 follow 决策的 ISMCTS）');
 {
     const rng = E.makeRng(777);
     const deck = all.slice();
@@ -100,17 +100,17 @@ console.log('== 4) 速度（中局 follow 決策的 ISMCTS）');
         passes: game.passes, firstPlay: game.firstPlay,
         rules: { allowTriple: true, firstLeadMustContainD3: true }
     };
-    console.log(`  局面：${obs.hand.length} 張手牌，${game.legalMoves().length} 個合法動作`);
+    console.log(`  局面：${obs.hand.length} 张手牌，${game.legalMoves().length} 个合法动作`);
     const t0 = Date.now();
     const res = E.search(obs, { iters: 2000, timeMs: 0, seed: 1 });
     const dt = (Date.now() - t0) / 1000;
     console.log(`  2000 次迭代 ${dt.toFixed(2)}s → ${(2000 / dt).toFixed(0)} iters/s；最佳 ${res.best ? (res.best.t + ':' + res.best.c.join(',')) : 'n/a'}`);
     const t1 = Date.now();
     E.search(obs, { iters: 100000, timeMs: 200, seed: 2 });
-    console.log(`  timeMs=200 預算實測 ${Date.now() - t1}ms（WebView 會慢 2~4 倍）`);
+    console.log(`  timeMs=200 预算实测 ${Date.now() - t1}ms（WebView 会慢 2~4 倍）`);
 }
 
-console.log('== 5) 強度：同副牌，ISMCTS 座位 vs 全啟發式基線（300 iters/步）');
+console.log('== 5) 强度：同副牌，ISMCTS 座位 vs 全启发式基线（300 iters/步）');
 {
     const rng = E.makeRng(20261024);
     const deals = 20, iters = 300;
@@ -131,7 +131,7 @@ console.log('== 5) 強度：同副牌，ISMCTS 座位 vs 全啟發式基線（30
     }
     const mean = sum / n;
     const sd = Math.sqrt(Math.max(0, sumSq / n - mean * mean));
-    console.log(`  ${n} 局：平均每副多得分 ${mean >= 0 ? '+' : ''}${mean.toFixed(2)}（sd ${sd.toFixed(1)}，se ${(sd / Math.sqrt(n)).toFixed(2)}），耗時 ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+    console.log(`  ${n} 局：平均每副多得分 ${mean >= 0 ? '+' : ''}${mean.toFixed(2)}（sd ${sd.toFixed(1)}，se ${(sd / Math.sqrt(n)).toFixed(2)}），耗时 ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 }
 
 function playDeal(deal, aiSeat, iters, rng) {
@@ -164,28 +164,28 @@ function playDeal(deal, aiSeat, iters, rng) {
     return game.isOver() ? game.scoresNow() : [0, 0, 0, 0];
 }
 
-console.log('== 6) 規則/決策硬性檢查');
+console.log('== 6) 规则/决策硬性检查');
 {
     const rules = { allowTriple: true, firstLeadMustContainD3: false, nextOneMustPlayMaxSingle: true, noPassIfCanBeatSingle: true };
-    // (a) 下家報單：我出單張只能是最大單張
+    // (a) 下家报单：我出单张只能是最大单张
     const handsA = [[8, 20, 30], [40], [1, 2, 3], [4, 5, 6]];
     const gA = new E.Game(handsA.map(h => h.slice()), 0, null, -1, 0, false, {}, rules);
     const msA = gA.legalMoves();
     const singlesA = msA.filter(m => m.t === E.SINGLE).map(m => m.c[0]);
     const okA = singlesA.length === 1 && singlesA[0] === 30;
-    console.log(`  ${okA ? 'OK ' : 'FAIL'} 下家剩 1 張時，出單張只剩最大單張（got ${singlesA.join(',')}）`);
+    console.log(`  ${okA ? 'OK ' : 'FAIL'} 下家剩 1 张时，出单张只剩最大单张（got ${singlesA.join(',')}）`);
     if (!okA) ok = false;
 
-    // (b) 下家報單且上一手是單張、我壓得過 → 不能過牌
+    // (b) 下家报单且上一手是单张、我压得过 → 不能过牌
     const handsB = [[8, 20, 30], [40], [1, 2, 3], [4, 5, 6]];
     const lm = E.classify([25]);
     const gB = new E.Game(handsB.map(h => h.slice()), 0, lm, 2, 0, false, {}, rules);
     const msB = gB.legalMoves();
     const okB = !msB.some(m => m.t === E.PASS);
-    console.log(`  ${okB ? 'OK ' : 'FAIL'} 下家報單且能壓過單張時不得過牌`);
+    console.log(`  ${okB ? 'OK ' : 'FAIL'} 下家报单且能压过单张时不得过牌`);
     if (!okB) ok = false;
 
-    // (c) 能一手出完 → 搜索應選出完的那手
+    // (c) 能一手出完 → 搜索应选出完的那手
     const handsC = [[8, 9], [16], [17, 18], [19, 20, 21, 22]];
     const gC = new E.Game(handsC.map(h => h.slice()), 0, null, -1, 0, false, {}, rules);
     const obsC = {
@@ -194,11 +194,11 @@ console.log('== 6) 規則/決策硬性檢查');
     };
     const rC = E.search(obsC, { iters: 400, timeMs: 0, seed: 5 });
     const okC = rC.best && rC.best.t === E.PAIR;
-    console.log(`  ${okC ? 'OK ' : 'FAIL'} 能一把出完時選對子（got ${rC.best ? rC.best.t + ':' + rC.best.c.join(',') : 'null'}）`);
+    console.log(`  ${okC ? 'OK ' : 'FAIL'} 能一把出完时选对子（got ${rC.best ? rC.best.t + ':' + rC.best.c.join(',') : 'null'}）`);
     if (!okC) ok = false;
 
-    // (d) 卡牌保守：手牌少、能壓小單張但也沒必要浪費 A → 不強制（只記錄）
-    console.log(`  info 首手 ♦3 過濾：generate+legalMoves 只留含 ♦3 的牌型（見測試 1 的 19898）`);
+    // (d) 卡牌保守：手牌少、能压小单张但也没必要浪费 A → 不强制（只记录）
+    console.log(`  info 首手 ♦3 过滤：generate+legalMoves 只留含 ♦3 的牌型（见测试 1 的 19898）`);
 }
 
 console.log(ok ? '\nALL TESTS PASSED' : '\nSOME TESTS FAILED');
