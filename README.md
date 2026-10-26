@@ -70,6 +70,7 @@ The winner collects the sum of all three losers' losses.
 - **Selection never hides a neighbour**: cards overlap, but a selected card is only lifted + outlined, so the neighbouring rank stays readable
 - **Compact layout** for short screens (≤760 px viewport height): smaller cards, thinner seats, tighter paddings — nothing gets clipped
 - Language switch (Traditional Chinese / English), sound effects, keyboard shortcuts on desktop
+- **Info modal (`i` button) has two tabs**: **游戏规则 / Rules** and **关于游戏 / About the Game** — the About tab shows the app name, what the game is, the AI's card-counting character, the privacy stance (offline, no ads, no personal data), and the developer line `张海鹏，SeaGaruda工作室` (the app-store review asks for an in-app page that ties the app name to the developer name; the modal footer repeats version + developer)
 
 ---
 

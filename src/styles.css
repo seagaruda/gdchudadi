@@ -171,6 +171,55 @@ button,
     flex: 1;
 }
 
+/* 关于游戏分页 */
+.about-section h3 {
+    color: var(--accent-color);
+    font-size: 17px;
+    margin-bottom: 10px;
+    letter-spacing: 0;
+}
+
+.about-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #cbd5e1;
+    margin: 0 0 10px;
+    letter-spacing: -0.1px;
+}
+
+.about-dev-card {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.about-dev-row {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+}
+
+.about-dev-label {
+    flex: 0 0 auto;
+    font-size: 12px;
+    color: #94a3b8;
+    background: rgba(148, 163, 184, 0.15);
+    border-radius: 5px;
+    padding: 2px 7px;
+}
+
+.about-dev-value {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #fff;
+    font-weight: 600;
+}
+
 .rules-sections h3 {
     color: var(--accent-color);
     font-size: 16px;

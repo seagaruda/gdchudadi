@@ -29,6 +29,21 @@ function updateRulesDescription() {
         const el = document.getElementById(id);
         if (el) el.innerHTML = t(key);
     }
+
+    // 「关于游戏」分页文案
+    const aboutElements = {
+        'about-heading': 'aboutHeading',
+        'about-p1': 'aboutP1',
+        'about-p2': 'aboutP2',
+        'about-dev-label': 'aboutDevLabel',
+        'about-dev-value': 'aboutDevValue',
+        'about-privacy-label': 'aboutPrivacyLabel',
+        'about-privacy-value': 'aboutPrivacyValue'
+    };
+    for (const [id, key] of Object.entries(aboutElements)) {
+        const el = document.getElementById(id);
+        if (el && I18N[currentLang][key]) el.textContent = I18N[currentLang][key];
+    }
 }
 window.updateRulesDescription = updateRulesDescription;
 
@@ -85,7 +100,8 @@ function updateLanguage() {
     const rulesVersion = document.getElementById('rules-version');
     const rulesAuthor = document.getElementById('rules-author');
     if (rulesVersion) rulesVersion.textContent = `v${pkg.buildVersion || pkg.version}`;
-    if (rulesAuthor) rulesAuthor.textContent = `${t('author')}: ${pkg.author || 'SeaGaruda'}`;
+    // 说明页底部直接挂开发者身份（应用商店审核要求应用名称与开发者名称可对应）
+    if (rulesAuthor) rulesAuthor.textContent = `${t('aboutDevLabel')}: ${t('aboutDevValue')}`;
 
     // Dynamic Character Name Sync
     const names = currentLang === 'zh' ? PLAYER_NAMES_ZH : PLAYER_NAMES_EN;

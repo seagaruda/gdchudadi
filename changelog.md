@@ -1,5 +1,17 @@
 # Changelog
 
+## [android-portrait] - 2026-10-26
+
+### Added（說明頁新增「關於遊戲」分頁，供應用市場審核佐證主體關聯）
+- 右上角 `i` 說明視窗由單一「遊戲規則」改為兩個分頁：**遊戲規則** / **關於遊戲**。
+- 「關於遊戲」內容：應用名稱《单机AI·锄大Dee》、玩法簡介（4 人、去大小王、13 張、1/2/3/5 四種牌型、
+  按輸家剩牌 0-7×1 / 8-9×2 / 10-12×3 / 13×4、留黑桃 2 翻倍）、AI 會算牌的特性說明、
+  **開發者：张海鹏，SeaGaruda工作室**，以及隱私說明（無需聯網、無廣告、不收集個人資訊）。
+- 說明視窗底部 footer 由「作者: SeaGaruda」改為「開發者: 张海鹏，SeaGaruda工作室」，與分頁內容一致。
+- 中英雙語（zh / en i18n key：`tabAbout` / `aboutHeading` / `aboutP1` / `aboutP2` / `aboutDevLabel` / `aboutDevValue` / `aboutPrivacyLabel` / `aboutPrivacyValue`）。
+- 量測：393×852 視口下分頁內容 `scrollHeight 404 = clientHeight 404`（無裁切、無溢出），版本 footer 顯示 `v1.5.68.0`。
+- 版本 1.5.67 → **1.5.68**（versionCode 50 → 51）。
+
 ## [android-portrait] - 2026-10-23
 
 ### Fixed（順子誤判：J-Q-K-A-2 被當成順子）

@@ -1,6 +1,6 @@
 {
   "name": "taiwan-big-two-ai",
-  "version": "1.5.67",
+  "version": "1.5.68",
   "description": "Android 单机版锄大地（Capacitor + 本机规则 AI）",
   "license": "AGPL-3.0-only",
   "scripts": {
@@ -12,7 +12,7 @@
     "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug"
   },
   "build": {
-    "buildVersion": "1.5.67.0",
+    "buildVersion": "1.5.68.0",
     "buildNumber": "59",
     "productName": "单机AI·锄大Dee"
   },
