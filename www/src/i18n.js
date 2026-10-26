@@ -1,7 +1,7 @@
 const I18N = {
     en: {
         title: "Chu Da Dee AI",
-        rulesTitle: "Guangdong Chudadi",
+        rulesTitle: "Chu Da Dee AI",
         handsTitle: "Hands & Play",
         scoringTitle: "Scoring",
         rank: "Rank",
@@ -93,7 +93,7 @@ const I18N = {
     },
     'zh': {
         title: "单机AI·锄大Dee",
-        rulesTitle: "广东锄大地",
+        rulesTitle: "单机AI·锄大Dee",
         handsTitle: "牌型与出牌",
         scoringTitle: "计分",
         rank: "点数",
