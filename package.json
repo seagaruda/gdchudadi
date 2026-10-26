@@ -1,6 +1,6 @@
 {
   "name": "taiwan-big-two-ai",
-  "version": "1.5.62",
+  "version": "1.5.63",
   "description": "Android 单机版锄大地（Capacitor + 本机规则 AI）",
   "license": "AGPL-3.0-only",
   "scripts": {
