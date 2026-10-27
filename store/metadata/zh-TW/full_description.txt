@@ -19,5 +19,5 @@
 ■ 適合誰
 想找牌搭子卻湊不齊四個人的你；想練廣東鋤大地牌技的你；只想安靜打兩局、不想被廣告打斷的你。
 
-開發者：張海鵬 / SeaGaruda 工作室
+開發者：SeaGaruda 工作室
 隱私權政策：https://seagaruda.github.io/gdchudadi/privacy.html
