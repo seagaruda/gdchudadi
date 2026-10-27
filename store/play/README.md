@@ -32,9 +32,9 @@ gplay releases upload app-release.aab --package com.gdchudadi.app \
 gplay metadata apply --package com.gdchudadi.app --dir store/metadata --dry-run
 gplay metadata apply --package com.gdchudadi.app --dir store/metadata --confirm
 
-# 图片（图标/特征图/截图）
-gplay metadata images apply --package com.gdchudadi.app --dir store/play --dry-run
-gplay metadata images apply --package com.gdchudadi.app --dir store/play --confirm
+# 图片（图标/特征图/截图）— 用自建脚本，gplay 原生命令有 bug，见下
+python3 scripts/gplay-upload-images.py store/metadata zh-CN zh-TW en-US
+python3 scripts/gplay-upload-images.py store/metadata --verify zh-CN zh-TW en-US
 
 # 截图重新生成（需先起本地服务：cd www && python3 -m http.server 8802）
 node scripts/shots-play.js && node scripts/shots-play-about.js
@@ -60,7 +60,10 @@ python3 scripts/generate-feature-graphic.py
 ## 坑
 
 - `gplay releases upload` 的文件是**位置参数**，没有 `--file`。
-- 大陆网络下 11MB 的 AAB 上传约 3-5 分钟，Edit 可能过期（`This edit has expired`），直接重跑即可；加 `--retry 5 --timeout 20m`。
+- **gplay 2.3.2 bug ①**：上传到 internal/beta/alpha 时 payload 带 `userFraction=1.0`，Google 拒 `COMPLETED release must not have fraction`。绕过：`scripts/gplay-upload-internal.py`（resumable 分块上传，payload 不带 fraction）。
+- **gplay 2.3.2 bug ②**：`metadata images apply/list` 会用 `promoGraphic` 去查 `image_type`，Google 报 `Invalid value ... "promoGraphic"`，整条图片通道挂掉。绕过：`scripts/gplay-upload-images.py`（直调 `edits.images.upload`，只用合法枚举）。
+- 图片目录约定：`<dir>/<locale>/images/{icon,featureGraphic}.png` + `<dir>/<locale>/images/phoneScreenshots/{1..N}.png`；某语系没有 images 目录时脚本会复用树里第一个有素材的语系。
+- 大陆网络下 10MB AAB 用 gplay 单发容易 `This edit has expired`，用自建脚本的 4MB 分块 resumable 约 50 秒传完。
 - 上传/推送前先 `--dry-run`，能提前发现包名或格式问题。
 - 本仓库启用了 sparse-checkout，新增顶层目录要 `git sparse-checkout add <dir>`，否则 `git add` 会被拒。
 - 推 GitHub 大文件易 408：已设 `http.postBuffer=524288000`、`http.lowSpeedLimit=0`。
