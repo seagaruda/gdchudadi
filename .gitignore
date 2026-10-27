@@ -52,3 +52,6 @@ StoreBridge/build/
 *.filters
 *.user
 android/keystore.properties
+
+# 软著申请资料（含个人信息，不入库）
+软件著作权申请资料/
