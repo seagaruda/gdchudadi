@@ -1,0 +1,23 @@
+Single-player Cantonese Big Two (Chudadi / Big Two) in your pocket — fully offline, no ads, no sign-up.
+
+CLASSIC 4-PLAYER RULES
+Jokers removed, 13 cards each, counter-clockwise play. Legal plays are singles, pairs, triples and five-card hands (straight flush > four of a kind > full house > flush > straight). The player holding the 3 of diamonds leads the first deal; the winner of each deal leads the next.
+
+AI THAT ACTUALLY COUNTS CARDS
+Your three computer opponents don't just follow suit. They track what has been played, count points, decide when to beat a hand and when to hold back — and they will gang up on whoever is ahead. To win points off them, you have to think.
+
+SCORING
+Points are counted from the cards left in each loser's hand: 0-7 cards x1, 8-9 x2, 10-12 x3, 13 x4, doubled again if the 2 of spades is still held. Settled pairwise, winner doubled.
+
+WHY PLAY
+- Fully offline: works on the subway, on a plane, anywhere
+- No ads, no in-app purchases, no personal data collected
+- One-handed portrait play, a deal takes a few minutes
+- Hand-type hints and built-in rules, so beginners can start and veterans can dig in
+- Local Cantonese conventions: single-card calls, top-card blocks, dragon straights
+
+WHO IT'S FOR
+Anyone who can't find three friends for a game; anyone who wants to sharpen their Big Two play; anyone who just wants a quiet hand without ads.
+
+Developer: Zhang Haipeng / SeaGaruda Studio
+Privacy policy: https://seagaruda.github.io/gdchudadi/privacy.html
