@@ -19,5 +19,5 @@
 ■ 适合谁
 想找搭子却凑不齐四个人的你；想练广东锄大地牌技的你；只想安静打两局、不想被广告打断的你。
 
-开发者：张海鹏 / SeaGaruda 工作室
+开发者：SeaGaruda 工作室
 隐私政策：https://seagaruda.github.io/gdchudadi/privacy.html

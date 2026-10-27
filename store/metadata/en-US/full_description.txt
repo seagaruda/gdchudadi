@@ -19,5 +19,5 @@ WHY PLAY
 WHO IT'S FOR
 Anyone who can't find three friends for a game; anyone who wants to sharpen their Big Two play; anyone who just wants a quiet hand without ads.
 
-Developer: Zhang Haipeng / SeaGaruda Studio
+Developer: SeaGaruda Studio
 Privacy policy: https://seagaruda.github.io/gdchudadi/privacy.html
