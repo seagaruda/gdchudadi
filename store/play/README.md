@@ -8,8 +8,9 @@
 |---|---|---|
 | 服务账号凭据 | ✅ 已注册 `gplay auth status` | `~/.gplay/service-account.json`（keyring 存储） |
 | Play 应用 | ✅ 已建（`com.gdchudadi.app`） | developer id `7154833699363011170` |
-| AAB | ✅ 已构建 v1.5.68 / versionCode 51 | `android/app/build/outputs/bundle/release/app-release.aab` |
-| 内部测试轨道 | 见下方命令 | `gplay tracks list --package com.gdchudadi.app` |
+| AAB | ✅ 已构建 v1.5.69 / versionCode 52（已上 internal + alpha） | `android/app/build/outputs/bundle/release/app-release.aab` |
+| 内部测试轨道 | ✅ 1.5.69 / vc52 completed | `gplay tracks list --package com.gdchudadi.app` |
+| 内部测试 opt-in 链接 | ✅ 有效（需先登录且账号在测试者名单内） | https://play.google.com/apps/internaltest/4700896365418075747 |
 | 商店文案 3 语言 | ✅ zh-CN（默认）/ zh-TW / en-US | `store/metadata/` |
 | 图标 512 + 特征图 1024x500 | ✅ | `store/play/` |
 | 手机截图 4 张 1080x1920 | ✅ | `store/play/phone-*.png` |
