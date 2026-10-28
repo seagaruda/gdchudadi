@@ -166,6 +166,16 @@ def main():
             log(f'{loc}: 没有 images 目录，跳过')
             continue
         for itype, files in slots:
+            # Play 的 images.upload 是「追加」语义：不先删就会变成 4+4=8 张。
+            # 每次上传前先清空该槽位，保证「本地几张 = 线上几张」且顺序与本地一致。
+            st, cur = call('GET', f'{API}/applications/{PKG}/edits/{eid}/listings/{loc}/{itype}')
+            old = cur.get('images', []) if isinstance(cur, dict) else []
+            for img in old:
+                iid = img.get('id')
+                if iid:
+                    call('DELETE', f'{API}/applications/{PKG}/edits/{eid}/listings/{loc}/{itype}/{iid}')
+            if old:
+                log(f'  {loc}/{itype}: purged {len(old)} old image(s)')
             for f in files:
                 data = open(f, 'rb').read()
                 ct = 'image/png' if f.lower().endswith('.png') else 'image/jpeg'
