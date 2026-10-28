@@ -76,7 +76,7 @@ for t in tags:
     d.text((x + 17, 312), t, font=f, fill=(224, 248, 235))
     x += tw + 48
 
-foot = "SeaGaruda 工作室 · 張海鵬"
+foot = "SeaGaruda 工作室"
 d.text((TX, 392), foot, font=font(REG, 24), fill=(150, 196, 172))
 
 out = sys.argv[1] if len(sys.argv) > 1 else "/home/zhp/gdchudadi/scripts/store-icons/feature-1024x500.png"
